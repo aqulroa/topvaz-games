@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Тренер Аима - Играть онлайн</title>
+<title>РўСЂРµРЅРµСЂ РђРёРјР° - РРіСЂР°С‚СЊ РѕРЅР»Р°Р№РЅ</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -109,12 +109,12 @@ a{text-decoration:none}
 <div class="nav">
   <a href="../index.html">&larr; aqulroa Games</a>
   <div class="nav-stats">
-    <div class="nav-stat">Счёт: <span id="score">0</span></div>
-    <div class="nav-stat">Время: <span id="timer">30</span>с</div>
-    <div class="nav-stat">Точность: <span id="accuracy">100</span>%</div>
-    <div class="nav-stat">Уровень: <span id="lvl">-</span></div>
+    <div class="nav-stat">РЎС‡С‘С‚: <span id="score">0</span></div>
+    <div class="nav-stat">Р’СЂРµРјСЏ: <span id="timer">30</span>СЃ</div>
+    <div class="nav-stat">РўРѕС‡РЅРѕСЃС‚СЊ: <span id="accuracy">100</span>%</div>
+    <div class="nav-stat">РЈСЂРѕРІРµРЅСЊ: <span id="lvl">-</span></div>
   </div>
-  <button class="settings-btn" onclick="toggleSettings()">&#9881; Настройки</button>
+  <button class="settings-btn" onclick="toggleSettings()">&#9881; РќР°СЃС‚СЂРѕР№РєРё</button>
 </div>
 
 <div class="arena" id="arena"><div class="arena-grid" id="grid"></div></div>
@@ -132,9 +132,9 @@ a{text-decoration:none}
 
 <div class="settings-panel" id="settingsPanel">
   <button class="close-settings" onclick="toggleSettings()">&times;</button>
-  <h3>&#9881; Настройки</h3>
+  <h3>&#9881; РќР°СЃС‚СЂРѕР№РєРё</h3>
   <div class="setting-group">
-    <label>Цвет арены</label>
+    <label>Р¦РІРµС‚ Р°СЂРµРЅС‹</label>
     <div class="color-row" data-s="arena">
       <div class="color-swatch active" style="background:rgba(0,212,255,0.25);--sc:#00d4ff" data-v="rgba(0,212,255,0.2)"></div>
       <div class="color-swatch" style="background:rgba(123,97,255,0.25);--sc:#7b61ff" data-v="rgba(123,97,255,0.2)"></div>
@@ -145,7 +145,7 @@ a{text-decoration:none}
     </div>
   </div>
   <div class="setting-group">
-    <label>Цвет шариков</label>
+    <label>Р¦РІРµС‚ С€Р°СЂРёРєРѕРІ</label>
     <div class="color-row" data-s="ball">
       <div class="color-swatch active" style="background:#00d4ff;--sc:#00d4ff" data-v="cyan"></div>
       <div class="color-swatch" style="background:#7b61ff;--sc:#7b61ff" data-v="purple"></div>
@@ -156,7 +156,7 @@ a{text-decoration:none}
     </div>
   </div>
   <div class="setting-group">
-    <label>Цвет сетки</label>
+    <label>Р¦РІРµС‚ СЃРµС‚РєРё</label>
     <div class="color-row" data-s="grid">
       <div class="color-swatch active" style="background:rgba(0,212,255,0.15);--sc:#00d4ff" data-v="rgba(0,212,255,0.03)"></div>
       <div class="color-swatch" style="background:rgba(123,97,255,0.15);--sc:#7b61ff" data-v="rgba(123,97,255,0.03)"></div>
@@ -165,33 +165,33 @@ a{text-decoration:none}
     </div>
   </div>
   <div class="setting-group">
-    <div class="toggle-row"><span class="toggle-label">Оружие</span><div class="toggle on" id="togW" onclick="togWeapon()"></div></div>
-    <div class="toggle-row"><span class="toggle-label">Сетка</span><div class="toggle on" id="togG" onclick="togGrid()"></div></div>
-    <div class="toggle-row"><span class="toggle-label">Звук</span><div class="toggle" id="togS" onclick="togSound()"></div></div>
+    <div class="toggle-row"><span class="toggle-label">РћСЂСѓР¶РёРµ</span><div class="toggle on" id="togW" onclick="togWeapon()"></div></div>
+    <div class="toggle-row"><span class="toggle-label">РЎРµС‚РєР°</span><div class="toggle on" id="togG" onclick="togGrid()"></div></div>
+    <div class="toggle-row"><span class="toggle-label">Р—РІСѓРє</span><div class="toggle" id="togS" onclick="togSound()"></div></div>
   </div>
 </div>
 
 <div class="overlay" id="menu">
   <div class="menu-box">
-    <div class="menu-title" id="mTitle">Тренер Аима</div>
-    <div class="menu-sub" id="mSub">Проверь свои рефлексы и точность</div>
+    <div class="menu-title" id="mTitle">РўСЂРµРЅРµСЂ РђРёРјР°</div>
+    <div class="menu-sub" id="mSub">РџСЂРѕРІРµСЂСЊ СЃРІРѕРё СЂРµС„Р»РµРєСЃС‹ Рё С‚РѕС‡РЅРѕСЃС‚СЊ</div>
     <div class="modes" id="modes">
-      <button class="mode-btn" onclick="go('s',1)"><span class="mn">Статичный — Уровень 1</span><span class="md">Большие шарики, легко</span></button>
-      <button class="mode-btn" onclick="go('s',2)"><span class="mn">Статичный — Уровень 2</span><span class="md">Смешанные шарики</span></button>
-      <button class="mode-btn" onclick="go('s',3)"><span class="mn">Статичный — Уровень 3</span><span class="md">Маленькие и быстрые</span></button>
-      <button class="mode-btn" onclick="go('t',1)"><span class="mn">Трекинг — Уровень 1</span><span class="md">Медленные движущиеся</span></button>
-      <button class="mode-btn" onclick="go('t',2)"><span class="mn">Трекинг — Уровень 2</span><span class="md">Быстрые движущиеся</span></button>
-      <button class="mode-btn" onclick="go('t',3)"><span class="mn">Трекинг — Уровень 3</span><span class="md">Очень быстрые + мелкие</span></button>
+      <button class="mode-btn" onclick="go('s',1)"><span class="mn">РЎС‚Р°С‚РёС‡РЅС‹Р№ вЂ” РЈСЂРѕРІРµРЅСЊ 1</span><span class="md">Р‘РѕР»СЊС€РёРµ С€Р°СЂРёРєРё, Р»РµРіРєРѕ</span></button>
+      <button class="mode-btn" onclick="go('s',2)"><span class="mn">РЎС‚Р°С‚РёС‡РЅС‹Р№ вЂ” РЈСЂРѕРІРµРЅСЊ 2</span><span class="md">РЎРјРµС€Р°РЅРЅС‹Рµ С€Р°СЂРёРєРё</span></button>
+      <button class="mode-btn" onclick="go('s',3)"><span class="mn">РЎС‚Р°С‚РёС‡РЅС‹Р№ вЂ” РЈСЂРѕРІРµРЅСЊ 3</span><span class="md">РњР°Р»РµРЅСЊРєРёРµ Рё Р±С‹СЃС‚СЂС‹Рµ</span></button>
+      <button class="mode-btn" onclick="go('t',1)"><span class="mn">РўСЂРµРєРёРЅРі вЂ” РЈСЂРѕРІРµРЅСЊ 1</span><span class="md">РњРµРґР»РµРЅРЅС‹Рµ РґРІРёР¶СѓС‰РёРµСЃСЏ</span></button>
+      <button class="mode-btn" onclick="go('t',2)"><span class="mn">РўСЂРµРєРёРЅРі вЂ” РЈСЂРѕРІРµРЅСЊ 2</span><span class="md">Р‘С‹СЃС‚СЂС‹Рµ РґРІРёР¶СѓС‰РёРµСЃСЏ</span></button>
+      <button class="mode-btn" onclick="go('t',3)"><span class="mn">РўСЂРµРєРёРЅРі вЂ” РЈСЂРѕРІРµРЅСЊ 3</span><span class="md">РћС‡РµРЅСЊ Р±С‹СЃС‚СЂС‹Рµ + РјРµР»РєРёРµ</span></button>
     </div>
     <div class="results" id="res">
-      <div class="menu-title" style="font-size:1.6rem">Результаты</div>
+      <div class="menu-title" style="font-size:1.6rem">Р РµР·СѓР»СЊС‚Р°С‚С‹</div>
       <div class="res-grid">
-        <div class="res-item"><div class="res-label">Счёт</div><div class="res-value" id="rS">0</div></div>
-        <div class="res-item"><div class="res-label">Точность</div><div class="res-value" id="rA">0%</div></div>
-        <div class="res-item"><div class="res-label">Ср. реакция</div><div class="res-value" id="rR">0мс</div></div>
-        <div class="res-item"><div class="res-label">Целей/сек</div><div class="res-value" id="rP">0</div></div>
+        <div class="res-item"><div class="res-label">РЎС‡С‘С‚</div><div class="res-value" id="rS">0</div></div>
+        <div class="res-item"><div class="res-label">РўРѕС‡РЅРѕСЃС‚СЊ</div><div class="res-value" id="rA">0%</div></div>
+        <div class="res-item"><div class="res-label">РЎСЂ. СЂРµР°РєС†РёСЏ</div><div class="res-value" id="rR">0РјСЃ</div></div>
+        <div class="res-item"><div class="res-label">Р¦РµР»РµР№/СЃРµРє</div><div class="res-value" id="rP">0</div></div>
       </div>
-      <button class="btn-primary" onclick="menuShow()">Играть снова</button>
+      <button class="btn-primary" onclick="menuShow()">РРіСЂР°С‚СЊ СЃРЅРѕРІР°</button>
     </div>
   </div>
 </div>
@@ -216,8 +216,8 @@ function menuShow(){
   arena.querySelectorAll('.target').forEach(t=>t.remove());mvs=[];
   document.getElementById('modes').style.display='flex';
   document.getElementById('res').classList.remove('active');
-  document.getElementById('mTitle').textContent='Тренер Аима';
-  document.getElementById('mSub').textContent='Проверь свои рефлексы и точность';
+  document.getElementById('mTitle').textContent='РўСЂРµРЅРµСЂ РђРёРјР°';
+  document.getElementById('mSub').textContent='РџСЂРѕРІРµСЂСЊ СЃРІРѕРё СЂРµС„Р»РµРєСЃС‹ Рё С‚РѕС‡РЅРѕСЃС‚СЊ';
   document.getElementById('menu').classList.remove('hidden');
   document.getElementById('score').textContent='0';document.getElementById('timer').textContent='30';
   document.getElementById('accuracy').textContent='100';document.getElementById('lvl').textContent='-';
@@ -280,10 +280,10 @@ function end(){
   active=false;clearInterval(gt);clearInterval(st);clearInterval(mt);mvs=[];
   const acc=shots>0?Math.round(hits/shots*100):0,avg=rts.length>0?Math.round(rts.reduce((a,b)=>a+b,0)/rts.length):0,spd=(hits/C[mode][lvl].d).toFixed(1);
   document.getElementById('rS').textContent=score;document.getElementById('rA').textContent=acc+'%';
-  document.getElementById('rR').textContent=avg+'мс';document.getElementById('rP').textContent=spd;
+  document.getElementById('rR').textContent=avg+'РјСЃ';document.getElementById('rP').textContent=spd;
   document.getElementById('modes').style.display='none';
-  document.getElementById('mTitle').textContent='Результаты';
-  document.getElementById('mSub').textContent=(mode==='s'?'Статичный':'Трекинг')+' — Уровень '+lvl;
+  document.getElementById('mTitle').textContent='Р РµР·СѓР»СЊС‚Р°С‚С‹';
+  document.getElementById('mSub').textContent=(mode==='s'?'РЎС‚Р°С‚РёС‡РЅС‹Р№':'РўСЂРµРєРёРЅРі')+' вЂ” РЈСЂРѕРІРµРЅСЊ '+lvl;
   document.getElementById('res').classList.add('active');
   document.getElementById('menu').classList.remove('hidden');
 }
