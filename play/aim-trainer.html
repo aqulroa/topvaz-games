@@ -1,9 +1,9 @@
-п»ї<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>РўСЂРµРЅРµСЂ РђРёРјР° - РРіСЂР°С‚СЊ РѕРЅР»Р°Р№РЅ</title>
+<title>Тренер Аима - Играть онлайн</title>
 <link rel="icon" href="../assets/images/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -187,9 +187,9 @@ body {
 <div class="nav">
   <a href="../index.html">&larr; aqulroa Games</a>
   <div class="nav-stats">
-    <div class="nav-stat">РЎС‡С‘С‚: <span id="score">0</span></div>
-    <div class="nav-stat">Р’СЂРµРјСЏ: <span id="timer">30</span>СЃ</div>
-    <div class="nav-stat">РўРѕС‡РЅРѕСЃС‚СЊ: <span id="accuracy">100</span>%</div>
+    <div class="nav-stat">Счёт: <span id="score">0</span></div>
+    <div class="nav-stat">Время: <span id="timer">30</span>с</div>
+    <div class="nav-stat">Точность: <span id="accuracy">100</span>%</div>
   </div>
 </div>
 
@@ -198,35 +198,35 @@ body {
 <!-- MENU -->
 <div class="menu-overlay" id="menu">
   <div class="menu-content">
-    <div class="menu-title">РўСЂРµРЅРµСЂ РђРёРјР°</div>
-    <div class="menu-subtitle">РџСЂРѕРІРµСЂСЊ СЃРІРѕРё СЂРµС„Р»РµРєСЃС‹ Рё С‚РѕС‡РЅРѕСЃС‚СЊ</div>
+    <div class="menu-title">Тренер Аима</div>
+    <div class="menu-subtitle">Проверь свои рефлексы и точность</div>
     <div class="modes" id="menuModes">
       <button class="mode-btn" onclick="startGame('easy')">
-        <span class="mode-name">Р›С‘РіРєРёР№</span>
-        <span class="mode-desc">30 СЃРµРєСѓРЅРґ, Р±РѕР»СЊС€РёРµ РјРёС€РµРЅРё</span>
+        <span class="mode-name">Лёгкий</span>
+        <span class="mode-desc">30 секунд, большие мишени</span>
       </button>
       <button class="mode-btn" onclick="startGame('normal')">
-        <span class="mode-name">РќРѕСЂРјР°Р»СЊРЅС‹Р№</span>
-        <span class="mode-desc">30 СЃРµРєСѓРЅРґ, СЂР°Р·РЅС‹Рµ РјРёС€РµРЅРё</span>
+        <span class="mode-name">Нормальный</span>
+        <span class="mode-desc">30 секунд, разные мишени</span>
       </button>
       <button class="mode-btn" onclick="startGame('hard')">
-        <span class="mode-name">РЎР»РѕР¶РЅС‹Р№</span>
-        <span class="mode-desc">30 СЃРµРєСѓРЅРґ, РјР°Р»РµРЅСЊРєРёРµ Р±С‹СЃС‚СЂС‹Рµ РјРёС€РµРЅРё</span>
+        <span class="mode-name">Сложный</span>
+        <span class="mode-desc">30 секунд, маленькие быстрые мишени</span>
       </button>
       <button class="mode-btn" onclick="startGame('tracking')">
-        <span class="mode-name">РўСЂРµРєРёРЅРі</span>
-        <span class="mode-desc">30 СЃРµРєСѓРЅРґ, РґРІРёР¶СѓС‰РёРµСЃСЏ РјРёС€РµРЅРё</span>
+        <span class="mode-name">Трекинг</span>
+        <span class="mode-desc">30 секунд, движущиеся мишени</span>
       </button>
     </div>
     <div class="results" id="results">
-      <div class="menu-title" style="font-size: 1.8rem;">Р РµР·СѓР»СЊС‚Р°С‚С‹</div>
+      <div class="menu-title" style="font-size: 1.8rem;">Результаты</div>
       <div class="result-grid">
-        <div class="result-item"><div class="result-label">РЎС‡С‘С‚</div><div class="result-value" id="resScore">0</div></div>
-        <div class="result-item"><div class="result-label">РўРѕС‡РЅРѕСЃС‚СЊ</div><div class="result-value" id="resAccuracy">0%</div></div>
-        <div class="result-item"><div class="result-label">РЎСЂ. СЂРµР°РєС†РёСЏ</div><div class="result-value" id="resReaction">0РјСЃ</div></div>
-        <div class="result-item"><div class="result-label">Р¦РµР»РµР№/СЃРµРє</div><div class="result-value" id="resSpeed">0</div></div>
+        <div class="result-item"><div class="result-label">Счёт</div><div class="result-value" id="resScore">0</div></div>
+        <div class="result-item"><div class="result-label">Точность</div><div class="result-value" id="resAccuracy">0%</div></div>
+        <div class="result-item"><div class="result-label">Ср. реакция</div><div class="result-value" id="resReaction">0мс</div></div>
+        <div class="result-item"><div class="result-label">Целей/сек</div><div class="result-value" id="resSpeed">0</div></div>
       </div>
-      <button class="restart-btn" onclick="showMenu()">РРіСЂР°С‚СЊ СЃРЅРѕРІР°</button>
+      <button class="restart-btn" onclick="showMenu()">Играть снова</button>
     </div>
   </div>
 </div>
