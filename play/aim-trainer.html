@@ -115,11 +115,13 @@ input[type=range]{width:100%;accent-color:#00d4ff;margin-top:2px}
 <div id="hud"><div class="hb">
 <div class="ha"><a href="../index.html">&larr; aqulroa Games</a></div>
 <div class="hs"><div class="hi">Счёт: <span id="sc">0</span></div><div class="hi">Время: <span id="tm">30</span>с</div><div class="hi">Точность: <span id="ac">100</span>%</div><div class="hi">Ур: <span id="lv">-</span></div></div>
+<div style="pointer-events:auto"><button class="btn" style="padding:4px 12px;font-size:.75rem;margin:0" onclick="toggleFS()">⛶ Полный экран</button></div>
 </div></div>
 
 <div id="cross"><div class="ch chw"></div><div class="ch chh"></div><div class="chd"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 // === SCENE ===
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050810);scene.fog=new THREE.Fog(0x050810,25,55);
@@ -146,65 +148,55 @@ function buildArena(){
 }
 buildArena();
 
-// === WEAPON (Desert Eagle shape) ===
+// === WEAPON ===
 const weaponGroup=new THREE.Group();
+let weaponLoaded=false;
+
+// Try loading GLB model
 (function(){
-  const metal=new THREE.MeshStandardMaterial({color:0x5a5a6a,metalness:0.95,roughness:0.15});
-  const dark=new THREE.MeshStandardMaterial({color:0x2a2a3a,metalness:0.9,roughness:0.2});
-  const grip=new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.8});
-  const glow=new THREE.MeshStandardMaterial({color:0x00d4ff,emissive:0x00d4ff,emissiveIntensity:0.8});
-
-  // Slide
-  const slide=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.07,0.55),metal);
-  slide.position.set(0,0.04,-0.2);weaponGroup.add(slide);
-  const top=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.55,8),metal);
-  top.rotation.z=Math.PI/2;top.position.set(0,0.075,-0.2);weaponGroup.add(top);
-
-  // Barrel
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.4,8),dark);
-  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.03,-0.55);weaponGroup.add(barrel);
-  const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.025,0.05,8),metal);
-  muzzle.rotation.x=Math.PI/2;muzzle.position.set(0,0.03,-0.78);weaponGroup.add(muzzle);
-
-  // Frame
-  const frame=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.05,0.4),dark);
-  frame.position.set(0,-0.01,0.05);weaponGroup.add(frame);
-
-  // Trigger guard
-  const tg=new THREE.Mesh(new THREE.TorusGeometry(0.045,0.008,6,12,Math.PI),metal);
-  tg.position.set(0,-0.04,0.08);tg.rotation.set(0,0,Math.PI);weaponGroup.add(tg);
-  const trigger=new THREE.Mesh(new THREE.BoxGeometry(0.008,0.04,0.008),dark);
-  trigger.position.set(0,-0.02,0.1);weaponGroup.add(trigger);
-
-  // Grip
-  const gL=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.22,0.12),grip);
-  gL.position.set(-0.05,-0.12,0.18);gL.rotation.x=0.25;weaponGroup.add(gL);
-  const gR=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.22,0.12),grip);
-  gR.position.set(0.05,-0.12,0.18);gR.rotation.x=0.25;weaponGroup.add(gR);
-  const gB=new THREE.Mesh(new THREE.BoxGeometry(0.09,0.22,0.012),dark);
-  gB.position.set(0,-0.12,0.13);gB.rotation.x=0.25;weaponGroup.add(gB);
-
-  // Sights
-  const fs=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.035,0.015),glow);
-  fs.position.set(0,0.1,-0.45);weaponGroup.add(fs);
-  const rs=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.035,0.018),metal);
-  rs.position.set(0,0.1,0.15);weaponGroup.add(rs);
-  const rsN=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.04,0.02),dark);
-  rsN.position.set(0,0.1,0.15);weaponGroup.add(rsN);
-
-  // Glow accents
-  const l1=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.005,0.45),glow);
-  l1.position.set(-0.055,0.015,-0.15);weaponGroup.add(l1);
-  const l2=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.005,0.45),glow);
-  l2.position.set(0.055,0.015,-0.15);weaponGroup.add(l2);
-
-  // Muzzle light
-  const ml=new THREE.PointLight(0xffaa33,0,5);ml.position.set(0,0.03,-0.82);
-  weaponGroup.add(ml);weaponGroup.userData.ml=ml;
+  try{
+    const loader=new THREE.GLTFLoader();
+    loader.load('https://aqulroa.github.io/aqulroa-games/low_poly_western_battle_rifle.glb',
+      function(gltf){
+        const m=gltf.scene;
+        m.scale.set(0.4,0.4,0.4);
+        m.rotation.set(0,Math.PI,0);
+        m.position.set(0,0,0);
+        weaponGroup.add(m);
+        weaponLoaded=true;
+      },
+      undefined,
+      function(){addWeapon();}
+    );
+  }catch(e){addWeapon();}
+  setTimeout(()=>{if(!weaponLoaded)addWeapon();},3000);
 })();
 
-weaponGroup.position.set(0.25,-0.2,-0.4);
-weaponGroup.rotation.y=0.05;
+function addWeapon(){
+  const metal=new THREE.MeshStandardMaterial({color:0x4a4a5a,metalness:0.95,roughness:0.15});
+  const dark=new THREE.MeshStandardMaterial({color:0x222230,metalness:0.9,roughness:0.2});
+  const glow=new THREE.MeshStandardMaterial({color:0x00d4ff,emissive:0x00d4ff,emissiveIntensity:0.6});
+  const grip=new THREE.MeshStandardMaterial({color:0x181820,roughness:0.85});
+
+  const slide=new THREE.Mesh(new THREE.BoxGeometry(0.038,0.028,0.22),metal);
+  slide.position.set(0,0.015,-0.08);weaponGroup.add(slide);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.009,0.011,0.15,8),dark);
+  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.01,-0.28);weaponGroup.add(barrel);
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(0.034,0.02,0.16),dark);
+  frame.position.set(0,-0.005,0);weaponGroup.add(frame);
+  const gL=new THREE.Mesh(new THREE.BoxGeometry(0.004,0.08,0.04),grip);
+  gL.position.set(-0.018,-0.05,0.06);gL.rotation.x=0.2;weaponGroup.add(gL);
+  const gR=new THREE.Mesh(new THREE.BoxGeometry(0.004,0.08,0.04),grip);
+  gR.position.set(0.018,-0.05,0.06);gR.rotation.x=0.2;weaponGroup.add(gR);
+  const fs=new THREE.Mesh(new THREE.BoxGeometry(0.005,0.012,0.005),glow);
+  fs.position.set(0,0.038,-0.18);weaponGroup.add(fs);
+}
+
+const muzzleLight=new THREE.PointLight(0xffaa33,0,3);muzzleLight.position.set(0,0.01,-0.4);
+weaponGroup.add(muzzleLight);weaponGroup.userData.ml=muzzleLight;
+
+weaponGroup.position.set(0.17,-0.15,-0.32);
+weaponGroup.rotation.y=0.03;
 camera.add(weaponGroup);scene.add(camera);
 
 // === FPS CONTROLS ===
@@ -240,7 +232,7 @@ let tG=null,tS=null,tM=null;
 // Fixed speeds - same magnitude every time
 const CFG={
   s:{1:{r:1400,sz:0.5,d:30},2:{r:900,sz:0.35,d:30},3:{r:550,sz:0.2,d:30}},
-  t:{1:{r:3000,sz:0.5,sp:0.09,d:30},2:{r:2500,sz:0.4,sp:0.15,d:30},3:{r:2000,sz:0.3,sp:0.2,d:30}},
+  t:{1:{r:3000,sz:0.5,sp:0.09,d:30},2:{r:2500,sz:0.4,sp:0.15,d:30},3:{r:2000,sz:0.3,sp:0.17,d:30}},
   f:{1:{sz:0.45,d:30,cnt:6},2:{sz:0.35,d:30,cnt:6},3:{sz:0.22,d:30,cnt:6}}
 };
 
@@ -272,10 +264,17 @@ function spawnFC(){
   while(targets.length<c.cnt)targets.push(mk(c.sz,(Math.random()-0.5)*18,0.5+Math.random()*3.8,-6-Math.random()*5));
 }
 function moveT(){
-  moving.forEach(m=>{if(!m.parent)return;m.position.add(m.userData.vel);
-  if(m.position.x<-11||m.position.x>11)m.userData.vel.x*=-1;
-  if(m.position.y<0.3||m.position.y>4.5)m.userData.vel.y*=-1;
-  if(m.position.z<-11||m.position.z>11)m.userData.vel.z*=-1;});
+  moving.forEach(m=>{if(!m.parent)return;
+  const c=CFG.t[lv];
+  m.position.add(m.userData.vel);
+  let bounced=false;
+  if(m.position.x<-11||m.position.x>11){m.userData.vel.x*=-1;bounced=true;}
+  if(m.position.y<0.3||m.position.y>4.5){m.userData.vel.y*=-1;bounced=true;}
+  if(m.position.z<-11||m.position.z>11){m.userData.vel.z*=-1;bounced=true;}
+  if(bounced)m.userData.vel.normalize().multiplyScalar(c.sp);
+  m.position.x=Math.max(-11,Math.min(11,m.position.x));
+  m.position.y=Math.max(0.3,Math.min(4.5,m.position.y));
+  m.position.z=Math.max(-11,Math.min(11,m.position.z));});
 }
 
 // === EFFECTS ===
@@ -294,8 +293,8 @@ function shoot(){
   if(!active)return;shots++;
   if(soundOn)playGunshot();
   weaponGroup.userData.ml.intensity=3;setTimeout(()=>weaponGroup.userData.ml.intensity=0,60);
-  weaponGroup.position.z+=0.03;weaponGroup.rotation.x-=0.06;
-  setTimeout(()=>{weaponGroup.position.z=-0.4;weaponGroup.rotation.x=0;},70);
+  weaponGroup.position.z+=0.025;weaponGroup.rotation.x-=0.05;
+  setTimeout(()=>{weaponGroup.position.z=-0.32;weaponGroup.rotation.x=0;},70);
   rc.setFromCamera(new THREE.Vector2(0,0),camera);
   const ha=rc.intersectObjects(targets,true);
   if(ha.length>0){let o=ha[0].object;while(o&&!o.userData.hit)o=o.parent;
@@ -321,6 +320,13 @@ document.addEventListener('mousemove',e=>{
 document.addEventListener('mousedown',e=>{if(locked&&active&&e.button===0)shoot();});
 
 // === FULLSCREEN ===
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }else{
+    document.exitFullscreen();
+  }
+}
 
 // === CLEAR TIMERS ===
 function clearAll(){clearInterval(tG);clearInterval(tS);clearInterval(tM);tG=null;tS=null;tM=null;}
@@ -382,7 +388,7 @@ document.querySelectorAll('.cs').forEach(sw=>{
 
 // === RENDER ===
 function animate(){requestAnimationFrame(animate);if(active&&mode==='t')moveT();
-  if(weaponGroup.visible){weaponGroup.position.x=0.25+Math.sin(Date.now()*0.002)*0.005;weaponGroup.position.y=-0.2+Math.sin(Date.now()*0.003)*0.003;}
+  if(weaponGroup.visible){weaponGroup.position.x=0.17+Math.sin(Date.now()*0.002)*0.004;weaponGroup.position.y=-0.15+Math.sin(Date.now()*0.003)*0.002;}
   renderer.render(scene,camera);}
 animate();
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
