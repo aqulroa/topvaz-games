@@ -115,7 +115,7 @@ input[type=range]{width:100%;accent-color:#00d4ff;margin-top:2px}
 <div id="hud"><div class="hb">
 <div class="ha"><a href="../index.html">&larr; aqulroa Games</a></div>
 <div class="hs"><div class="hi">Счёт: <span id="sc">0</span></div><div class="hi">Время: <span id="tm">30</span>с</div><div class="hi">Точность: <span id="ac">100</span>%</div><div class="hi">Ур: <span id="lv">-</span></div></div>
-<div style="pointer-events:auto"><button class="btn" style="padding:4px 12px;font-size:.75rem;margin:0" onclick="toggleFS()">⛶ Полный экран</button></div>
+<div style="pointer-events:auto;padding:0 10px"><button onclick="toggleFS()" style="background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:#00d4ff;padding:4px 12px;border-radius:12px;cursor:pointer;font-family:Poppins;font-size:.75rem">Fullscreen</button></div>
 </div></div>
 
 <div id="cross"><div class="ch chw"></div><div class="ch chh"></div><div class="chd"></div></div>
@@ -195,7 +195,7 @@ function addWeapon(){
 const muzzleLight=new THREE.PointLight(0xffaa33,0,3);muzzleLight.position.set(0,0.01,-0.4);
 weaponGroup.add(muzzleLight);weaponGroup.userData.ml=muzzleLight;
 
-weaponGroup.position.set(0.17,-0.15,-0.32);
+weaponGroup.position.set(0.22,-0.12,-0.25);
 weaponGroup.rotation.y=0.03;
 camera.add(weaponGroup);scene.add(camera);
 
@@ -294,7 +294,7 @@ function shoot(){
   if(soundOn)playGunshot();
   weaponGroup.userData.ml.intensity=3;setTimeout(()=>weaponGroup.userData.ml.intensity=0,60);
   weaponGroup.position.z+=0.025;weaponGroup.rotation.x-=0.05;
-  setTimeout(()=>{weaponGroup.position.z=-0.32;weaponGroup.rotation.x=0;},70);
+  setTimeout(()=>{weaponGroup.position.z=-0.25;weaponGroup.rotation.x=0;},70);
   rc.setFromCamera(new THREE.Vector2(0,0),camera);
   const ha=rc.intersectObjects(targets,true);
   if(ha.length>0){let o=ha[0].object;while(o&&!o.userData.hit)o=o.parent;
@@ -388,7 +388,7 @@ document.querySelectorAll('.cs').forEach(sw=>{
 
 // === RENDER ===
 function animate(){requestAnimationFrame(animate);if(active&&mode==='t')moveT();
-  if(weaponGroup.visible){weaponGroup.position.x=0.17+Math.sin(Date.now()*0.002)*0.004;weaponGroup.position.y=-0.15+Math.sin(Date.now()*0.003)*0.002;}
+  if(weaponGroup.visible){weaponGroup.position.x=0.22+Math.sin(Date.now()*0.002)*0.004;weaponGroup.position.y=-0.12+Math.sin(Date.now()*0.003)*0.002;}
   renderer.render(scene,camera);}
 animate();
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
