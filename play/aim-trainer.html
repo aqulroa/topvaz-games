@@ -5,55 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Тренер Аима 3D - Играть онлайн</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Poppins',sans-serif;background:#000;color:#e8eaf6;overflow:hidden;height:100vh}
-a{text-decoration:none}
-canvas{display:block}
+a{text-decoration:none}canvas{display:block}
 
-/* BLOCKER / MENU */
 #blocker{position:fixed;inset:0;z-index:300;background:rgba(5,8,16,0.95);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
 #blocker.hidden{display:none}
-.menu-box{text-align:center;max-width:560px;width:92%;padding:30px;background:rgba(15,20,45,0.8);border:1px solid rgba(0,212,255,0.15);border-radius:20px;max-height:90vh;overflow-y:auto}
+.menu-box{text-align:center;max-width:520px;width:92%;padding:28px;background:rgba(15,20,45,0.8);border:1px solid rgba(0,212,255,0.15);border-radius:20px;max-height:90vh;overflow-y:auto}
 .menu-title{font-size:1.8rem;font-weight:900;margin-bottom:5px;background:linear-gradient(135deg,#00d4ff,#7b61ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .menu-sub{color:rgba(232,234,246,0.4);margin-bottom:18px;font-size:.85rem}
-.modes{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
-.mode-btn{padding:11px 18px;border:1px solid rgba(0,212,255,0.2);border-radius:12px;background:rgba(0,212,255,0.06);color:#e8eaf6;font-family:'Poppins';font-size:.88rem;cursor:pointer;transition:all .3s;text-align:left}
-.mode-btn:hover{background:rgba(0,212,255,0.15);border-color:#00d4ff;transform:translateX(4px)}
-.mn{display:block;font-weight:700;color:#00d4ff;font-size:.93rem}
-.md{display:block;font-size:.73rem;color:rgba(232,234,246,0.35);margin-top:1px}
 
-/* Settings in menu */
-.menu-settings{border-top:1px solid rgba(0,212,255,0.1);padding-top:15px;margin-top:12px;text-align:left}
-.menu-settings h4{color:#00d4ff;font-size:.85rem;margin-bottom:12px;text-align:center}
-.msg{margin-bottom:14px}
-.msg>label{display:block;font-size:.75rem;color:rgba(232,234,246,0.45);margin-bottom:5px}
+/* Mode folders */
+.mode-folder{margin-bottom:8px;border:1px solid rgba(0,212,255,0.15);border-radius:14px;overflow:hidden;background:rgba(0,212,255,0.04);transition:all .3s}
+.mode-folder:hover{border-color:rgba(0,212,255,0.3)}
+.mode-header{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.mode-header:hover{background:rgba(0,212,255,0.08)}
+.mode-name{font-weight:700;color:#00d4ff;font-size:1rem;text-align:left}
+.mode-desc{font-size:.75rem;color:rgba(232,234,246,0.35);text-align:left;margin-top:2px}
+.mode-arrow{color:#00d4ff;font-size:1.2rem;transition:transform .3s}
+.mode-folder.open .mode-arrow{transform:rotate(180deg)}
+.mode-levels{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.mode-folder.open .mode-levels{max-height:300px}
+.level-btn{display:block;width:100%;padding:10px 18px;border:none;border-top:1px solid rgba(0,212,255,0.08);background:rgba(0,212,255,0.03);color:#e8eaf6;font-family:'Poppins';font-size:.85rem;cursor:pointer;transition:all .2s;text-align:left}
+.level-btn:hover{background:rgba(0,212,255,0.12);color:#00d4ff}
+.level-btn .ln{font-weight:600}
+.level-btn .ld{font-size:.72rem;color:rgba(232,234,246,0.3);margin-top:1px}
+
+/* Settings */
+.menu-settings{border-top:1px solid rgba(0,212,255,0.1);padding-top:14px;margin-top:10px;text-align:left}
+.menu-settings h4{color:#00d4ff;font-size:.82rem;margin-bottom:10px;text-align:center}
+.msg{margin-bottom:12px}
+.msg>label{display:block;font-size:.73rem;color:rgba(232,234,246,0.4);margin-bottom:4px}
 .mcr{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.mcs{width:28px;height:28px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.mcs{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .2s}
 .mcs:hover,.mcs.on{border-color:#fff;transform:scale(1.1)}
-.mtr{display:flex;align-items:center;justify-content:space-between;padding:5px 0}
-.mtl{font-size:.82rem;color:#e8eaf6}
-.mtg{width:40px;height:20px;background:rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;position:relative;transition:background .3s}
+.mtr{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.mtl{font-size:.8rem;color:#e8eaf6}
+.mtg{width:38px;height:19px;background:rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;position:relative;transition:background .3s}
 .mtg.on{background:rgba(0,212,255,0.4)}
-.mtg::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .3s}
-.mtg.on::after{transform:translateX(20px)}
-input[type=range]{width:100%;accent-color:#00d4ff;margin-top:3px}
+.mtg::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform .3s}
+.mtg.on::after{transform:translateX(19px)}
+input[type=range]{width:100%;accent-color:#00d4ff;margin-top:2px}
 
+/* Results */
 .results{display:none}.results.active{display:block}
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
 .res-item{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.1);border-radius:10px;padding:12px}
-.res-label{font-size:.7rem;color:rgba(232,234,246,0.35)}.res-value{font-size:1.3rem;font-weight:700;color:#00d4ff}
-.btn-p{padding:10px 30px;border:none;border-radius:22px;background:linear-gradient(135deg,#00d4ff,#7b61ff);color:#fff;font-family:'Poppins';font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s;margin-top:8px}
+.res-label{font-size:.7rem;color:rgba(232,234,246,0.35)}.res-value{font-size:1.2rem;font-weight:700;color:#00d4ff}
+.btn-p{padding:10px 28px;border:none;border-radius:20px;background:linear-gradient(135deg,#00d4ff,#7b61ff);color:#fff;font-family:'Poppins';font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s;margin-top:8px}
 .btn-p:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,212,255,0.4)}
 
 /* HUD */
 #hud{position:fixed;top:0;left:0;right:0;z-index:100;pointer-events:none;display:none}
 #hud.active{display:flex}
 .hud-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 16px;background:rgba(5,8,16,0.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,212,255,0.1)}
-.hud-left a{color:#00d4ff;font-weight:600;font-size:.85rem;pointer-events:auto}
-.hud-stats{display:flex;gap:10px;font-size:.78rem}
-.hud-s{background:rgba(0,212,255,0.08);padding:3px 10px;border-radius:12px;border:1px solid rgba(0,212,255,0.12)}
+.hud-left a{color:#00d4ff;font-weight:600;font-size:.82rem;pointer-events:auto}
+.hud-stats{display:flex;gap:10px;font-size:.75rem}
+.hud-s{background:rgba(0,212,255,0.08);padding:3px 10px;border-radius:12px;border:1px solid rgba(0,212,255,0.1)}
 .hud-s span{color:#00d4ff;font-weight:700}
 
 /* Crosshair */
@@ -67,24 +77,55 @@ input[type=range]{width:100%;accent-color:#00d4ff;margin-top:3px}
 </head>
 <body>
 
-<!-- MENU -->
 <div id="blocker">
   <div class="menu-box">
     <div class="menu-title" id="mTitle">Тренер Аима 3D</div>
     <div class="menu-sub" id="mSub">Выбери режим и настрой игру</div>
 
-    <div class="modes" id="modes">
-      <button class="mode-btn" onclick="go('s',1)"><span class="mn">Статичный — Уровень 1</span><span class="md">Большие медленные шары</span></button>
-      <button class="mode-btn" onclick="go('s',2)"><span class="mn">Статичный — Уровень 2</span><span class="md">Средние шары</span></button>
-      <button class="mode-btn" onclick="go('s',3)"><span class="mn">Статичный — Уровень 3</span><span class="md">Маленькие и быстрые</span></button>
-      <button class="mode-btn" onclick="go('t',1)"><span class="mn">Трекинг — Уровень 1</span><span class="md">Медленные движущиеся</span></button>
-      <button class="mode-btn" onclick="go('t',2)"><span class="mn">Трекинг — Уровень 2</span><span class="md">Быстрые движущиеся</span></button>
-      <button class="mode-btn" onclick="go('t',3)"><span class="mn">Трекинг — Уровень 3</span><span class="md">Очень быстрые</span></button>
+    <div id="menuContent">
+      <!-- STATIC -->
+      <div class="mode-folder" data-mode="s">
+        <div class="mode-header" onclick="toggleFolder(this)">
+          <div><div class="mode-name">Статичный</div><div class="mode-desc">Неподвижные цели — тренируй точность</div></div>
+          <div class="mode-arrow">▼</div>
+        </div>
+        <div class="mode-levels">
+          <button class="level-btn" onclick="go('s',1)"><span class="ln">Уровень 1</span><span class="ld">Большие медленные шары</span></button>
+          <button class="level-btn" onclick="go('s',2)"><span class="ln">Уровень 2</span><span class="ld">Средние шары, быстрее спавн</span></button>
+          <button class="level-btn" onclick="go('s',3)"><span class="ln">Уровень 3</span><span class="ld">Маленькие и быстрые</span></button>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="mode-folder" data-mode="t">
+        <div class="mode-header" onclick="toggleFolder(this)">
+          <div><div class="mode-name">Трекинг</div><div class="mode-desc">Движущиеся цели — тренируй отслеживание</div></div>
+          <div class="mode-arrow">▼</div>
+        </div>
+        <div class="mode-levels">
+          <button class="level-btn" onclick="go('t',1)"><span class="ln">Уровень 1</span><span class="ld">Медленные движущиеся шары</span></button>
+          <button class="level-btn" onclick="go('t',2)"><span class="ln">Уровень 2</span><span class="ld">Быстрые движущиеся шары</span></button>
+          <button class="level-btn" onclick="go('t',3)"><span class="ln">Уровень 3</span><span class="ld">Очень быстрые шары</span></button>
+        </div>
+      </div>
+
+      <!-- FAST CLICK -->
+      <div class="mode-folder" data-mode="f">
+        <div class="mode-header" onclick="toggleFolder(this)">
+          <div><div class="mode-name">ФастКлик</div><div class="mode-desc">6 целей — стреляй быстро, не давай им накопиться</div></div>
+          <div class="mode-arrow">▼</div>
+        </div>
+        <div class="mode-levels">
+          <button class="level-btn" onclick="go('f',1)"><span class="ln">Уровень 1</span><span class="ld">Большие шары, спокойно</span></button>
+          <button class="level-btn" onclick="go('f',2)"><span class="ln">Уровень 2</span><span class="ld">Средние шары, побыстрее</span></button>
+          <button class="level-btn" onclick="go('f',3)"><span class="ln">Уровень 3</span><span class="ld">Маленькие и очень быстрые</span></button>
+        </div>
+      </div>
     </div>
 
-    <!-- SETTINGS IN MENU -->
-    <div class="menu-settings">
-      <h4>⚙ Настройки</h4>
+    <!-- SETTINGS -->
+    <div class="menu-settings" id="settingsBlock">
+      <h4>Настройки</h4>
       <div class="msg"><label>Цвет стен</label><div class="mcr" data-s="wall">
         <div class="mcs on" style="background:#1a2a4a" data-v="0x1a2a4a"></div>
         <div class="mcs" style="background:#2a1a3a" data-v="0x2a1a3a"></div>
@@ -104,13 +145,14 @@ input[type=range]{width:100%;accent-color:#00d4ff;margin-top:3px}
         <input type="range" min="1" max="10" value="5" id="sensSlider" oninput="document.getElementById('sensVal').textContent=this.value">
       </div>
       <div class="msg">
-        <div class="mtr"><span class="mtl">Оружие</span><div class="mtg on" id="tW" onclick="this.classList.toggle('on')"></div></div>
-        <div class="mtr"><span class="mtl">Звук</span><div class="mtg" id="tS" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mtr"><span class="mtl">Оружие</span><div class="mtg on" id="tW"></div></div>
+        <div class="mtr"><span class="mtl">Звук</span><div class="mtg" id="tS"></div></div>
       </div>
     </div>
 
+    <!-- RESULTS -->
     <div class="results" id="res">
-      <div class="menu-title" style="font-size:1.5rem">Результаты</div>
+      <div class="menu-title" style="font-size:1.4rem">Результаты</div>
       <div class="res-grid">
         <div class="res-item"><div class="res-label">Счёт</div><div class="res-value" id="rS">0</div></div>
         <div class="res-item"><div class="res-label">Точность</div><div class="res-value" id="rA">0%</div></div>
@@ -123,22 +165,28 @@ input[type=range]{width:100%;accent-color:#00d4ff;margin-top:3px}
 </div>
 
 <!-- HUD -->
-<div id="hud">
-  <div class="hud-bar">
-    <div class="hud-left"><a href="../index.html">&larr; aqulroa Games</a></div>
-    <div class="hud-stats">
-      <div class="hud-s">Счёт: <span id="score">0</span></div>
-      <div class="hud-s">Время: <span id="timer">30</span>с</div>
-      <div class="hud-s">Точность: <span id="acc">100</span>%</div>
-      <div class="hud-s">Ур: <span id="lvl">-</span></div>
-    </div>
+<div id="hud"><div class="hud-bar">
+  <div class="hud-left"><a href="../index.html">&larr; aqulroa Games</a></div>
+  <div class="hud-stats">
+    <div class="hud-s">Счёт: <span id="score">0</span></div>
+    <div class="hud-s">Время: <span id="timer">30</span>с</div>
+    <div class="hud-s">Точность: <span id="acc">100</span>%</div>
+    <div class="hud-s">Ур: <span id="lvl">-</span></div>
   </div>
-</div>
+</div></div>
 
 <div id="cross"><div class="chh"></div><div class="chv"></div><div class="chd"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+// === FOLDER TOGGLE ===
+function toggleFolder(header) {
+  const folder = header.parentElement;
+  const wasOpen = folder.classList.contains('open');
+  document.querySelectorAll('.mode-folder').forEach(f => f.classList.remove('open'));
+  if (!wasOpen) folder.classList.add('open');
+}
+
 // === THREE.JS ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050810);
@@ -152,11 +200,10 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Lights
 scene.add(new THREE.AmbientLight(0x223344, 0.5));
 const dl = new THREE.DirectionalLight(0xffffff, 0.3);
 dl.position.set(5, 10, 5); dl.castShadow = true; scene.add(dl);
-const pl = new THREE.PointLight(0x00d4ff, 0.5, 30);
+const pl = new THREE.PointLight(0x00d4ff, 0.4, 30);
 pl.position.set(0, 4, 0); scene.add(pl);
 
 // === ARENA ===
@@ -167,17 +214,19 @@ function buildArena() {
   arenaParts.forEach(m => scene.remove(m)); arenaParts = [];
   const wm = new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.8 });
   const fm = new THREE.MeshStandardMaterial({ color: 0x0a0e1a, roughness: 0.9 });
+  const geo24 = new THREE.PlaneGeometry(24, 24);
+  const wGeo = new THREE.PlaneGeometry(24, 5);
 
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), fm);
+  const floor = new THREE.Mesh(geo24, fm);
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
   scene.add(floor); arenaParts.push(floor);
 
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), wm);
+  const ceil = new THREE.Mesh(geo24, wm.clone());
   ceil.rotation.x = Math.PI / 2; ceil.position.y = 5;
   scene.add(ceil); arenaParts.push(ceil);
 
   [[0,2.5,-12,0,0,0],[0,2.5,12,0,Math.PI,0],[-12,2.5,0,0,Math.PI/2,0],[12,2.5,0,0,-Math.PI/2,0]].forEach(p => {
-    const w = new THREE.Mesh(new THREE.PlaneGeometry(24, 5), wm);
+    const w = new THREE.Mesh(wGeo, wm.clone());
     w.position.set(p[0],p[1],p[2]); w.rotation.set(p[3],p[4],p[5]); w.receiveShadow = true;
     scene.add(w); arenaParts.push(w);
   });
@@ -188,37 +237,91 @@ function buildArena() {
 }
 buildArena();
 
-// === WEAPON ===
+// === WEAPON (improved rifle) ===
 const weapon = new THREE.Group();
-(function buildWeapon() {
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.45, 8), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.3 }));
-  barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0, -0.25); weapon.add(barrel);
+(function() {
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.7, roughness: 0.3 });
+  const mid = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.8, roughness: 0.25 });
+  const accent = new THREE.MeshStandardMaterial({ color: 0x00d4ff, emissive: 0x00d4ff, emissiveIntensity: 0.3 });
+  const grip = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.25), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.6 }));
-  body.position.set(0, -0.02, -0.05); weapon.add(body);
+  // Main body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.09, 0.4), mid);
+  body.position.set(0, 0, -0.1); weapon.add(body);
 
-  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.06), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
-  grip.position.set(0, -0.1, 0.05); grip.rotation.x = 0.2; weapon.add(grip);
+  // Upper receiver
+  const upper = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.04, 0.3), dark);
+  upper.position.set(0, 0.065, -0.12); weapon.add(upper);
 
-  const sight = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.03, 0.01), new THREE.MeshStandardMaterial({ color: 0x00d4ff, emissive: 0x00d4ff, emissiveIntensity: 0.5 }));
-  sight.position.set(0, 0.07, -0.15); weapon.add(sight);
+  // Barrel
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.5, 8), dark);
+  barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, -0.45); weapon.add(barrel);
 
-  const mag = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.1, 0.05), new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.7 }));
-  mag.position.set(0.02, -0.1, -0.08); weapon.add(mag);
+  // Barrel tip (muzzle)
+  const muzzle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.015, 0.04, 8), mid);
+  muzzle.rotation.x = Math.PI / 2; muzzle.position.set(0, 0.02, -0.72); weapon.add(muzzle);
 
-  const ml = new THREE.PointLight(0xffaa33, 0, 3); ml.position.set(0, 0, -0.5);
+  // Handguard
+  const hg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.2), dark);
+  hg.position.set(0, -0.01, -0.35); weapon.add(hg);
+
+  // Rail on top
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.012, 0.25), mid);
+  rail.position.set(0, 0.09, -0.15); weapon.add(rail);
+
+  // Sight front
+  const sf = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.025, 0.008), accent);
+  sf.position.set(0, 0.11, -0.35); weapon.add(sf);
+
+  // Sight rear
+  const sr = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.01), accent);
+  sr.position.set(0, 0.1, 0.02); weapon.add(sr);
+
+  // Grip (pistol grip)
+  const pg = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.13, 0.05), grip);
+  pg.position.set(0, -0.09, 0.06); pg.rotation.x = 0.25; weapon.add(pg);
+
+  // Grip texture lines
+  for (let i = 0; i < 4; i++) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.005, 0.051), dark);
+    line.position.set(0, -0.06 + i * 0.025, 0.06); line.rotation.x = 0.25;
+    weapon.add(line);
+  }
+
+  // Magazine
+  const mag = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.12, 0.045), dark);
+  mag.position.set(0, -0.08, -0.08); mag.rotation.x = 0.1; weapon.add(mag);
+
+  // Stock
+  const stock = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.06, 0.2), mid);
+  stock.position.set(0, -0.01, 0.2); weapon.add(stock);
+
+  // Stock pad
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.055, 0.02), grip);
+  pad.position.set(0, -0.01, 0.31); weapon.add(pad);
+
+  // Trigger guard
+  const tg = new THREE.Mesh(new THREE.TorusGeometry(0.025, 0.004, 4, 8, Math.PI), dark);
+  tg.position.set(0, -0.04, 0.02); tg.rotation.z = Math.PI; weapon.add(tg);
+
+  // Trigger
+  const tr = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.025, 0.005), mid);
+  tr.position.set(0, -0.035, 0.03); weapon.add(tr);
+
+  // Muzzle flash light
+  const ml = new THREE.PointLight(0xffaa33, 0, 3); ml.position.set(0, 0.02, -0.75);
   weapon.add(ml); weapon.userData.ml = ml;
 })();
 
-// Proper first-person weapon position (right side, like holding)
-weapon.position.set(0.18, -0.15, -0.4);
+weapon.position.set(0.2, -0.18, -0.45);
+weapon.rotation.y = 0;
 camera.add(weapon);
 scene.add(camera);
 
-// === FPS CAMERA (fixed Y-axis with yaw/pitch) ===
+// === FPS CONTROLS (yaw/pitch) ===
 let yaw = 0, pitch = 0;
-const pitchObj = new THREE.Object3D();
 const yawObj = new THREE.Object3D();
+const pitchObj = new THREE.Object3D();
 yawObj.position.set(0, 1.7, 0);
 yawObj.add(pitchObj);
 pitchObj.add(camera);
@@ -226,37 +329,77 @@ camera.position.set(0, 0, 0);
 scene.add(yawObj);
 
 // === GAME STATE ===
-let targets = [], movingTargets = [], active = false, mode = 's', lvl = 1;
+let targets = [], movingTargets = [], active = false, curMode = 's', lvl = 1;
 let score = 0, shots = 0, hits = 0, timeLeft = 30;
 let gt, st, mt, reactionTimes = [];
+let fastClickCount = 6;
 
 const CFG = {
-  s: { 1: { r: 1400, sz: 0.5, d: 30 }, 2: { r: 900, sz: 0.35, d: 30 }, 3: { r: 550, sz: 0.2, d: 30 } },
-  t: { 1: { r: 2200, sz: 0.45, sp: 1.5, d: 30 }, 2: { r: 1800, sz: 0.35, sp: 3, d: 30 }, 3: { r: 1400, sz: 0.25, sp: 5, d: 30 } }
+  s: {
+    1: { r: 1400, sz: 0.5, d: 30 },
+    2: { r: 900, sz: 0.35, d: 30 },
+    3: { r: 550, sz: 0.2, d: 30 }
+  },
+  t: {
+    1: { r: 2200, sz: 0.45, sp: 1.5, d: 30 },
+    2: { r: 1800, sz: 0.35, sp: 3, d: 30 },
+    3: { r: 1400, sz: 0.25, sp: 5, d: 30 }
+  },
+  f: {
+    1: { sz: 0.45, d: 30, cnt: 6, zone: 8 },
+    2: { sz: 0.35, d: 30, cnt: 6, zone: 10 },
+    3: { sz: 0.22, d: 30, cnt: 6, zone: 11 }
+  }
 };
+
+function makeTarget(sz, x, y, z) {
+  const geo = new THREE.SphereGeometry(sz, 16, 16);
+  const mat = new THREE.MeshStandardMaterial({ color: targetColor, emissive: targetColor, emissiveIntensity: 0.6, roughness: 0.3 });
+  const m = new THREE.Mesh(geo, mat);
+  const gGeo = new THREE.SphereGeometry(sz * 1.3, 16, 16);
+  const gMat = new THREE.MeshBasicMaterial({ color: targetColor, transparent: true, opacity: 0.15 });
+  m.add(new THREE.Mesh(gGeo, gMat));
+  m.position.set(x, y, z);
+  m.userData = { spawn: Date.now(), isTarget: true, pts: sz < 0.25 ? 35 : sz < 0.4 ? 25 : 15 };
+  scene.add(m);
+  return m;
+}
 
 function spawn() {
   if (!active) return;
-  const c = CFG[mode][lvl];
-  const geo = new THREE.SphereGeometry(c.sz, 16, 16);
-  const mat = new THREE.MeshStandardMaterial({ color: targetColor, emissive: targetColor, emissiveIntensity: 0.6, roughness: 0.3 });
-  const m = new THREE.Mesh(geo, mat);
-
-  // Glow
-  const gGeo = new THREE.SphereGeometry(c.sz * 1.3, 16, 16);
-  const gMat = new THREE.MeshBasicMaterial({ color: targetColor, transparent: true, opacity: 0.15 });
-  m.add(new THREE.Mesh(gGeo, gMat));
-
-  m.position.set((Math.random() - 0.5) * 20, 0.5 + Math.random() * 3.5, (Math.random() - 0.5) * 20);
-  m.userData = { spawn: Date.now(), isTarget: true, pts: c.sz < 0.25 ? 35 : c.sz < 0.4 ? 25 : 15 };
-
-  if (mode === 't') {
+  const c = CFG[curMode][lvl];
+  const m = makeTarget(c.sz,
+    (Math.random() - 0.5) * 20,
+    0.5 + Math.random() * 3.5,
+    (Math.random() - 0.5) * 20
+  );
+  if (curMode === 't') {
     m.userData.vel = new THREE.Vector3((Math.random() - 0.5) * c.sp, (Math.random() - 0.5) * c.sp * 0.4, (Math.random() - 0.5) * c.sp);
     movingTargets.push(m);
   }
+  targets.push(m);
+  setTimeout(() => removeTarget(m), curMode === 't' ? 5000 : lvl === 3 ? 1800 : 3000);
+}
 
-  scene.add(m); targets.push(m);
-  setTimeout(() => { if (m.parent) { scene.remove(m); targets.splice(targets.indexOf(m), 1); const j = movingTargets.indexOf(m); if (j > -1) movingTargets.splice(j, 1); } }, mode === 't' ? 5000 : lvl === 3 ? 1800 : 3000);
+function spawnFastClick() {
+  if (!active || curMode !== 'f') return;
+  const c = CFG.f[lvl];
+  while (targets.length < c.cnt) {
+    const side = Math.random() > 0.5 ? 1 : -1;
+    const m = makeTarget(c.sz,
+      side * (5 + Math.random() * c.zone),
+      0.5 + Math.random() * 3.5,
+      (Math.random() - 0.5) * 20
+    );
+    targets.push(m);
+  }
+}
+
+function removeTarget(m) {
+  if (!m.parent) return;
+  scene.remove(m);
+  const i = targets.indexOf(m); if (i > -1) targets.splice(i, 1);
+  const j = movingTargets.indexOf(m); if (j > -1) movingTargets.splice(j, 1);
 }
 
 function moveTargets() {
@@ -275,14 +418,12 @@ function hitFx(pos) {
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.15, 16), new THREE.MeshBasicMaterial({ color: targetColor, transparent: true, opacity: 1, side: THREE.DoubleSide }));
   ring.position.copy(pos); ring.lookAt(yawObj.position); scene.add(ring);
   let s = 1; const a = () => { s += 0.15; ring.scale.set(s, s, s); ring.material.opacity -= 0.05; ring.material.opacity > 0 ? requestAnimationFrame(a) : scene.remove(ring); }; a();
-
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 6; i++) {
     const p = new THREE.Mesh(new THREE.SphereGeometry(0.03, 4, 4), new THREE.MeshBasicMaterial({ color: targetColor }));
     p.position.copy(pos); scene.add(p);
     const v = new THREE.Vector3((Math.random() - 0.5) * 0.3, Math.random() * 0.2, (Math.random() - 0.5) * 0.3);
     let l = 1; const pa = () => { p.position.add(v); v.y -= 0.01; l -= 0.04; p.material.opacity = l; p.material.transparent = true; l > 0 ? requestAnimationFrame(pa) : scene.remove(p); }; pa();
   }
-
   if (document.getElementById('tS').classList.contains('on')) {
     try { const c = new AudioContext(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 800; g.gain.value = 0.08; o.start(); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08); o.stop(c.currentTime + 0.1); } catch (e) {}
   }
@@ -294,26 +435,21 @@ const raycaster = new THREE.Raycaster();
 function shoot() {
   if (!active) return;
   shots++;
-
-  // Muzzle flash
   const ml = weapon.userData.ml; ml.intensity = 2; setTimeout(() => ml.intensity = 0, 50);
-
-  // Recoil
   weapon.position.z += 0.03; weapon.rotation.x -= 0.06;
-  setTimeout(() => { weapon.position.z = -0.4; weapon.rotation.x = 0; }, 80);
+  setTimeout(() => { weapon.position.z = -0.45; weapon.rotation.x = 0; }, 80);
 
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  const hits_arr = raycaster.intersectObjects(targets, true);
-
-  if (hits_arr.length > 0) {
-    let obj = hits_arr[0].object;
+  const hitsArr = raycaster.intersectObjects(targets, true);
+  if (hitsArr.length > 0) {
+    let obj = hitsArr[0].object;
     while (obj && !obj.userData.isTarget) obj = obj.parent;
     if (obj && obj.userData.isTarget) {
       reactionTimes.push(Date.now() - obj.userData.spawn);
       score += obj.userData.pts; hits++;
       hitFx(obj.position.clone());
-      scene.remove(obj); targets.splice(targets.indexOf(obj), 1);
-      const j = movingTargets.indexOf(obj); if (j > -1) movingTargets.splice(j, 1);
+      removeTarget(obj);
+      if (curMode === 'f') spawnFastClick();
       updHUD(); return;
     }
   }
@@ -328,8 +464,6 @@ document.addEventListener('pointerlockchange', () => {
   document.getElementById('cross').classList.toggle('active', isLocked && active);
   document.getElementById('blocker').classList.toggle('hidden', isLocked);
 });
-
-// Mouse look with FIXED Y-axis
 document.addEventListener('mousemove', e => {
   if (!isLocked || !active) return;
   const sens = parseFloat(document.getElementById('sensSlider').value) * 0.001;
@@ -339,20 +473,15 @@ document.addEventListener('mousemove', e => {
   yawObj.rotation.y = yaw;
   pitchObj.rotation.x = pitch;
 });
-
 document.addEventListener('mousedown', e => { if (isLocked && active && e.button === 0) shoot(); });
 
 // === GAME ===
 function go(m, l) {
-  mode = m; lvl = l; score = 0; shots = 0; hits = 0; reactionTimes = []; movingTargets = [];
-  timeLeft = CFG[m][l].d; active = true;
+  curMode = m; lvl = l; score = 0; shots = 0; hits = 0; reactionTimes = [];
+  movingTargets = []; timeLeft = CFG[m][l].d; active = true;
   targets.forEach(t => scene.remove(t)); targets = [];
-
   yaw = 0; pitch = 0; yawObj.rotation.y = 0; pitchObj.rotation.x = 0;
-
-  // Apply settings
-  const weaponOn = document.getElementById('tW').classList.contains('on');
-  weapon.visible = weaponOn;
+  weapon.visible = document.getElementById('tW').classList.contains('on');
 
   document.getElementById('blocker').classList.add('hidden');
   document.getElementById('hud').classList.add('active');
@@ -361,8 +490,15 @@ function go(m, l) {
   updHUD();
 
   gt = setInterval(() => { timeLeft--; document.getElementById('timer').textContent = timeLeft; if (timeLeft <= 0) endGame(); }, 1000);
-  spawn(); st = setInterval(spawn, CFG[m][l].r);
-  if (m === 't') mt = setInterval(moveTargets, 20);
+
+  if (m === 'f') {
+    spawnFastClick();
+    st = setInterval(spawnFastClick, 500);
+  } else {
+    spawn();
+    st = setInterval(spawn, CFG[m][l].r);
+    if (m === 't') mt = setInterval(moveTargets, 20);
+  }
 }
 
 function endGame() {
@@ -372,18 +508,19 @@ function endGame() {
 
   const acc = shots > 0 ? Math.round(hits / shots * 100) : 0;
   const avg = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
-  const spd = (hits / CFG[mode][lvl].d).toFixed(1);
+  const spd = (hits / CFG[curMode][lvl].d).toFixed(1);
 
   document.getElementById('rS').textContent = score;
   document.getElementById('rA').textContent = acc + '%';
   document.getElementById('rR').textContent = avg + 'мс';
   document.getElementById('rP').textContent = spd;
 
-  document.getElementById('modes').style.display = 'none';
-  document.querySelector('.menu-settings').style.display = 'none';
+  document.getElementById('menuContent').style.display = 'none';
+  document.getElementById('settingsBlock').style.display = 'none';
   document.getElementById('res').classList.add('active');
   document.getElementById('mTitle').textContent = 'Результаты';
-  document.getElementById('mSub').textContent = (mode === 's' ? 'Статичный' : 'Трекинг') + ' — Уровень ' + lvl;
+  const modeName = curMode === 's' ? 'Статичный' : curMode === 't' ? 'Трекинг' : 'ФастКлик';
+  document.getElementById('mSub').textContent = modeName + ' — Уровень ' + lvl;
   document.getElementById('blocker').classList.remove('hidden');
   document.getElementById('hud').classList.remove('active');
   document.getElementById('cross').classList.remove('active');
@@ -393,9 +530,8 @@ function showMenu() {
   active = false; clearInterval(gt); clearInterval(st); clearInterval(mt);
   targets.forEach(t => scene.remove(t)); targets = []; movingTargets = [];
   document.exitPointerLock();
-
-  document.getElementById('modes').style.display = 'flex';
-  document.querySelector('.menu-settings').style.display = 'block';
+  document.getElementById('menuContent').style.display = 'block';
+  document.getElementById('settingsBlock').style.display = 'block';
   document.getElementById('res').classList.remove('active');
   document.getElementById('mTitle').textContent = 'Тренер Аима 3D';
   document.getElementById('mSub').textContent = 'Выбери режим и настрой игру';
@@ -413,7 +549,7 @@ function updHUD() {
   document.getElementById('acc').textContent = shots > 0 ? Math.round(hits / shots * 100) : 100;
 }
 
-// === MENU SETTINGS COLOR PICKERS ===
+// === COLOR PICKERS ===
 document.querySelectorAll('.mcs').forEach(sw => {
   sw.addEventListener('click', function () {
     const s = this.closest('[data-s]').dataset.s;
@@ -425,13 +561,13 @@ document.querySelectorAll('.mcs').forEach(sw => {
   });
 });
 
-// === RENDER LOOP ===
+// === RENDER ===
 function animate() {
   requestAnimationFrame(animate);
-  if (active && mode === 't') moveTargets();
+  if (active && curMode === 't') moveTargets();
   if (weapon.visible) {
-    weapon.position.x = 0.18 + Math.sin(Date.now() * 0.002) * 0.004;
-    weapon.position.y = -0.15 + Math.sin(Date.now() * 0.003) * 0.002;
+    weapon.position.x = 0.2 + Math.sin(Date.now() * 0.002) * 0.004;
+    weapon.position.y = -0.18 + Math.sin(Date.now() * 0.003) * 0.002;
   }
   renderer.render(scene, camera);
 }
