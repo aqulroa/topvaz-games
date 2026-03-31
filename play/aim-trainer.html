@@ -19,7 +19,7 @@ a{text-decoration:none}canvas{display:block}
 .mf{margin-bottom:8px;border:1px solid rgba(0,212,255,0.15);border-radius:14px;overflow:hidden;background:rgba(0,212,255,0.04)}
 .mh{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .mh:hover{background:rgba(0,212,255,0.08)}
-.mn{font-weight:700;color:#00d4ff;font-size:1rem}.md{font-size:.75rem;color:rgba(232,234,246,0.35);margin-top:2px}
+.mn{font-weight:700;color:#00d4ff;font-size:1rem;text-align:left}.md{font-size:.75rem;color:rgba(232,234,246,0.35);margin-top:2px;text-align:left}
 .ma{color:#00d4ff;font-size:1.2rem;transition:transform .3s}
 .mf.open .ma{transform:rotate(180deg)}
 .ml{max-height:0;overflow:hidden;transition:max-height .3s}.mf.open .ml{max-height:300px}
@@ -325,18 +325,18 @@ document.addEventListener('mousemove',e=>{
 });
 document.addEventListener('mousedown',e=>{if(locked&&active&&e.button===0)shoot();});
 
-// === FULLSCREEN ===
+// === Полный экран ===
 (function(){
   var btn=document.getElementById('fsBtn');
   if(!btn)return;
   var b=document.createElement('button');
-  b.textContent='Fullscreen';
+  b.textContent='Полный экран';
   b.style.cssText='background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:#00d4ff;padding:4px 12px;border-radius:12px;cursor:pointer;font-family:Poppins;font-size:.75rem;white-space:nowrap';
   b.addEventListener('click',function(){
-    if(!document.fullscreenElement){
-      document.documentElement.requestFullscreen().catch(function(){});
+    if(!document.Полный экранElement){
+      document.documentElement.requestПолный экран().catch(function(){});
     }else{
-      document.exitFullscreen();
+      document.exitПолный экран();
     }
   });
   btn.appendChild(b);
