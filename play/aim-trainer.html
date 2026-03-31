@@ -197,17 +197,16 @@ function addWeapon(){
   fs.position.set(0,0.038,-0.18);weaponGroup.add(fs);
 }
 
-const muzzleLight=new THREE.PointLight(0xffaa33,0,6);muzzleLight.position.set(0,0.03,-0.52);
-const mfGeo=new THREE.PlaneGeometry(0.12,0.12);
-const mfMat=new THREE.MeshBasicMaterial({color:0xffdd44,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
-const muzzleFlash=new THREE.Mesh(mfGeo,mfMat);
-muzzleFlash.position.set(0,0.03,-0.55);
-const mfGeo2=new THREE.PlaneGeometry(0.08,0.08);
-const mfMat2=new THREE.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
-const muzzleFlash2=new THREE.Mesh(mfGeo2,mfMat2);
-muzzleFlash2.position.set(0,0.03,-0.54);muzzleFlash2.rotation.z=Math.PI/4;
-weaponGroup.add(muzzleLight);weaponGroup.add(muzzleFlash);weaponGroup.add(muzzleFlash2);
-weaponGroup.userData.ml=muzzleLight;weaponGroup.userData.mf=muzzleFlash;weaponGroup.userData.mf2=muzzleFlash2;
+const muzzleLight=new THREE.PointLight(0xffaa33,0,6);muzzleLight.position.set(0,0.03,-0.55);
+const flashGroup=new THREE.Group();flashGroup.position.set(0,0.03,-0.56);
+const f1=new THREE.Mesh(new THREE.PlaneGeometry(0.1,0.1),new THREE.MeshBasicMaterial({color:0xffee44,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+const f2=new THREE.Mesh(new THREE.PlaneGeometry(0.1,0.1),new THREE.MeshBasicMaterial({color:0xffaa22,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+f2.rotation.z=Math.PI/4;
+const f3=new THREE.Mesh(new THREE.PlaneGeometry(0.06,0.06),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+f3.rotation.z=Math.PI/8;
+flashGroup.add(f1);flashGroup.add(f2);flashGroup.add(f3);
+weaponGroup.add(muzzleLight);weaponGroup.add(flashGroup);
+weaponGroup.userData.ml=muzzleLight;weaponGroup.userData.mf=flashGroup;weaponGroup.userData.mfParts=[f1,f2,f3];
 
 weaponGroup.position.set(0.22,-0.22,-0.15);
 weaponGroup.rotation.y=0.03;
@@ -307,9 +306,9 @@ const rc=new THREE.Raycaster();
 function shoot(){
   if(!active)return;shots++;
   if(soundOn)playGunshot();
-  weaponGroup.userData.ml.intensity=6;weaponGroup.userData.mf.material.opacity=0.6;weaponGroup.userData.mf.scale.set(0.35,0.35,0.35);
-  weaponGroup.userData.mf2.material.opacity=0.4;weaponGroup.userData.mf2.scale.set(0.25,0.25,0.25);
-  setTimeout(()=>{weaponGroup.userData.ml.intensity=0;weaponGroup.userData.mf.material.opacity=0;weaponGroup.userData.mf.scale.set(0,0,0);weaponGroup.userData.mf2.material.opacity=0;weaponGroup.userData.mf2.scale.set(0,0,0);},50);
+  weaponGroup.userData.ml.intensity=6;
+  weaponGroup.userData.mfParts.forEach((p,i)=>{p.material.opacity=i===2?0.8:0.5;});
+  setTimeout(()=>{weaponGroup.userData.ml.intensity=0;weaponGroup.userData.mfParts.forEach(p=>p.material.opacity=0);},50);
   weaponGroup.position.z+=0.025;weaponGroup.rotation.x-=0.05;
   setTimeout(()=>{weaponGroup.position.z=-0.15;weaponGroup.rotation.x=0;},70);
   rc.setFromCamera(new THREE.Vector2(0,0),camera);
