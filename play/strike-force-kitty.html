@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=0.9, shrink-to-fit=no" />
-<title>BunnyHop - Play Online</title>
+<title>Strike Force Kitty - Play Online</title>
 <link rel="icon" href="../assets/images/favicon.png" sizes="32x32">
 <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
 <link rel="stylesheet" href="../assets/css/user.css" />
@@ -12,20 +12,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-.bunny-container {
+.sfk-container {
   position: relative;
   width: 100%;
-  padding-bottom: 75%;
   background: #000;
   border-radius: 18px;
   overflow: hidden;
 }
-.bunny-iframe {
-  position: absolute;
-  top: 0; left: 0;
+.sfk-game {
   width: 100%;
-  height: 100%;
-  border: none;
+  height: 600px;
+  display: block;
+}
+@media (max-width: 768px) {
+  .sfk-game { height: 400px; }
 }
 </style>
 </head>
@@ -53,15 +53,15 @@
 <div class="container game-wrapper">
 <div class="game-container">
 <div class="game-content">
-<div class="bunny-container">
-<iframe class="bunny-iframe" id="game-area" src="https://classroom2111.github.io/g5/class-577" scrolling="no" frameborder="0" allowfullscreen></iframe>
+<div class="sfk-container">
+<embed class="sfk-game" src="https://schoolind.github.io/Strike-force-kitty/strikeforcekitty.swf" type="application/x-shockwave-flash">
 </div>
 </div>
 <div class="game-info">
-<div class="header-left"><h1 class="single-title">BunnyHop</h1></div>
+<div class="header-left"><h1 class="single-title">Strike Force Kitty</h1></div>
 <div class="header-right">
 <div class="b-action">
-<a href="#" onclick="open_fullscreen(); return false;" class="btn btn-capsule"><i class="bi bi-arrows-fullscreen"></i> Fullscreen</a>
+<a href="#" onclick="document.querySelector('.sfk-game').requestFullscreen(); return false;" class="btn btn-capsule"><i class="bi bi-arrows-fullscreen"></i> Fullscreen</a>
 </div>
 </div>
 </div>
@@ -71,8 +71,8 @@
 <div class="container"><div class="border-line mt-4"></div></div>
 <div class="footer-copyright py-4"><div class="container">aqulroa Games &copy; 2024</div></div>
 
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 <script src="../assets/js/jquery-3.6.2.min.js"></script>
 <script src="../assets/js/bootstrap.min.js"></script>
-<script src="../assets/js/script.js"></script>
 </body>
 </html>
