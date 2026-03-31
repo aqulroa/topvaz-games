@@ -197,10 +197,17 @@ function addWeapon(){
   fs.position.set(0,0.038,-0.18);weaponGroup.add(fs);
 }
 
-const muzzleLight=new THREE.PointLight(0xffaa33,0,5);muzzleLight.position.set(0,0.01,-0.45);
-const muzzleFlash=new THREE.Mesh(new THREE.SphereGeometry(0.03,8,8),new THREE.MeshBasicMaterial({color:0xffcc44,transparent:true,opacity:0}));
-muzzleFlash.position.set(0,0.01,-0.46);
-weaponGroup.add(muzzleLight);weaponGroup.add(muzzleFlash);weaponGroup.userData.ml=muzzleLight;weaponGroup.userData.mf=muzzleFlash;
+const muzzleLight=new THREE.PointLight(0xffaa33,0,5);muzzleLight.position.set(0,0.03,-0.5);
+const mfGeo=new THREE.ConeGeometry(0.06,0.15,8);
+const mfMat=new THREE.MeshBasicMaterial({color:0xffdd44,transparent:true,opacity:0,side:THREE.DoubleSide});
+const muzzleFlash=new THREE.Mesh(mfGeo,mfMat);
+muzzleFlash.rotation.x=Math.PI/2;muzzleFlash.position.set(0,0.03,-0.53);
+const mfGeo2=new THREE.ConeGeometry(0.04,0.1,8);
+const mfMat2=new THREE.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:0,side:THREE.DoubleSide});
+const muzzleFlash2=new THREE.Mesh(mfGeo2,mfMat2);
+muzzleFlash2.rotation.x=Math.PI/2;muzzleFlash2.position.set(0,0.03,-0.51);
+weaponGroup.add(muzzleLight);weaponGroup.add(muzzleFlash);weaponGroup.add(muzzleFlash2);
+weaponGroup.userData.ml=muzzleLight;weaponGroup.userData.mf=muzzleFlash;weaponGroup.userData.mf2=muzzleFlash2;
 
 weaponGroup.position.set(0.22,-0.22,-0.15);
 weaponGroup.rotation.y=0.03;
@@ -212,25 +219,23 @@ const yawObj=new THREE.Object3D();const pitchObj=new THREE.Object3D();
 yawObj.position.set(0,1.7,0);yawObj.add(pitchObj);pitchObj.add(camera);camera.position.set(0,0,0);scene.add(yawObj);
 
 // === GUNSHOT SOUND ===
+let audioCtx=null;
 function playGunshot(){
   try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const t=audioCtx.currentTime;
     // Low boom
-    const o1=ctx.createOscillator(),g1=ctx.createGain();
-    o1.connect(g1);g1.connect(ctx.destination);o1.type='sine';o1.frequency.value=60;
-    g1.gain.setValueAtTime(0.6,ctx.currentTime);g1.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);
-    o1.start();o1.stop(ctx.currentTime+0.2);
-    // Mid crack
-    const o2=ctx.createOscillator(),g2=ctx.createGain();
-    o2.connect(g2);g2.connect(ctx.destination);o2.type='sawtooth';o2.frequency.value=800;
-    g2.gain.setValueAtTime(0.15,ctx.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.06);
-    o2.start();o2.stop(ctx.currentTime+0.06);
-    // Noise burst (impact)
-    const bs=ctx.sampleRate*0.1;const buf=ctx.createBuffer(1,bs,ctx.sampleRate);const d=buf.getChannelData(0);
-    for(let i=0;i<bs;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bs,4);
-    const ns=ctx.createBufferSource(),ng=ctx.createGain();ns.buffer=buf;
-    ns.connect(ng);ng.connect(ctx.destination);ng.gain.setValueAtTime(0.35,ctx.currentTime);
-    ng.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.1);ns.start();
+    const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
+    o1.connect(g1);g1.connect(audioCtx.destination);o1.type='sine';o1.frequency.setValueAtTime(80,t);o1.frequency.exponentialRampToValueAtTime(40,t+0.1);
+    g1.gain.setValueAtTime(0.4,t);g1.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+    o1.start(t);o1.stop(t+0.15);
+    // Noise burst
+    const bs=audioCtx.sampleRate*0.06;const buf=audioCtx.createBuffer(1,bs,audioCtx.sampleRate);const d=buf.getChannelData(0);
+    for(let i=0;i<bs;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/bs,6);
+    const ns=audioCtx.createBufferSource();const ng=audioCtx.createGain();ns.buffer=buf;
+    ns.connect(ng);ng.connect(audioCtx.destination);ng.gain.setValueAtTime(0.3,t);
+    ng.gain.exponentialRampToValueAtTime(0.001,t+0.06);ns.start(t);
   }catch(e){}
 }
 
@@ -302,8 +307,9 @@ const rc=new THREE.Raycaster();
 function shoot(){
   if(!active)return;shots++;
   if(soundOn)playGunshot();
-  weaponGroup.userData.ml.intensity=5;weaponGroup.userData.mf.material.opacity=0.9;weaponGroup.userData.mf.scale.set(1.5,1.5,1.5);
-  setTimeout(()=>{weaponGroup.userData.ml.intensity=0;weaponGroup.userData.mf.material.opacity=0;},50);
+  weaponGroup.userData.ml.intensity=8;weaponGroup.userData.mf.material.opacity=1;weaponGroup.userData.mf.scale.set(2,2,2);
+  weaponGroup.userData.mf2.material.opacity=0.8;weaponGroup.userData.mf2.scale.set(1.5,1.5,1.5);
+  setTimeout(()=>{weaponGroup.userData.ml.intensity=0;weaponGroup.userData.mf.material.opacity=0;weaponGroup.userData.mf2.material.opacity=0;},50);
   weaponGroup.position.z+=0.025;weaponGroup.rotation.x-=0.05;
   setTimeout(()=>{weaponGroup.position.z=-0.15;weaponGroup.rotation.x=0;},70);
   rc.setFromCamera(new THREE.Vector2(0,0),camera);
