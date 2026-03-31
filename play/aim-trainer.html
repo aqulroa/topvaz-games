@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aim Trainer - Play Online</title>
+<link rel="icon" href="../assets/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #0a0e27;
+  color: #e8eaf6;
+  overflow: hidden;
+  height: 100vh;
+  cursor: crosshair;
+}
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10, 14, 39, 0.9); backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+  padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
+}
+.nav a {
+  color: #00d4ff; text-decoration: none; font-weight: 600; font-size: 1.1rem;
+  transition: all 0.3s;
+}
+.nav a:hover { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+.nav-stats {
+  display: flex; gap: 20px; font-size: 0.9rem;
+}
+.nav-stat {
+  background: rgba(0, 212, 255, 0.1); padding: 5px 15px; border-radius: 20px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+.nav-stat span { color: #00d4ff; font-weight: 600; }
+
+/* GAME AREA */
+.game-area {
+  width: 100%; height: 100vh; position: relative;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(123, 97, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.04) 0%, transparent 50%);
+}
+
+/* TARGET */
+.target {
+  position: absolute; border-radius: 50%; cursor: crosshair;
+  display: flex; align-items: center; justify-content: center;
+  animation: targetAppear 0.2s ease-out;
+  transition: transform 0.1s;
+}
+.target:active { transform: scale(0.8); }
+
+.target-normal {
+  width: 50px; height: 50px;
+  background: radial-gradient(circle, #00d4ff, #0088aa);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(0, 212, 255, 0.2);
+}
+.target-normal::after {
+  content: ''; width: 20px; height: 20px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, #cceeff);
+}
+.target-small {
+  width: 30px; height: 30px;
+  background: radial-gradient(circle, #ff6b9d, #cc3366);
+  box-shadow: 0 0 15px rgba(255, 107, 157, 0.5), 0 0 30px rgba(255, 107, 157, 0.2);
+}
+.target-small::after {
+  content: ''; width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, #ffccdd);
+}
+.target-big {
+  width: 70px; height: 70px;
+  background: radial-gradient(circle, #7b61ff, #5533cc);
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.5), 0 0 40px rgba(123, 97, 255, 0.2);
+}
+.target-big::after {
+  content: ''; width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, #ddd6ff);
+}
+.target-moving {
+  width: 40px; height: 40px;
+  background: radial-gradient(circle, #ffd700, #cc9900);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2);
+}
+.target-moving::after {
+  content: ''; width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, #fff8cc);
+}
+
+@keyframes targetAppear {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* HIT EFFECT */
+.hit-effect {
+  position: absolute; pointer-events: none;
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 2px solid #00d4ff;
+  animation: hitPulse 0.4s ease-out forwards;
+}
+@keyframes hitPulse {
+  from { transform: scale(0.5); opacity: 1; }
+  to { transform: scale(2); opacity: 0; }
+}
+
+/* MISS EFFECT */
+.miss-mark {
+  position: absolute; pointer-events: none; font-size: 20px;
+  animation: missFade 0.5s ease-out forwards;
+}
+@keyframes missFade {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* MENU OVERLAY */
+.menu-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+}
+.menu-overlay.hidden { display: none; }
+
+.menu-content {
+  text-align: center; max-width: 500px; padding: 40px;
+  background: rgba(20, 27, 60, 0.6); border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.menu-title {
+  font-size: 2.5rem; font-weight: 700; margin-bottom: 10px;
+  background: linear-gradient(135deg, #00d4ff, #7b61ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.menu-subtitle { color: rgba(232, 234, 246, 0.6); margin-bottom: 30px; }
+
+.modes { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+.mode-btn {
+  padding: 15px 30px; border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px; background: rgba(0, 212, 255, 0.1);
+  color: #e8eaf6; font-family: 'Poppins', sans-serif;
+  font-size: 1rem; font-weight: 500; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.mode-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 97, 255, 0.3));
+  border-color: #00d4ff; transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+}
+.mode-btn .mode-name { display: block; font-size: 1.1rem; font-weight: 600; color: #00d4ff; }
+.mode-btn .mode-desc { display: block; font-size: 0.8rem; color: rgba(232, 234, 246, 0.5); margin-top: 3px; }
+
+/* RESULTS */
+.results { display: none; }
+.results.active { display: block; }
+
+.result-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;
+}
+.result-item {
+  background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 12px; padding: 15px;
+}
+.result-label { font-size: 0.8rem; color: rgba(232, 234, 246, 0.5); }
+.result-value { font-size: 1.5rem; font-weight: 700; color: #00d4ff; }
+
+.restart-btn {
+  padding: 12px 40px; border: none; border-radius: 25px;
+  background: linear-gradient(135deg, #00d4ff, #7b61ff);
+  color: #fff; font-family: 'Poppins'; font-size: 1rem;
+  font-weight: 600; cursor: pointer; transition: all 0.3s;
+  margin-top: 10px;
+}
+.restart-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4); }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="../index.html">&larr; aqulroa Games</a>
+  <div class="nav-stats">
+    <div class="nav-stat">Score: <span id="score">0</span></div>
+    <div class="nav-stat">Time: <span id="timer">30</span>s</div>
+    <div class="nav-stat">Accuracy: <span id="accuracy">100</span>%</div>
+  </div>
+</div>
+
+<div class="game-area" id="gameArea"></div>
+
+<!-- MENU -->
+<div class="menu-overlay" id="menu">
+  <div class="menu-content">
+    <div class="menu-title">Aim Trainer</div>
+    <div class="menu-subtitle">Test your reflexes and accuracy</div>
+    <div class="modes" id="menuModes">
+      <button class="mode-btn" onclick="startGame('easy')">
+        <span class="mode-name">Easy</span>
+        <span class="mode-desc">30 seconds, big targets</span>
+      </button>
+      <button class="mode-btn" onclick="startGame('normal')">
+        <span class="mode-name">Normal</span>
+        <span class="mode-desc">30 seconds, mixed targets</span>
+      </button>
+      <button class="mode-btn" onclick="startGame('hard')">
+        <span class="mode-name">Hard</span>
+        <span class="mode-desc">30 seconds, small fast targets</span>
+      </button>
+      <button class="mode-btn" onclick="startGame('tracking')">
+        <span class="mode-name">Tracking</span>
+        <span class="mode-desc">30 seconds, moving targets</span>
+      </button>
+    </div>
+    <div class="results" id="results">
+      <div class="menu-title" style="font-size: 1.8rem;">Results</div>
+      <div class="result-grid">
+        <div class="result-item"><div class="result-label">Score</div><div class="result-value" id="resScore">0</div></div>
+        <div class="result-item"><div class="result-label">Accuracy</div><div class="result-value" id="resAccuracy">0%</div></div>
+        <div class="result-item"><div class="result-label">Avg Reaction</div><div class="result-value" id="resReaction">0ms</div></div>
+        <div class="result-item"><div class="result-label">Targets/sec</div><div class="result-value" id="resSpeed">0</div></div>
+      </div>
+      <button class="restart-btn" onclick="showMenu()">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const gameArea = document.getElementById('gameArea');
+const menu = document.getElementById('menu');
+const menuModes = document.getElementById('menuModes');
+const resultsDiv = document.getElementById('results');
+
+let score = 0, shots = 0, hits = 0, timeLeft = 30;
+let gameTimer = null, spawnTimer = null, moveTimer = null;
+let gameActive = false, currentMode = 'normal';
+let reactionTimes = [], lastTargetTime = 0;
+let movingTargets = [];
+
+const modeConfig = {
+  easy: { spawnRate: 1200, types: ['target-big'], time: 30 },
+  normal: { spawnRate: 800, types: ['target-normal', 'target-small', 'target-big'], weights: [5, 2, 3], time: 30 },
+  hard: { spawnRate: 500, types: ['target-small', 'target-normal'], weights: [6, 4], time: 30 },
+  tracking: { spawnRate: 2000, types: ['target-moving'], time: 30 }
+};
+
+function showMenu() {
+  gameActive = false;
+  clearInterval(gameTimer);
+  clearInterval(spawnTimer);
+  clearInterval(moveTimer);
+  gameArea.innerHTML = '';
+  menuModes.style.display = 'flex';
+  resultsDiv.classList.remove('active');
+  menu.classList.remove('hidden');
+  document.getElementById('score').textContent = '0';
+  document.getElementById('timer').textContent = '30';
+  document.getElementById('accuracy').textContent = '100';
+}
+
+function startGame(mode) {
+  currentMode = mode;
+  score = 0; shots = 0; hits = 0;
+  reactionTimes = [];
+  timeLeft = modeConfig[mode].time;
+  gameActive = true;
+  menu.classList.add('hidden');
+  gameArea.innerHTML = '';
+  updateUI();
+
+  gameTimer = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = timeLeft;
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+
+  spawnTarget();
+  spawnTimer = setInterval(spawnTarget, modeConfig[mode].spawnRate);
+
+  if (mode === 'tracking') {
+    moveTimer = setInterval(moveTargets, 30);
+  }
+}
+
+function spawnTarget() {
+  if (!gameActive) return;
+  const config = modeConfig[currentMode];
+  let type;
+  if (config.weights) {
+    const total = config.weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < config.types.length; i++) {
+      r -= config.weights[i];
+      if (r <= 0) { type = config.types[i]; break; }
+    }
+  } else {
+    type = config.types[Math.floor(Math.random() * config.types.length)];
+  }
+
+  const el = document.createElement('div');
+  el.className = 'target ' + type;
+  const size = type === 'target-small' ? 30 : type === 'target-big' ? 70 : type === 'target-moving' ? 40 : 50;
+  const x = Math.random() * (window.innerWidth - size - 40) + 20;
+  const y = Math.random() * (window.innerHeight - size - 100) + 60;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+
+  if (type === 'target-moving') {
+    el.dataset.vx = (Math.random() - 0.5) * 4;
+    el.dataset.vy = (Math.random() - 0.5) * 4;
+    movingTargets.push(el);
+  }
+
+  const points = type === 'target-small' ? 30 : type === 'target-big' ? 10 : type === 'target-moving' ? 25 : 20;
+  el.dataset.points = points;
+  el.dataset.spawn = Date.now();
+
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!gameActive) return;
+    const reaction = Date.now() - parseInt(el.dataset.spawn);
+    reactionTimes.push(reaction);
+    score += parseInt(el.dataset.points);
+    hits++;
+    shots++;
+    showHitEffect(e.clientX, e.clientY);
+    el.remove();
+    const idx = movingTargets.indexOf(el);
+    if (idx > -1) movingTargets.splice(idx, 1);
+    updateUI();
+  });
+
+  gameArea.appendChild(el);
+
+  // Auto-remove after time
+  setTimeout(() => {
+    if (el.parentNode) {
+      el.remove();
+      const idx = movingTargets.indexOf(el);
+      if (idx > -1) movingTargets.splice(idx, 1);
+    }
+  }, currentMode === 'hard' ? 2000 : currentMode === 'tracking' ? 4000 : 3000);
+}
+
+function moveTargets() {
+  movingTargets.forEach(el => {
+    if (!el.parentNode) return;
+    let x = parseFloat(el.style.left) + parseFloat(el.dataset.vx);
+    let y = parseFloat(el.style.top) + parseFloat(el.dataset.vy);
+    if (x < 10 || x > window.innerWidth - 50) el.dataset.vx = -parseFloat(el.dataset.vx);
+    if (y < 60 || y > window.innerHeight - 50) el.dataset.vy = -parseFloat(el.dataset.vy);
+    el.style.left = Math.max(10, Math.min(window.innerWidth - 50, x)) + 'px';
+    el.style.top = Math.max(60, Math.min(window.innerHeight - 50, y)) + 'px';
+  });
+}
+
+gameArea.addEventListener('click', (e) => {
+  if (!gameActive) return;
+  shots++;
+  showMissMark(e.clientX, e.clientY);
+  updateUI();
+});
+
+function showHitEffect(x, y) {
+  const effect = document.createElement('div');
+  effect.className = 'hit-effect';
+  effect.style.left = (x - 30) + 'px';
+  effect.style.top = (y - 30) + 'px';
+  gameArea.appendChild(effect);
+  setTimeout(() => effect.remove(), 400);
+}
+
+function showMissMark(x, y) {
+  const mark = document.createElement('div');
+  mark.className = 'miss-mark';
+  mark.textContent = '\u00d7';
+  mark.style.left = (x - 10) + 'px';
+  mark.style.top = (y - 10) + 'px';
+  mark.style.color = '#ff4444';
+  gameArea.appendChild(mark);
+  setTimeout(() => mark.remove(), 500);
+}
+
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  const acc = shots > 0 ? Math.round((hits / shots) * 100) : 100;
+  document.getElementById('accuracy').textContent = acc;
+}
+
+function endGame() {
+  gameActive = false;
+  clearInterval(gameTimer);
+  clearInterval(spawnTimer);
+  clearInterval(moveTimer);
+  movingTargets = [];
+
+  const acc = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+  const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
+  const speed = (hits / modeConfig[currentMode].time).toFixed(1);
+
+  document.getElementById('resScore').textContent = score;
+  document.getElementById('resAccuracy').textContent = acc + '%';
+  document.getElementById('resReaction').textContent = avgReaction + 'ms';
+  document.getElementById('resSpeed').textContent = speed;
+
+  menuModes.style.display = 'none';
+  resultsDiv.classList.add('active');
+  menu.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
