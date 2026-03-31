@@ -149,69 +149,62 @@ buildArena();
 // === WEAPON (Desert Eagle shape) ===
 const weaponGroup=new THREE.Group();
 (function(){
-  const metal=new THREE.MeshStandardMaterial({color:0x4a4a5a,metalness:0.95,roughness:0.15});
-  const dark=new THREE.MeshStandardMaterial({color:0x222230,metalness:0.9,roughness:0.2});
-  const grip=new THREE.MeshStandardMaterial({color:0x181820,roughness:0.85});
-  const glow=new THREE.MeshStandardMaterial({color:0x00d4ff,emissive:0x00d4ff,emissiveIntensity:0.6});
+  const metal=new THREE.MeshStandardMaterial({color:0x5a5a6a,metalness:0.95,roughness:0.15});
+  const dark=new THREE.MeshStandardMaterial({color:0x2a2a3a,metalness:0.9,roughness:0.2});
+  const grip=new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.8});
+  const glow=new THREE.MeshStandardMaterial({color:0x00d4ff,emissive:0x00d4ff,emissiveIntensity:0.8});
 
-  // Slide (top part)
-  const slide=new THREE.Mesh(new THREE.BoxGeometry(0.038,0.028,0.22),metal);
-  slide.position.set(0,0.015,-0.08);weaponGroup.add(slide);
-  // Slide top rounding
-  const slideTop=new THREE.Mesh(new THREE.CylinderGeometry(0.019,0.019,0.22,8),metal);
-  slideTop.rotation.z=Math.PI/2;slideTop.position.set(0,0.032,-0.08);weaponGroup.add(slideTop);
+  // Slide
+  const slide=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.07,0.55),metal);
+  slide.position.set(0,0.04,-0.2);weaponGroup.add(slide);
+  const top=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.55,8),metal);
+  top.rotation.z=Math.PI/2;top.position.set(0,0.075,-0.2);weaponGroup.add(top);
 
   // Barrel
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.009,0.011,0.15,8),dark);
-  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.01,-0.28);weaponGroup.add(barrel);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.4,8),dark);
+  barrel.rotation.x=Math.PI/2;barrel.position.set(0,0.03,-0.55);weaponGroup.add(barrel);
+  const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.025,0.05,8),metal);
+  muzzle.rotation.x=Math.PI/2;muzzle.position.set(0,0.03,-0.78);weaponGroup.add(muzzle);
 
-  // Muzzle
-  const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(0.013,0.009,0.02,8),metal);
-  muzzle.rotation.x=Math.PI/2;muzzle.position.set(0,0.01,-0.36);weaponGroup.add(muzzle);
-
-  // Frame (lower body)
-  const frame=new THREE.Mesh(new THREE.BoxGeometry(0.034,0.02,0.16),dark);
-  frame.position.set(0,-0.005,0);weaponGroup.add(frame);
+  // Frame
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.05,0.4),dark);
+  frame.position.set(0,-0.01,0.05);weaponGroup.add(frame);
 
   // Trigger guard
-  const tg=new THREE.Mesh(new THREE.TorusGeometry(0.016,0.003,6,10,Math.PI),metal);
-  tg.position.set(0,-0.018,0.01);tg.rotation.set(0,0,Math.PI);weaponGroup.add(tg);
+  const tg=new THREE.Mesh(new THREE.TorusGeometry(0.045,0.008,6,12,Math.PI),metal);
+  tg.position.set(0,-0.04,0.08);tg.rotation.set(0,0,Math.PI);weaponGroup.add(tg);
+  const trigger=new THREE.Mesh(new THREE.BoxGeometry(0.008,0.04,0.008),dark);
+  trigger.position.set(0,-0.02,0.1);weaponGroup.add(trigger);
 
-  // Trigger
-  const trigger=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.016,0.003),dark);
-  trigger.position.set(0,-0.012,0.015);weaponGroup.add(trigger);
+  // Grip
+  const gL=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.22,0.12),grip);
+  gL.position.set(-0.05,-0.12,0.18);gL.rotation.x=0.25;weaponGroup.add(gL);
+  const gR=new THREE.Mesh(new THREE.BoxGeometry(0.012,0.22,0.12),grip);
+  gR.position.set(0.05,-0.12,0.18);gR.rotation.x=0.25;weaponGroup.add(gR);
+  const gB=new THREE.Mesh(new THREE.BoxGeometry(0.09,0.22,0.012),dark);
+  gB.position.set(0,-0.12,0.13);gB.rotation.x=0.25;weaponGroup.add(gB);
 
-  // Grip panels
-  const gripL=new THREE.Mesh(new THREE.BoxGeometry(0.004,0.08,0.04),grip);
-  gripL.position.set(-0.018,-0.05,0.06);gripL.rotation.x=0.2;weaponGroup.add(gripL);
-  const gripR=new THREE.Mesh(new THREE.BoxGeometry(0.004,0.08,0.04),grip);
-  gripR.position.set(0.018,-0.05,0.06);gripR.rotation.x=0.2;weaponGroup.add(gripR);
-  const gripB=new THREE.Mesh(new THREE.BoxGeometry(0.03,0.08,0.004),dark);
-  gripB.position.set(0,-0.05,0.04);gripB.rotation.x=0.2;weaponGroup.add(gripB);
+  // Sights
+  const fs=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.035,0.015),glow);
+  fs.position.set(0,0.1,-0.45);weaponGroup.add(fs);
+  const rs=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.035,0.018),metal);
+  rs.position.set(0,0.1,0.15);weaponGroup.add(rs);
+  const rsN=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.04,0.02),dark);
+  rsN.position.set(0,0.1,0.15);weaponGroup.add(rsN);
 
-  // Front sight
-  const fs=new THREE.Mesh(new THREE.BoxGeometry(0.005,0.012,0.005),glow);
-  fs.position.set(0,0.038,-0.18);weaponGroup.add(fs);
-
-  // Rear sight
-  const rs=new THREE.Mesh(new THREE.BoxGeometry(0.02,0.012,0.006),metal);
-  rs.position.set(0,0.038,0.06);weaponGroup.add(rs);
-  const rsCut=new THREE.Mesh(new THREE.BoxGeometry(0.006,0.013,0.007),dark);
-  rsCut.position.set(0,0.038,0.06);weaponGroup.add(rsCut);
-
-  // Accent lines
-  const l1=new THREE.Mesh(new THREE.BoxGeometry(0.001,0.002,0.18),glow);
-  l1.position.set(-0.02,0.005,-0.06);weaponGroup.add(l1);
-  const l2=new THREE.Mesh(new THREE.BoxGeometry(0.001,0.002,0.18),glow);
-  l2.position.set(0.02,0.005,-0.06);weaponGroup.add(l2);
+  // Glow accents
+  const l1=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.005,0.45),glow);
+  l1.position.set(-0.055,0.015,-0.15);weaponGroup.add(l1);
+  const l2=new THREE.Mesh(new THREE.BoxGeometry(0.003,0.005,0.45),glow);
+  l2.position.set(0.055,0.015,-0.15);weaponGroup.add(l2);
 
   // Muzzle light
-  const ml=new THREE.PointLight(0xffaa33,0,2);ml.position.set(0,0.01,-0.38);
+  const ml=new THREE.PointLight(0xffaa33,0,5);ml.position.set(0,0.03,-0.82);
   weaponGroup.add(ml);weaponGroup.userData.ml=ml;
 })();
 
-weaponGroup.position.set(0.2,-0.17,-0.35);
-weaponGroup.rotation.y=0.03;
+weaponGroup.position.set(0.25,-0.2,-0.4);
+weaponGroup.rotation.y=0.05;
 camera.add(weaponGroup);scene.add(camera);
 
 // === FPS CONTROLS ===
@@ -247,7 +240,7 @@ let tG=null,tS=null,tM=null;
 // Fixed speeds - same magnitude every time
 const CFG={
   s:{1:{r:1400,sz:0.5,d:30},2:{r:900,sz:0.35,d:30},3:{r:550,sz:0.2,d:30}},
-  t:{1:{r:3000,sz:0.5,sp:0.15,d:30},2:{r:2500,sz:0.4,sp:0.3,d:30},3:{r:2000,sz:0.3,sp:0.5,d:30}},
+  t:{1:{r:3000,sz:0.5,sp:0.09,d:30},2:{r:2500,sz:0.4,sp:0.15,d:30},3:{r:2000,sz:0.3,sp:0.2,d:30}},
   f:{1:{sz:0.45,d:30,cnt:6},2:{sz:0.35,d:30,cnt:6},3:{sz:0.22,d:30,cnt:6}}
 };
 
@@ -301,8 +294,8 @@ function shoot(){
   if(!active)return;shots++;
   if(soundOn)playGunshot();
   weaponGroup.userData.ml.intensity=3;setTimeout(()=>weaponGroup.userData.ml.intensity=0,60);
-  weaponGroup.position.z+=0.02;weaponGroup.rotation.x-=0.04;
-  setTimeout(()=>{weaponGroup.position.z=-0.35;weaponGroup.rotation.x=0;},60);
+  weaponGroup.position.z+=0.03;weaponGroup.rotation.x-=0.06;
+  setTimeout(()=>{weaponGroup.position.z=-0.4;weaponGroup.rotation.x=0;},70);
   rc.setFromCamera(new THREE.Vector2(0,0),camera);
   const ha=rc.intersectObjects(targets,true);
   if(ha.length>0){let o=ha[0].object;while(o&&!o.userData.hit)o=o.parent;
@@ -328,13 +321,6 @@ document.addEventListener('mousemove',e=>{
 document.addEventListener('mousedown',e=>{if(locked&&active&&e.button===0)shoot();});
 
 // === FULLSCREEN ===
-document.addEventListener('keydown',e=>{
-  if(e.key==='F11'||(e.key==='f'&&!e.ctrlKey)){
-    e.preventDefault();
-    if(!document.fullscreenElement){document.documentElement.requestFullscreen();}
-    else{document.exitFullscreen();}
-  }
-});
 
 // === CLEAR TIMERS ===
 function clearAll(){clearInterval(tG);clearInterval(tS);clearInterval(tM);tG=null;tS=null;tM=null;}
@@ -396,7 +382,7 @@ document.querySelectorAll('.cs').forEach(sw=>{
 
 // === RENDER ===
 function animate(){requestAnimationFrame(animate);if(active&&mode==='t')moveT();
-  if(weaponGroup.visible){weaponGroup.position.x=0.2+Math.sin(Date.now()*0.002)*0.003;weaponGroup.position.y=-0.17+Math.sin(Date.now()*0.003)*0.002;}
+  if(weaponGroup.visible){weaponGroup.position.x=0.25+Math.sin(Date.now()*0.002)*0.005;weaponGroup.position.y=-0.2+Math.sin(Date.now()*0.003)*0.003;}
   renderer.render(scene,camera);}
 animate();
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
