@@ -9,52 +9,33 @@
 body{overflow:hidden;background:#87CEEB;font-family:'Segoe UI',Arial,sans-serif}
 canvas{display:block}
 #game-ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;display:none}
-#top-center{position:absolute;top:10px;left:50%;transform:translateX(-50%);text-align:center}
-#timer{font-size:30px;font-weight:bold;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5);letter-spacing:2px}
-#level-name{font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);margin-top:2px;opacity:.85}
-#pause-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.25);color:#fff;font-size:13px;font-weight:bold;padding:7px 16px;border-radius:6px;cursor:pointer;pointer-events:all;letter-spacing:1px}
-#pause-btn:hover{background:rgba(0,0,0,.5)}
-#top-left{position:absolute;top:10px;left:10px;text-align:left}
-#combo{font-size:26px;font-weight:bold;color:#ffcc00;text-shadow:0 2px 4px rgba(0,0,0,.5);display:none}
-#score{font-size:20px;font-weight:bold;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.5);margin-top:3px}
-#best{font-size:12px;color:#ddd;text-shadow:0 1px 3px rgba(0,0,0,.4);margin-top:2px;opacity:.8}
-#bottom-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:70%;max-width:500px;text-align:center}
-#progress-track{width:100%;height:10px;background:rgba(0,0,0,.3);border-radius:5px;overflow:hidden;position:relative}
-#progress-fill{height:100%;background:linear-gradient(90deg,#ff6600,#ffcc00);border-radius:5px;transition:width .1s;width:0%}
-#progress-icon{position:absolute;top:-8px;font-size:18px;transition:left .1s}
-#speed-display{font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);margin-top:5px;opacity:.8}
-#combo-popup{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font-size:44px;font-weight:bold;color:#ffcc00;text-shadow:0 0 20px rgba(255,200,0,.6);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
-#combo-popup.show{opacity:1;transform:translate(-50%,-60%)}
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.35);border-radius:1px}
-#crosshair::before{width:2px;height:18px;left:8px}
-#crosshair::after{width:18px;height:2px;top:8px}
-#hint{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
+#level-name{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:bold;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);letter-spacing:3px;transition:opacity 1s}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.3)}
+#crosshair::before{width:2px;height:16px;left:7px}
+#crosshair::after{width:16px;height:2px;top:7px}
+#hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
 #menu-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#4a90d9 0%,#2a5a9a 50%,#1a3a6a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#menu-screen h1{font-size:56px;color:#ff6600;margin-bottom:6px;text-shadow:0 0 20px rgba(255,100,0,.5),0 3px 6px rgba(0,0,0,.4);letter-spacing:2px}
+#menu-screen h1{font-size:56px;color:#fff;margin-bottom:6px;text-shadow:0 3px 8px rgba(0,0,0,.3);letter-spacing:2px}
 #menu-screen h2{font-size:16px;color:#aaccff;margin-bottom:18px;font-weight:normal}
-.menu-btn{background:linear-gradient(135deg,#ff6600,#dd4400);border:none;color:#fff;font-size:16px;font-weight:bold;padding:11px 34px;border-radius:8px;cursor:pointer;pointer-events:all;transition:all .2s;letter-spacing:1px;min-width:230px;margin:4px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
-.menu-btn:hover{transform:scale(1.05)}
-.menu-btn.secondary{background:linear-gradient(135deg,#3366aa,#224488)}
+.menu-btn{background:#fff;border:none;color:#333;font-size:16px;font-weight:bold;padding:12px 36px;border-radius:8px;cursor:pointer;pointer-events:all;transition:all .2s;letter-spacing:1px;min-width:230px;margin:4px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.menu-btn:hover{transform:scale(1.05);background:#f0f0f0}
+.menu-btn.secondary{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3)}
 .controls-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 20px;margin-bottom:14px}
 .controls-box p{color:#ccddff;font-size:13px;margin:3px 0}
 .controls-box span{color:#ffaa44;font-weight:bold}
-#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(180,0,0,.45);backdrop-filter:blur(4px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#death-screen h1{font-size:50px;color:#ff4444;margin-bottom:10px;text-shadow:0 0 15px rgba(255,0,0,.5)}
-#death-screen .fs{font-size:24px;color:#fff;margin-bottom:5px}
-#death-screen .bs{font-size:14px;color:#ddaa66;margin-bottom:18px}
-#complete-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,100,0,.4);backdrop-filter:blur(4px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#death-screen h1{font-size:48px;color:#ff4444;margin-bottom:10px;text-shadow:0 0 15px rgba(255,0,0,.5)}
+#death-screen .fs{font-size:22px;color:#fff;margin-bottom:18px}
+#death-buttons{display:flex;gap:10px}
+#complete-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,80,0,.5);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
 #complete-screen h1{font-size:42px;color:#44ff88;margin-bottom:8px;text-shadow:0 0 15px rgba(0,255,100,.5)}
 #complete-screen .info{font-size:17px;color:#fff;margin-bottom:14px}
-#complete-screen .stars{font-size:34px;margin-bottom:14px}
-#level-select{display:none;flex-direction:column;align-items:center;gap:6px;margin:8px 0;max-height:220px;overflow-y:auto;padding:6px}
-.lv-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 18px;color:#fff;font-size:13px;cursor:pointer;pointer-events:all;transition:all .15s;min-width:210px;text-align:center}
-.lv-item:hover{background:rgba(255,102,0,.15);border-color:#ff6600}
+#level-select{display:none;flex-direction:column;align-items:center;gap:6px;margin:8px 0;max-height:200px;overflow-y:auto;padding:6px}
+.lv-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 18px;color:#fff;font-size:13px;cursor:pointer;pointer-events:all;transition:all .15s;min-width:200px;text-align:center}
+.lv-item:hover{background:rgba(255,255,255,.15)}
 .lv-item.locked{opacity:.3;cursor:not-allowed}
 .lv-item.done{border-color:#44ff88}
-.lv-item .st{color:#ffcc00;margin-left:5px}
-#pause-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#pause-overlay h1{font-size:46px;color:#fff;margin-bottom:18px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
 </style>
 </head>
 <body>
@@ -76,44 +57,21 @@ canvas{display:block}
 <div id="death-screen">
   <h1>УПАЛ!</h1>
   <div class="fs">Счёт: <span id="final-score">0</span></div>
-  <div class="bs">Лучший: <span id="best-score">0</span></div>
-  <button class="menu-btn" id="btn-restart">ЗАНОВО</button>
-  <button class="menu-btn secondary" id="btn-menu1">МЕНЮ</button>
+  <div id="death-buttons">
+    <button class="menu-btn" id="btn-restart">ЗАНОВО</button>
+    <button class="menu-btn secondary" id="btn-menu1">МЕНЮ</button>
+  </div>
 </div>
 
 <div id="complete-screen">
   <h1>УРОВЕНЬ ПРОЙДЕН!</h1>
   <div class="info" id="complete-info"></div>
-  <div class="stars" id="complete-stars"></div>
   <button class="menu-btn" id="btn-next">СЛЕДУЮЩИЙ</button>
   <button class="menu-btn secondary" id="btn-menu2">МЕНЮ</button>
 </div>
 
-<div id="pause-overlay">
-  <h1>ПАУЗА</h1>
-  <button class="menu-btn" id="btn-resume">ПРОДОЛЖИТЬ</button>
-  <button class="menu-btn secondary" id="btn-menu3">МЕНЮ</button>
-</div>
-
 <div id="game-ui">
-  <div id="top-center">
-    <div id="timer">00:00</div>
-    <div id="level-name"></div>
-  </div>
-  <button id="pause-btn">ПАУЗА</button>
-  <div id="top-left">
-    <div id="combo"></div>
-    <div id="score">0</div>
-    <div id="best">РЕКОРД: 0</div>
-  </div>
-  <div id="bottom-bar">
-    <div id="progress-track">
-      <div id="progress-fill"></div>
-      <div id="progress-icon">&#128666;</div>
-    </div>
-    <div id="speed-display">0 km/h</div>
-  </div>
-  <div id="combo-popup"></div>
+  <div id="level-name"></div>
   <div id="crosshair"></div>
   <div id="hint">Нажми чтобы начать</div>
 </div>
@@ -137,38 +95,40 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 
-const TW = 3, TH = 2.4, TL = [8, 10, 12];
-const G = -30, JF = 14, MS = 8, DF = 15;
+const TW = 3, TH = 2.5, TL = [10, 12, 14];
+const G = -28, JF = 13, MS = 7, DF = 14;
+const LANE_W = 5;
+
 const LEVELS = [
-  { n: 'Уровень 1', t: 10, s: 8, g: 5, l: 1 },
-  { n: 'Уровень 2', t: 12, s: 8, g: 5, l: 2 },
-  { n: 'Уровень 3', t: 14, s: 9, g: 5, l: 3 },
-  { n: 'Уровень 4', t: 15, s: 10, g: 5, l: 3 },
-  { n: 'Уровень 5', t: 16, s: 11, g: 4, l: 3 },
-  { n: 'Уровень 6', t: 18, s: 12, g: 4, l: 3 },
-  { n: 'Уровень 7', t: 20, s: 13, g: 4, l: 3 },
-  { n: 'Уровень 8', t: 22, s: 14, g: 3, l: 3 },
-  { n: 'Уровень 9', t: 25, s: 15, g: 3, l: 3 },
-  { n: 'Уровень 10', t: 30, s: 16, g: 3, l: 3 },
+  { n: 'Уровень 1', t: 10, s: 7, g: 6, l: 1 },
+  { n: 'Уровень 2', t: 12, s: 7, g: 6, l: 2 },
+  { n: 'Уровень 3', t: 14, s: 8, g: 6, l: 3 },
+  { n: 'Уровень 4', t: 15, s: 9, g: 5, l: 3 },
+  { n: 'Уровень 5', t: 16, s: 10, g: 5, l: 3 },
+  { n: 'Уровень 6', t: 18, s: 11, g: 5, l: 3 },
+  { n: 'Уровень 7', t: 20, s: 12, g: 4, l: 3 },
+  { n: 'Уровень 8', t: 22, s: 13, g: 4, l: 3 },
+  { n: 'Уровень 9', t: 25, s: 14, g: 4, l: 3 },
+  { n: 'Уровень 10', t: 30, s: 15, g: 3, l: 3 },
 ];
-const TC = [0xcc2222, 0x22aa44, 0x2266cc, 0xddaa22, 0xdd6622, 0xaa22cc, 0x22cccc, 0xcc4488];
 
 let scene, camera, renderer, controls, clock;
-let composer, bloomPass;
+let composer;
 let player, pv, onGround;
 let trucks = [], particles = [];
-let groundMesh;
-let audio, keys = {}, comboC = 0, comboT = 0, dc = 0;
+let audio, keys = {};
 let mode = 'endless', cLevel = 0, score = 0, best = +localStorage.getItem('tjB') || 0;
-let lj = 0, lt = 0, active = false, ct = null, ts = 0, gameTime = 0, paused = false;
+let lj = 0, lt = 0, active = false, ct = null, gameTime = 0;
 
 function init() {
   clock = new THREE.Clock();
+
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87CEEB);
-  scene.fog = new THREE.FogExp2(0x87CEEB, 0.005);
+  scene.fog = new THREE.FogExp2(0x87CEEB, 0.004);
 
   camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
+
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -181,7 +141,7 @@ function init() {
   controls = new PointerLockControls(camera, document.body);
   controls.addEventListener('lock', () => { document.getElementById('hint').style.display = 'none'; });
   controls.addEventListener('unlock', () => {
-    if (active && !paused) document.getElementById('hint').style.display = 'block';
+    if (active) document.getElementById('hint').style.display = 'block';
   });
 
   setupLights();
@@ -194,9 +154,10 @@ function init() {
 }
 
 function setupLights() {
-  scene.add(new THREE.HemisphereLight(0x88bbdd, 0x445522, 0.7));
-  scene.add(new THREE.AmbientLight(0x667788, 0.6));
-  const sun = new THREE.DirectionalLight(0xffeedd, 1.3);
+  scene.add(new THREE.HemisphereLight(0x88bbdd, 0x445522, 0.8));
+  scene.add(new THREE.AmbientLight(0x667788, 0.7));
+
+  const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
   sun.position.set(20, 50, 10);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -210,10 +171,10 @@ function setupLights() {
 function setupPP() {
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.3, 0.3, 0.9);
-  composer.addPass(bloomPass);
+  const bp = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.2, 0.3, 0.9);
+  composer.addPass(bp);
   const vp = new ShaderPass(VignetteShader);
-  vp.uniforms['offset'].value = 1.3; vp.uniforms['darkness'].value = 0.6;
+  vp.uniforms['offset'].value = 1.4; vp.uniforms['darkness'].value = 0.5;
   composer.addPass(vp);
   const fp = new ShaderPass(FXAAShader);
   fp.material.uniforms['resolution'].value.set(
@@ -224,116 +185,156 @@ function setupPP() {
 }
 
 function createWorld() {
-  // Ground - dark gray surface below trucks
+  // Ground - dark surface far below
   const gg = new THREE.PlaneGeometry(400, 1200);
-  const gm = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.9 });
-  groundMesh = new THREE.Mesh(gg, gm);
-  groundMesh.rotation.x = -Math.PI / 2;
-  groundMesh.position.y = -6;
-  groundMesh.position.z = -300;
-  groundMesh.receiveShadow = true;
-  scene.add(groundMesh);
+  const gm = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.95 });
+  const ground = new THREE.Mesh(gg, gm);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -10;
+  ground.position.z = -300;
+  ground.receiveShadow = true;
+  scene.add(ground);
 
   // Clouds
-  for (let i = 0; i < 25; i++) {
-    const cg = new THREE.SphereGeometry(4 + Math.random() * 8, 8, 6);
+  for (let i = 0; i < 30; i++) {
+    const cg = new THREE.SphereGeometry(5 + Math.random() * 10, 8, 6);
     const cm = new THREE.MeshStandardMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.35, roughness: 1
+      color: 0xffffff, transparent: true, opacity: 0.4, roughness: 1
     });
     const c = new THREE.Mesh(cg, cm);
     c.position.set(
-      (Math.random() - 0.5) * 180,
-      25 + Math.random() * 35,
-      (Math.random() - 0.5) * 400
+      (Math.random() - 0.5) * 200,
+      30 + Math.random() * 40,
+      (Math.random() - 0.5) * 500
     );
     c.scale.set(1 + Math.random() * 0.5, 0.3 + Math.random() * 0.2, 1 + Math.random() * 0.5);
     scene.add(c);
   }
 
   // Distant buildings
-  for (let i = 0; i < 50; i++) {
-    const h = 3 + Math.random() * 20;
-    const bg = new THREE.BoxGeometry(2 + Math.random() * 6, h, 2 + Math.random() * 6);
+  for (let i = 0; i < 60; i++) {
+    const h = 5 + Math.random() * 25;
+    const bg = new THREE.BoxGeometry(3 + Math.random() * 8, h, 3 + Math.random() * 8);
     const bm = new THREE.MeshStandardMaterial({
-      color: new THREE.Color().setHSL(0.58, 0.15, 0.2 + Math.random() * 0.15),
+      color: new THREE.Color().setHSL(0.6, 0.1, 0.25 + Math.random() * 0.15),
       roughness: 0.9
     });
     const b = new THREE.Mesh(bg, bm);
     const a = Math.random() * Math.PI * 2;
-    const d = 50 + Math.random() * 70;
-    b.position.set(Math.cos(a) * d, h / 2 - 6, Math.sin(a) * d - 80);
+    const d = 60 + Math.random() * 80;
+    b.position.set(Math.cos(a) * d, h / 2 - 10, Math.sin(a) * d - 100);
     scene.add(b);
   }
 }
 
-function createTruck(x, z, length, speed, color) {
+// Белый американский тягач
+function createTruck(x, z, length, speed, lane) {
   const group = new THREE.Group();
 
-  // Body - bright color
-  const bg = new THREE.BoxGeometry(TW, TH, length);
-  const bm = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.4 });
-  const body = new THREE.Mesh(bg, bm);
-  body.position.y = TH / 2;
-  body.castShadow = true;
-  body.receiveShadow = true;
-  group.add(body);
+  // Trailer - белый
+  const trailerLen = length - 2.5;
+  const tg = new THREE.BoxGeometry(TW, TH, trailerLen);
+  const tm = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.5, metalness: 0.3 });
+  const trailer = new THREE.Mesh(tg, tm);
+  trailer.position.set(0, TH / 2 + 0.3, -0.5);
+  trailer.castShadow = true;
+  trailer.receiveShadow = true;
+  group.add(trailer);
 
-  // White stripe
-  const sg = new THREE.BoxGeometry(TW + 0.02, 0.08, length + 0.02);
-  const sm = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.3, transparent: true, opacity: 0.25 });
-  const stripe = new THREE.Mesh(sg, sm);
-  stripe.position.y = TH * 0.5;
-  group.add(stripe);
+  // Trailer bottom frame
+  const fg = new THREE.BoxGeometry(TW - 0.2, 0.3, trailerLen);
+  const fm = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7, metalness: 0.5 });
+  const frame = new THREE.Mesh(fg, fm);
+  frame.position.set(0, 0.3, -0.5);
+  group.add(frame);
 
-  // Cabin
-  const cg = new THREE.BoxGeometry(TW - 0.3, TH * 0.6, 2.2);
-  const cm = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.3, metalness: 0.6 });
+  // Cabin (кабина тягача)
+  const cg = new THREE.BoxGeometry(TW - 0.2, TH * 0.8, 2.5);
+  const cm = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.4, metalness: 0.4 });
   const cab = new THREE.Mesh(cg, cm);
-  cab.position.set(0, TH + 0.3, length / 2 - 1.1);
+  cab.position.set(0, TH * 0.4 + 0.3, length / 2 - 1.25);
   cab.castShadow = true;
   group.add(cab);
 
+  // Cabin top deflector
+  const dg = new THREE.BoxGeometry(TW - 0.4, 0.4, 1.5);
+  const deflector = new THREE.Mesh(dg, cm);
+  deflector.position.set(0, TH * 0.8 + 0.5, length / 2 - 1.25);
+  group.add(deflector);
+
   // Windshield
-  const wg = new THREE.PlaneGeometry(TW - 0.7, 0.8);
+  const wg = new THREE.PlaneGeometry(TW - 0.6, 0.9);
   const wm = new THREE.MeshStandardMaterial({
-    color: 0x88bbdd, emissive: 0x224466, emissiveIntensity: 0.2,
+    color: 0x88bbdd, emissive: 0x224466, emissiveIntensity: 0.15,
     roughness: 0.05, metalness: 0.9, transparent: true, opacity: 0.5
   });
   const ws = new THREE.Mesh(wg, wm);
-  ws.position.set(0, TH + 0.45, length / 2 - 0.01);
+  ws.position.set(0, TH * 0.5 + 0.5, length / 2 - 0.01);
   group.add(ws);
+
+  // Grill
+  const gg2 = new THREE.PlaneGeometry(TW - 0.8, 0.6);
+  const gm2 = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.7 });
+  const grill = new THREE.Mesh(gg2, gm2);
+  grill.position.set(0, TH * 0.2 + 0.3, length / 2 + 0.01);
+  group.add(grill);
+
+  // Headlights
+  const hg = new THREE.SphereGeometry(0.12, 6, 6);
+  const hm = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 0.8 });
+  [-1, 1].forEach(s => {
+    const h = new THREE.Mesh(hg, hm);
+    h.position.set(s * (TW / 2 - 0.5), TH * 0.2 + 0.3, length / 2 + 0.05);
+    group.add(h);
+  });
+
+  // Bumper
+  const bg2 = new THREE.BoxGeometry(TW - 0.2, 0.3, 0.3);
+  const bm2 = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.6 });
+  const bumper = new THREE.Mesh(bg2, bm2);
+  bumper.position.set(0, 0.3, length / 2 + 0.15);
+  group.add(bumper);
 
   // Wheels
   const whg = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 12);
-  const whm = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-  [[-TW / 2 - .15, .5, length / 2 - 2.5], [TW / 2 + .15, .5, length / 2 - 2.5],
-   [-TW / 2 - .15, .5, -length / 2 + 2.5], [TW / 2 + .15, .5, -length / 2 + 2.5]].forEach(p => {
+  const whm = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
+  const wheelPositions = [
+    [-TW / 2 - 0.15, 0.5, length / 2 - 2],
+    [TW / 2 + 0.15, 0.5, length / 2 - 2],
+    [-TW / 2 - 0.15, 0.5, -length / 2 + 2],
+    [TW / 2 + 0.15, 0.5, -length / 2 + 2],
+    [-TW / 2 - 0.15, 0.5, -length / 2 + 3.2],
+    [TW / 2 + 0.15, 0.5, -length / 2 + 3.2],
+  ];
+  wheelPositions.forEach(p => {
     const w = new THREE.Mesh(whg, whm);
     w.rotation.z = Math.PI / 2;
     w.position.set(...p);
     group.add(w);
   });
 
-  // Headlights
-  const hg = new THREE.SphereGeometry(0.15, 6, 6);
-  const hm = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 1 });
-  [-1, 1].forEach(s => {
-    const h = new THREE.Mesh(hg, hm);
-    h.position.set(s * (TW / 2 - .4), TH * .5, length / 2 + .05);
-    group.add(h);
-  });
-
   group.position.set(x, 0, z);
   scene.add(group);
-  return { mesh: group, speed, length, width: TW, height: TH, color, jumped: false };
+
+  return {
+    mesh: group,
+    speed: speed,
+    length: length,
+    width: TW,
+    height: TH + 0.3,
+    lane: lane,
+    jumped: false,
+    vx: 0,
+    vz: 0,
+  };
 }
 
 function createPlayer() {
   const g = new THREE.Group();
   const bg = new THREE.CapsuleGeometry(0.3, 0.6, 4, 8);
   const bm = new THREE.MeshStandardMaterial({
-    color: 0x00ff88, emissive: 0x00aa44, emissiveIntensity: 0.3,
-    roughness: 0.3, metalness: 0.5
+    color: 0x222222, emissive: 0x111111, emissiveIntensity: 0.1,
+    roughness: 0.4, metalness: 0.3
   });
   const b = new THREE.Mesh(bg, bm);
   b.position.y = 0.6;
@@ -345,15 +346,15 @@ function createPlayer() {
 
 function createParticles(pos, color, count) {
   for (let i = 0; i < count; i++) {
-    const g = new THREE.SphereGeometry(0.06 + Math.random() * 0.06, 4, 4);
+    const g = new THREE.SphereGeometry(0.05 + Math.random() * 0.05, 4, 4);
     const m = new THREE.MeshBasicMaterial({ color });
     const p = new THREE.Mesh(g, m);
     p.position.copy(pos);
     scene.add(p);
     particles.push({
       mesh: p,
-      vel: new THREE.Vector3((Math.random() - .5) * 10, Math.random() * 6 + 2, (Math.random() - .5) * 10),
-      life: 1, decay: 1.5 + Math.random()
+      vel: new THREE.Vector3((Math.random() - .5) * 8, Math.random() * 5 + 1, (Math.random() - .5) * 8),
+      life: 1, decay: 2 + Math.random()
     });
   }
 }
@@ -361,7 +362,7 @@ function createParticles(pos, color, count) {
 function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.vel.y -= 15 * dt;
+    p.vel.y -= 12 * dt;
     p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
     p.life -= p.decay * dt;
     p.mesh.material.opacity = Math.max(0, p.life);
@@ -390,21 +391,19 @@ function startEndless() {
   player = createPlayer();
   pv = new THREE.Vector3(0, 0, 0);
   onGround = true;
-  score = 0; comboC = 0; comboT = 0; dc = 0;
-  ts = 0; gameTime = 0;
-  active = true; paused = false;
+  score = 0; lj = 0; lt = 999;
+  gameTime = 0;
+  active = true;
 
-  let z = -5;
+  let z = -6;
   for (let i = 0; i < 15; i++) {
     const lane = Math.floor(Math.random() * 3) - 1;
-    const x = lane * 0;
+    const x = lane * LANE_W;
     const len = TL[Math.floor(Math.random() * TL.length)];
-    const col = TC[Math.floor(Math.random() * TC.length)];
-    const spd = 6 + Math.random() * 6;
-    const truck = createTruck(x, z, len, spd, col);
+    const spd = 5 + Math.random() * 4;
+    const truck = createTruck(x, z, len, spd, lane);
     trucks.push(truck);
-    z -= len / 2 + 4 + Math.random() * 4 + len / 2;
-    ts++;
+    z -= len / 2 + 5 + Math.random() * 4 + len / 2;
   }
 
   const first = trucks[0];
@@ -412,9 +411,10 @@ function startEndless() {
   ct = first;
 
   document.getElementById('game-ui').style.display = 'block';
-  document.getElementById('level-name').textContent = 'БЕСКОНЕЧНЫЙ';
-  document.getElementById('best').textContent = 'РЕКОРД: ' + best;
-  document.getElementById('combo').style.display = 'none';
+  const ln = document.getElementById('level-name');
+  ln.textContent = 'БЕСКОНЕЧНЫЙ';
+  ln.style.opacity = '1';
+  setTimeout(() => { ln.style.opacity = '0'; }, 2000);
 
   audio.init();
   setTimeout(() => { if (active) controls.lock(); }, 100);
@@ -430,22 +430,19 @@ function startLevel(idx) {
   player = createPlayer();
   pv = new THREE.Vector3(0, 0, 0);
   onGround = true;
-  score = 0; comboC = 0; comboT = 0; dc = 0;
-  lj = 0; lt = lv.t;
-  ts = 0; gameTime = 0;
-  active = true; paused = false;
+  score = 0; lj = 0; lt = lv.t;
+  gameTime = 0;
+  active = true;
 
-  let z = -5;
+  let z = -6;
   for (let i = 0; i < lv.t; i++) {
     const lane = lv.l === 1 ? 0 : (Math.floor(Math.random() * lv.l) - Math.floor(lv.l / 2));
-    const x = lane * 0;
+    const x = lane * LANE_W;
     const len = TL[Math.floor(Math.random() * TL.length)];
-    const col = TC[Math.floor(Math.random() * TC.length)];
     const spd = lv.s * (0.85 + Math.random() * 0.3);
-    const truck = createTruck(x, z, len, spd, col);
+    const truck = createTruck(x, z, len, spd, lane);
     trucks.push(truck);
     z -= len / 2 + lv.g + len / 2;
-    ts++;
   }
 
   const first = trucks[0];
@@ -453,9 +450,10 @@ function startLevel(idx) {
   ct = first;
 
   document.getElementById('game-ui').style.display = 'block';
-  document.getElementById('level-name').textContent = lv.n;
-  document.getElementById('best').textContent = 'РЕКОРД: ' + best;
-  document.getElementById('combo').style.display = 'none';
+  const ln = document.getElementById('level-name');
+  ln.textContent = lv.n;
+  ln.style.opacity = '1';
+  setTimeout(() => { ln.style.opacity = '0'; }, 2500);
 
   audio.init();
   setTimeout(() => { if (active) controls.lock(); }, 100);
@@ -465,7 +463,6 @@ function hideAll() {
   document.getElementById('menu-screen').style.display = 'none';
   document.getElementById('death-screen').style.display = 'none';
   document.getElementById('complete-screen').style.display = 'none';
-  document.getElementById('pause-overlay').style.display = 'none';
   document.getElementById('level-select').style.display = 'none';
 }
 
@@ -478,30 +475,16 @@ function die() {
   if (fs > best) { best = fs; localStorage.setItem('tjB', fs.toString()); }
 
   document.getElementById('final-score').textContent = fs;
-  document.getElementById('best-score').textContent = best;
   document.getElementById('death-screen').style.display = 'flex';
 
-  createParticles(player.position, 0xff4444, 25);
+  createParticles(player.position, 0xff4444, 20);
 }
 
 function completeLevel() {
   active = false;
   controls.unlock();
 
-  const stars = lj >= lt ? 3 : lj >= lt * 0.7 ? 2 : 1;
-  const done = JSON.parse(localStorage.getItem('tjL') || '{}');
-  done[cLevel] = Math.max(done[cLevel] || 0, stars);
-  localStorage.setItem('tjL', JSON.stringify(done));
-
   document.getElementById('complete-info').textContent = `Грузовиков: ${lj} / ${lt}`;
-  document.getElementById('complete-stars').textContent = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
-
-  if (cLevel < LEVELS.length - 1) {
-    document.getElementById('btn-next').style.display = 'block';
-    document.getElementById('btn-next').onclick = () => startLevel(cLevel + 1);
-  } else {
-    document.getElementById('btn-next').style.display = 'none';
-  }
   document.getElementById('complete-screen').style.display = 'flex';
 }
 
@@ -510,19 +493,7 @@ function goToMenu() {
   document.getElementById('menu-screen').style.display = 'flex';
   document.getElementById('game-ui').style.display = 'none';
   clearScene();
-  active = false; paused = false;
-}
-
-function togglePause() {
-  if (!active) return;
-  paused = !paused;
-  if (paused) {
-    controls.unlock();
-    document.getElementById('pause-overlay').style.display = 'flex';
-  } else {
-    document.getElementById('pause-overlay').style.display = 'none';
-    controls.lock();
-  }
+  active = false;
 }
 
 // ===================== CONTROLS =====================
@@ -531,7 +502,6 @@ function setupInput() {
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
     if (e.code === 'Space') e.preventDefault();
-    if (e.code === 'Escape' && active) togglePause();
   });
   document.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -547,11 +517,8 @@ function setupInput() {
   };
   document.getElementById('btn-menu1').onclick = goToMenu;
   document.getElementById('btn-menu2').onclick = goToMenu;
-  document.getElementById('btn-menu3').onclick = goToMenu;
-  document.getElementById('btn-resume').onclick = togglePause;
-  document.getElementById('pause-btn').onclick = togglePause;
 
-  renderer.domElement.onclick = () => { if (active && !paused) controls.lock(); };
+  renderer.domElement.onclick = () => { if (active) controls.lock(); };
 
   window.onresize = () => {
     camera.aspect = innerWidth / innerHeight;
@@ -563,16 +530,13 @@ function setupInput() {
 
 function buildLS() {
   const ls = document.getElementById('level-select');
-  const done = JSON.parse(localStorage.getItem('tjL') || '{}');
   ls.innerHTML = '';
   LEVELS.forEach((lv, i) => {
     const d = document.createElement('div');
     d.className = 'lv-item';
-    const s = done[i] || 0;
-    const unlocked = i === 0 || (done[i - 1] || 0) > 0;
+    const unlocked = i === 0 || true;
     if (!unlocked) d.classList.add('locked');
-    if (s > 0) d.classList.add('done');
-    d.innerHTML = `${i + 1}. ${lv.n} <span class="st">${'\u2B50'.repeat(s)}${'\u2606'.repeat(3 - s)}</span>`;
+    d.textContent = `${i + 1}. ${lv.n}`;
     if (unlocked) d.onclick = () => startLevel(i);
     ls.appendChild(d);
   });
@@ -600,12 +564,42 @@ function checkLanding() {
   return null;
 }
 
+// ===================== TRUCK PHYSICS =====================
+
+function updateTruckPhysics(dt) {
+  // Столкновения между грузовиками
+  for (let i = 0; i < trucks.length; i++) {
+    for (let j = i + 1; j < trucks.length; j++) {
+      const a = trucks[i], b = trucks[j];
+      if (a.lane !== b.lane) continue;
+
+      const az = a.mesh.position.z;
+      const bz = b.mesh.position.z;
+      const aHalf = a.length / 2;
+      const bHalf = b.length / 2;
+
+      const overlap = (aHalf + bHalf) - Math.abs(az - bz);
+      if (overlap > 0) {
+        // Раздвигаем
+        const push = overlap / 2 + 0.1;
+        if (az > bz) {
+          a.mesh.position.z += push;
+          b.mesh.position.z -= push;
+        } else {
+          a.mesh.position.z -= push;
+          b.mesh.position.z += push;
+        }
+      }
+    }
+  }
+}
+
 // ===================== MAIN LOOP =====================
 
 function update() {
   const dt = Math.min(clock.getDelta(), 0.05);
 
-  if (!active || paused) {
+  if (!active) {
     updateParticles(dt);
     composer.render();
     return;
@@ -613,28 +607,6 @@ function update() {
 
   gameTime += dt;
   score += dt * 10;
-
-  // Timer
-  const min = Math.floor(gameTime / 60);
-  const sec = Math.floor(gameTime % 60);
-  document.getElementById('timer').textContent =
-    String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
-  document.getElementById('score').textContent = Math.floor(score);
-
-  // Progress
-  if (mode === 'level') {
-    const pct = Math.min(100, (lj / lt) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-icon').style.left = `calc(${pct}% - 10px)`;
-  } else {
-    const pct = Math.min(100, score / 500 * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-icon').style.left = `calc(${pct}% - 10px)`;
-  }
-
-  // Speed
-  const spd = ct ? Math.abs(ct.speed) * 3.6 : 0;
-  document.getElementById('speed-display').textContent = Math.floor(spd) + ' km/h';
 
   // Camera direction
   const fwd = new THREE.Vector3();
@@ -655,21 +627,23 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
+      // Инерция от грузовика при прыжке
+      if (ct) {
+        pv.z -= ct.speed * 0.5;
+      }
       ct = null;
       audio.playJumpSound();
-      createParticles(player.position, 0x00ff88, 5);
+      createParticles(player.position, 0xffffff, 4);
       keys['Space'] = false;
     }
   }
 
   // Dash
-  dc = Math.max(0, dc - dt);
-  if (keys['ShiftLeft'] && dc <= 0) {
+  if (keys['ShiftLeft'] && onGround) {
     const dd = md.length() > 0 ? md.clone() : fwd.clone();
     pv.add(dd.multiplyScalar(DF));
-    dc = 1.0;
     audio.playDashSound();
-    createParticles(player.position, 0xffcc00, 8);
+    createParticles(player.position, 0xffcc00, 6);
     keys['ShiftLeft'] = false;
   }
 
@@ -678,7 +652,7 @@ function update() {
   pv.z = md.z * MS;
   pv.y += G * dt;
 
-  // Inertia from truck
+  // Inertia from truck - игрок движется вместе с грузовиком
   if (onGround && ct) {
     pv.z -= ct.speed;
   }
@@ -697,22 +671,8 @@ function update() {
         col.truck.jumped = true;
         lj++;
       }
-      comboC++;
-      comboT = 2;
       audio.playLandSound();
-      createParticles(player.position, col.truck.color, 6);
-
-      if (comboC >= 2) {
-        const el = document.getElementById('combo-popup');
-        el.textContent = 'COMBO x' + comboC + '!';
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 800);
-        score += comboC * 50;
-
-        const ce = document.getElementById('combo');
-        ce.textContent = 'x' + comboC;
-        ce.style.display = 'block';
-      }
+      createParticles(player.position, 0xcccccc, 4);
 
       if (mode === 'level' && lj >= lt) {
         setTimeout(() => completeLevel(), 400);
@@ -724,16 +684,10 @@ function update() {
     ct = col.truck;
   } else {
     onGround = false;
-    if (pv.y > 0) comboC = 0;
   }
 
-  if (comboT > 0) {
-    comboT -= dt;
-    if (comboT <= 0) {
-      comboC = 0;
-      document.getElementById('combo').style.display = 'none';
-    }
-  }
+  // Truck physics - collisions
+  updateTruckPhysics(dt);
 
   // Move trucks FORWARD (-Z)
   for (let i = trucks.length - 1; i >= 0; i--) {
@@ -752,18 +706,17 @@ function update() {
     let minZ = 0;
     for (const t of trucks) { if (t.mesh.position.z < minZ) minZ = t.mesh.position.z; }
     if (minZ > player.position.z - 150) {
+      const lane = Math.floor(Math.random() * 3) - 1;
       const len = TL[Math.floor(Math.random() * TL.length)];
-      const col2 = TC[Math.floor(Math.random() * TC.length)];
-      const spd = 6 + Math.random() * 6;
-      const z = minZ - len / 2 - 4 - Math.random() * 6;
-      const truck = createTruck(0, z, len, spd, col2);
+      const spd = 5 + Math.random() * 4;
+      const z = minZ - len / 2 - 5 - Math.random() * 6;
+      const truck = createTruck(lane * LANE_W, z, len, spd, lane);
       trucks.push(truck);
-      ts++;
     }
   }
 
   // Death
-  if (player.position.y < -6) { die(); return; }
+  if (player.position.y < -8) { die(); return; }
 
   // FPS camera
   controls.getObject().position.set(
@@ -771,9 +724,6 @@ function update() {
     player.position.y + 1.6,
     player.position.z
   );
-
-  // Move ground with player
-  groundMesh.position.z = player.position.z - 300;
 
   updateParticles(dt);
   composer.render();
@@ -798,7 +748,7 @@ class Audio {
   init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.mg = this.ctx.createGain();
-    this.mg.gain.value = 0.3;
+    this.mg.gain.value = 0.25;
     this.cp = this.ctx.createDynamicsCompressor();
     this.cp.threshold.value = -20; this.cp.ratio.value = 8;
     this.mg.connect(this.cp); this.cp.connect(this.ctx.destination);
@@ -815,24 +765,24 @@ class Audio {
   pb(t, b) {
     if (this.muted) return;
     const bp = b % 8, sp = b % 16;
-    if (sp === 0 || sp === 4 || sp === 8 || sp === 12) this.kick(t, sp % 8 === 0 ? .8 : .5);
+    if (sp === 0 || sp === 4 || sp === 8 || sp === 12) this.kick(t, sp % 8 === 0 ? .7 : .4);
     if (bp === 2 || bp === 6) this.snare(t);
-    this.hh(t, sp % 2 === 0 ? .1 : .05);
+    this.hh(t, sp % 2 === 0 ? .08 : .04);
     if (sp % 2 === 0) this.bn(t, this.bass[bp]);
     if (bp % 2 === 0) this.mn(t, this.mel[bp]);
     if (sp % 4 === 0) this.an(t, this.arp[sp % 8]);
   }
   kick(t, v) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(35, t + .12); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .2); o.connect(g); g.connect(this.mg); o.start(t); o.stop(t + .2); }
-  snare(t) { const b = this.ctx.createBuffer(1, this.ctx.sampleRate * .1, this.ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = this.ctx.createBufferSource(); n.buffer = b; const g = this.ctx.createGain(); g.gain.setValueAtTime(.3, t); g.gain.exponentialRampToValueAtTime(.001, t + .1); const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1000; n.connect(f); f.connect(g); g.connect(this.mg); n.start(t); n.stop(t + .1); }
+  snare(t) { const b = this.ctx.createBuffer(1, this.ctx.sampleRate * .1, this.ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = this.ctx.createBufferSource(); n.buffer = b; const g = this.ctx.createGain(); g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .1); const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1000; n.connect(f); f.connect(g); g.connect(this.mg); n.start(t); n.stop(t + .1); }
   hh(t, v) { const b = this.ctx.createBuffer(1, this.ctx.sampleRate * .03, this.ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = this.ctx.createBufferSource(); n.buffer = b; const g = this.ctx.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .03); const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 7000; n.connect(f); f.connect(g); g.connect(this.mg); n.start(t); n.stop(t + .03); }
-  bn(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = f; g.gain.setValueAtTime(.15, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .8); const fl = this.ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 300; o.connect(fl); fl.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi); }
-  mn(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(.04, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .7); const fl = this.ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 1500; o.connect(fl); fl.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi); }
-  an(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.03, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .4); o.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi * .5); }
-  playJumpSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(250, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(500, this.ctx.currentTime + .1); g.gain.setValueAtTime(.12, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .12); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .12); }
-  playLandSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(180, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + .1); g.gain.setValueAtTime(.2, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .15); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .15); }
-  playDeathSound() { if (!this.ctx || this.muted) return; for (let i = 0; i < 5; i++) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(400 - i * 60, this.ctx.currentTime + i * .08); g.gain.setValueAtTime(.12, this.ctx.currentTime + i * .08); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + i * .08 + .15); o.connect(g); g.connect(this.mg); o.start(this.ctx.currentTime + i * .08); o.stop(this.ctx.currentTime + i * .08 + .15); } }
-  playDashSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(400, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + .12); g.gain.setValueAtTime(.1, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .15); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .15); }
-  toggleMute() { this.muted = !this.muted; if (this.mg) this.mg.gain.value = this.muted ? 0 : .3; return this.muted; }
+  bn(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = f; g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .8); const fl = this.ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 300; o.connect(fl); fl.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi); }
+  mn(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(.03, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .7); const fl = this.ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 1500; o.connect(fl); fl.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi); }
+  an(t, f) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.02, t); g.gain.exponentialRampToValueAtTime(.001, t + this.bi * .4); o.connect(g); g.connect(this.mg); o.start(t); o.stop(t + this.bi * .5); }
+  playJumpSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(250, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(500, this.ctx.currentTime + .1); g.gain.setValueAtTime(.1, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .12); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .12); }
+  playLandSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(180, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + .1); g.gain.setValueAtTime(.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .15); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .15); }
+  playDeathSound() { if (!this.ctx || this.muted) return; for (let i = 0; i < 5; i++) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(400 - i * 60, this.ctx.currentTime + i * .08); g.gain.setValueAtTime(.1, this.ctx.currentTime + i * .08); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + i * .08 + .15); o.connect(g); g.connect(this.mg); o.start(this.ctx.currentTime + i * .08); o.stop(this.ctx.currentTime + i * .08 + .15); } }
+  playDashSound() { if (!this.ctx || this.muted) return; const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(400, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + .12); g.gain.setValueAtTime(.08, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + .15); o.connect(g); g.connect(this.mg); o.start(); o.stop(this.ctx.currentTime + .15); }
+  toggleMute() { this.muted = !this.muted; if (this.mg) this.mg.gain.value = this.muted ? 0 : .25; return this.muted; }
 }
 
 init();
