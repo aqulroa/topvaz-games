@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a2e"/>
+      <stop offset="100%" stop-color="#1a0a3e"/>
+    </linearGradient>
+    <linearGradient id="lava" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff4400"/>
+      <stop offset="100%" stop-color="#ff2200"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#sky)"/>
+  <rect y="150" width="300" height="50" fill="url(#lava)"/>
+  <ellipse cx="80" cy="148" rx="40" ry="8" fill="#ff6600" opacity="0.6"/>
+  <ellipse cx="200" cy="148" rx="50" ry="10" fill="#ff6600" opacity="0.6"/>
+  <rect x="50" y="110" width="60" height="38" rx="4" fill="#ff3333"/>
+  <rect x="55" y="100" width="20" height="15" rx="2" fill="#333"/>
+  <rect x="60" y="102" width="12" height="10" rx="1" fill="#88ccff" opacity="0.7"/>
+  <circle cx="55" cy="145" r="5" fill="#111"/>
+  <circle cx="105" cy="145" r="5" fill="#111"/>
+  <rect x="170" y="105" width="70" height="43" rx="4" fill="#3366ff"/>
+  <rect x="215" y="95" width="22" height="16" rx="2" fill="#333"/>
+  <rect x="220" y="97" width="14" height="11" rx="1" fill="#88ccff" opacity="0.7"/>
+  <circle cx="175" cy="145" r="5" fill="#111"/>
+  <circle cx="235" cy="145" r="5" fill="#111"/>
+  <circle cx="130" cy="85" r="12" fill="#00ff88"/>
+  <rect x="124" y="95" width="12" height="18" rx="3" fill="#00ff88"/>
+  <circle cx="126" cy="82" r="2" fill="#fff"/>
+  <circle cx="134" cy="82" r="2" fill="#fff"/>
+  <path d="M125 75 Q130 65 135 75" stroke="#00ff88" fill="none" stroke-width="2"/>
+  <text x="150" y="35" text-anchor="middle" fill="#ff6600" font-family="Arial" font-size="22" font-weight="bold" letter-spacing="2">TRUCK JUMP</text>
+</svg>
