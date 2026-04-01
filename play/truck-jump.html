@@ -497,8 +497,6 @@ function startEndless() {
   clearScene();
 
   player = createPlayer();
-  // Игрок стоит на стартовой платформе
-  player.position.set(0, 3, 0);
   playerVelocity = new THREE.Vector3(0, 0, 0);
   onGround = true;
   currentTruck = null;
@@ -508,18 +506,15 @@ function startEndless() {
   trucksSpawned = 0;
   gameActive = true;
 
-  // Создаём стартовую платформу под игроком
-  const startGeo = new THREE.BoxGeometry(4, 0.5, 6);
-  const startMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.5 });
-  const startPlat = new THREE.Mesh(startGeo, startMat);
-  startPlat.position.set(0, -0.25, 0);
-  startPlat.castShadow = true;
-  startPlat.receiveShadow = true;
-  scene.add(startPlat);
-  trucks.push({ mesh: startPlat, speed: 0, length: 6, width: 4, height: 0.5, color: 0x444444, jumped: false, isPlatform: true });
-
-  // Спавним грузовики ВДАЛИ (-Z), которые едут к игроку
+  // Спавним цепочку грузовиков вперёд (-Z), все едут вперёд
   spawnInitialTrucksEndless();
+
+  // Ставим игрока НА первый грузовик (ближайший к 0)
+  if (trucks.length > 0) {
+    const first = trucks[0];
+    player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
+    currentTruck = first;
+  }
 
   document.getElementById('level-display').textContent = 'БЕСКОНЕЧНЫЙ';
   document.getElementById('progress-display').textContent = '';
@@ -529,7 +524,7 @@ function startEndless() {
 }
 
 function spawnInitialTrucksEndless() {
-  let z = -20;
+  let z = -6;
   for (let i = 0; i < 15; i++) {
     const lane = Math.floor(Math.random() * LANE_COUNT) - Math.floor(LANE_COUNT / 2);
     const x = lane * LANE_WIDTH;
@@ -539,7 +534,7 @@ function spawnInitialTrucksEndless() {
 
     const truck = createTruck(x, z, length, speed, color);
     trucks.push(truck);
-    z -= length / 2 + 5 + Math.random() * 6 + length / 2;
+    z -= length / 2 + 4 + Math.random() * 4 + length / 2;
     trucksSpawned++;
   }
 }
@@ -548,7 +543,7 @@ function spawnNextTruckEndless() {
   // Находим самый дальний грузовик (самый отрицательный Z)
   let minZ = 0;
   for (const t of trucks) {
-    if (!t.isPlatform && t.mesh.position.z < minZ) minZ = t.mesh.position.z;
+    if (t.mesh.position.z < minZ) minZ = t.mesh.position.z;
   }
 
   const lane = Math.floor(Math.random() * LANE_COUNT) - Math.floor(LANE_COUNT / 2);
@@ -557,7 +552,7 @@ function spawnNextTruckEndless() {
   const color = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
   const speed = 5 + Math.random() * 7;
 
-  const z = minZ - length / 2 - 5 - Math.random() * 8;
+  const z = minZ - length / 2 - 4 - Math.random() * 6;
   const truck = createTruck(x, z, length, speed, color);
   trucks.push(truck);
   trucksSpawned++;
@@ -575,7 +570,6 @@ function startLevel(levelIdx) {
   clearScene();
 
   player = createPlayer();
-  player.position.set(0, 3, 0);
   playerVelocity = new THREE.Vector3(0, 0, 0);
   onGround = true;
   currentTruck = null;
@@ -586,17 +580,14 @@ function startLevel(levelIdx) {
   levelTrucksTotal = level.trucks;
   gameActive = true;
 
-  // Стартовая платформа
-  const startGeo = new THREE.BoxGeometry(4, 0.5, 6);
-  const startMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.5 });
-  const startPlat = new THREE.Mesh(startGeo, startMat);
-  startPlat.position.set(0, -0.25, 0);
-  startPlat.castShadow = true;
-  startPlat.receiveShadow = true;
-  scene.add(startPlat);
-  trucks.push({ mesh: startPlat, speed: 0, length: 6, width: 4, height: 0.5, color: 0x444444, jumped: false, isPlatform: true });
-
   spawnLevelTrucks(level);
+
+  // Ставим игрока на первый грузовик
+  if (trucks.length > 0) {
+    const first = trucks[0];
+    player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
+    currentTruck = first;
+  }
 
   document.getElementById('level-display').textContent = `Уровень ${levelIdx + 1}: ${level.name}`;
   document.getElementById('progress-display').textContent = `0 / ${level.trucks}`;
@@ -607,7 +598,7 @@ function startLevel(levelIdx) {
 
 function spawnLevelTrucks(level) {
   const lanes = level.lanes;
-  let z = -20;
+  let z = -6;
   for (let i = 0; i < level.trucks; i++) {
     const lane = lanes === 1 ? 0 : (Math.floor(Math.random() * lanes) - Math.floor(lanes / 2));
     const x = lane * LANE_WIDTH;
@@ -837,8 +828,9 @@ function update() {
   playerVelocity.y += GRAVITY * delta;
 
   // Если стоим на грузовике — добавляем его скорость к игроку
-  if (onGround && currentTruck && !currentTruck.isPlatform) {
-    playerVelocity.z += currentTruck.speed;
+  // (как в Clustertruck — игрок движется вместе с грузовиком)
+  if (onGround && currentTruck) {
+    playerVelocity.z -= currentTruck.speed;
   }
 
   player.position.add(playerVelocity.clone().multiplyScalar(delta));
@@ -896,27 +888,25 @@ function update() {
     if (comboTimer <= 0) comboCount = 0;
   }
 
-  // Обновляем грузовики — все едут +Z (отдали от спавна, к камере, за спину)
+  // Обновляем грузовики — все едут ВПЕРЁД (-Z)
   for (let i = trucks.length - 1; i >= 0; i--) {
     const t = trucks[i];
-    t.mesh.position.z += t.speed * delta;
+    t.mesh.position.z -= t.speed * delta;
 
-    // Удаляем ушедшие ЗА спину игрока (прошли мимо, ушли в +Z)
-    if (!t.isPlatform && t.mesh.position.z > player.position.z + 40) {
+    // Удаляем ушедшие далеко ВПЕРЁД (-Z)
+    if (t.mesh.position.z < player.position.z - 80) {
       scene.remove(t.mesh);
       trucks.splice(i, 1);
       if (currentTruck === t) currentTruck = null;
     }
   }
 
-  // Спавним новые в бесконечном режиме — грузовики появляются ВДАЛИ (-Z)
+  // Спавним новые в бесконечном режиме
   if (gameMode === 'endless') {
-    // Находим самый дальний грузовик
     let minZ = 0;
     for (const t of trucks) {
-      if (!t.isPlatform && t.mesh.position.z < minZ) minZ = t.mesh.position.z;
+      if (t.mesh.position.z < minZ) minZ = t.mesh.position.z;
     }
-    // Если самый дальний слишком близко — спавним ещё
     if (minZ > player.position.z - 150) {
       spawnNextTruckEndless();
     }
