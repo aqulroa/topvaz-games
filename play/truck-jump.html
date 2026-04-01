@@ -322,12 +322,7 @@ function createTruck(x, z, length, baseSpeed, lane) {
     height: TH + 0.3,
     lane,
     speed: baseSpeed,
-    // Физика: поворот как у машины
-    angle: 0,
-    turnSpeed: 0,
     targetX: x,
-    // Для коллизий
-    collided: false,
     jumped: false,
   };
 }
@@ -579,26 +574,21 @@ function checkTruckSideCollision() {
 
 function updateTrucks(dt) {
   for (const t of trucks) {
-    // Плавный поворот к целевой полосе
+    // Плавное смещение к целевой полосе
     const dx = t.targetX - t.mesh.position.x;
-    const turnRate = 1.5;
-    const desiredAngle = Math.atan2(dx, 10);
-    t.angle += (desiredAngle - t.angle) * turnRate * dt;
-    t.angle = Math.max(-0.3, Math.min(0.3, t.angle));
+    t.mesh.position.x += dx * 1.5 * dt;
 
-    // Двигаем вперёд с поворотом
-    t.mesh.position.x += Math.sin(t.angle) * t.speed * dt;
-    t.mesh.position.z -= Math.cos(t.angle) * t.speed * dt;
-    t.mesh.rotation.y = t.angle;
-
-    // Ограничиваем дорогу
-    t.mesh.position.x = Math.max(-ROAD_W/2, Math.min(ROAD_W/2, t.mesh.position.x));
+    // Двигаем вперёд
+    t.mesh.position.z -= t.speed * dt;
 
     // Случайная смена полосы
     if (Math.random() < dt * 0.15) {
       const newLane = Math.floor(Math.random() * 3);
       t.targetX = LANE_X[newLane];
     }
+
+    // Ограничиваем дорогу
+    t.mesh.position.x = Math.max(-ROAD_W/2, Math.min(ROAD_W/2, t.mesh.position.x));
   }
 
   // Столкновения грузовиков
@@ -614,17 +604,14 @@ function updateTrucks(dt) {
       const overlapZ = (ahl + bhl) - Math.abs(az - bz);
 
       if (overlapX > 0 && overlapZ > 0) {
-        const push = 2;
         if (overlapX < overlapZ) {
           const dir = ax > bx ? 1 : -1;
           a.targetX += dir * 3;
           b.targetX -= dir * 3;
-          a.speed *= 0.95;
-          b.speed *= 0.95;
         } else {
           const dir = az > bz ? 1 : -1;
-          a.speed += dir * 1;
-          b.speed -= dir * 1;
+          a.speed += dir * 0.5;
+          b.speed -= dir * 0.5;
         }
       }
     }
@@ -662,11 +649,9 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
-      // Импульс вперёд при прыжке
+      // При прыжке: сохраняем скорость грузовика + небольшой импульс вперёд
       if (ct) {
-        pv.z = ct.mesh.position.z - (player.position.z + ct.speed * dt) - 2;
-        pv.z = -ct.speed - 2;
-        pv.x = ct.speed * Math.sin(ct.angle) * 0.3;
+        pv.z = -ct.speed - 1.5;
       }
       ct = null;
       audio.playJumpSound();
@@ -677,8 +662,7 @@ function update() {
 
   // Dash
   if (keys['ShiftLeft'] && onGround) {
-    const dd = md.length() > 0 ? md.clone() : fwd.clone();
-    pv.add(dd.multiplyScalar(DF));
+    pv.z -= DF;
     audio.playDashSound();
     createParticles(player.position, 0xffcc00, 6);
     keys['ShiftLeft'] = false;
@@ -688,11 +672,14 @@ function update() {
   pv.y += G * dt;
 
   if (onGround && ct) {
-    pv.x = ct.speed * Math.sin(ct.angle) + md.x * MS * 0.5;
-    pv.z = -ct.speed * Math.cos(ct.angle) + md.z * MS * 0.5;
+    // На грузовике: двигаемся вместе с ним
+    pv.x = md.x * MS;
+    pv.z = -ct.speed + md.z * MS;
   } else {
-    pv.x += md.x * MS * 0.05;
-    pv.z += md.z * MS * 0.05;
+    // В воздухе: WASD добавляет управление
+    pv.x += md.x * MS * 0.1;
+    pv.z += md.z * MS * 0.1;
+    // Лёгкое затухание
     pv.x *= 0.98;
   }
 
