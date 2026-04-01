@@ -96,7 +96,9 @@ import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 
 const TW = 3, TH = 2.5;
 const TRUCK_LENGTHS = [10, 12, 14];
-const G = -28, JF = 13, MS = 7, DF = 14;
+const G = -28, JF = 12, MS = 6, DF = 12;
+const ROAD_W = 18;
+const LANE_X = [-6, 0, 6];
 
 const LEVELS = [
   { n: 'Уровень 1', t: 10, s: 7, l: 1 },
@@ -114,7 +116,7 @@ const LEVELS = [
 let scene, camera, renderer, controls, clock;
 let composer;
 let player, pv, onGround;
-let trucks = [], particles = [];
+let trucks = [], particles = [], roadLines = [], finishLine = null;
 let audio, keys = {};
 let mode = 'endless', cLevel = 0, score = 0, best = +localStorage.getItem('tjB') || 0;
 let lj = 0, lt = 0, active = false, ct = null, gameTime = 0;
@@ -123,7 +125,7 @@ function init() {
   clock = new THREE.Clock();
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87CEEB);
-  scene.fog = new THREE.FogExp2(0x87CEEB, 0.004);
+  scene.fog = new THREE.FogExp2(0x87CEEB, 0.003);
   camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(innerWidth, innerHeight);
@@ -174,14 +176,41 @@ function setupPP() {
 }
 
 function createWorld() {
-  const gg = new THREE.PlaneGeometry(400, 1200);
-  const gm = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.95 });
-  const ground = new THREE.Mesh(gg, gm);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -10; ground.position.z = -300;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  // Дорога
+  const roadGeo = new THREE.PlaneGeometry(ROAD_W + 4, 1200, 1, 1);
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.85 });
+  const road = new THREE.Mesh(roadGeo, roadMat);
+  road.rotation.x = -Math.PI / 2;
+  road.position.y = -0.01;
+  road.position.z = -300;
+  road.receiveShadow = true;
+  scene.add(road);
 
+  // Обочины
+  [-1, 1].forEach(side => {
+    const sg = new THREE.PlaneGeometry(2, 1200);
+    const sm = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
+    const s = new THREE.Mesh(sg, sm);
+    s.rotation.x = -Math.PI / 2;
+    s.position.set(side * (ROAD_W / 2 + 3), -0.02, -300);
+    s.receiveShadow = true;
+    scene.add(s);
+  });
+
+  // Разметка - пунктирные линии между полосами
+  for (let i = 0; i < 200; i++) {
+    [-3, 3].forEach(x => {
+      const lg = new THREE.PlaneGeometry(0.15, 3);
+      const lm = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      const l = new THREE.Mesh(lg, lm);
+      l.rotation.x = -Math.PI / 2;
+      l.position.set(x, 0.01, -i * 6);
+      scene.add(l);
+      roadLines.push(l);
+    });
+  }
+
+  // Облака
   for (let i = 0; i < 30; i++) {
     const cg = new THREE.SphereGeometry(5 + Math.random() * 10, 8, 6);
     const cm = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, roughness: 1 });
@@ -191,6 +220,7 @@ function createWorld() {
     scene.add(c);
   }
 
+  // Здания
   for (let i = 0; i < 60; i++) {
     const h = 5 + Math.random() * 25;
     const bg = new THREE.BoxGeometry(3+Math.random()*8, h, 3+Math.random()*8);
@@ -203,11 +233,11 @@ function createWorld() {
   }
 }
 
-function createTruckMesh(x, z, length) {
+function createTruckMesh(length) {
   const group = new THREE.Group();
+  const trailerLen = length - 2.5;
 
   // Trailer
-  const trailerLen = length - 2.5;
   const tg = new THREE.BoxGeometry(TW, TH, trailerLen);
   const tm = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.5, metalness: 0.3 });
   const trailer = new THREE.Mesh(tg, tm);
@@ -276,26 +306,29 @@ function createTruckMesh(x, z, length) {
     group.add(w);
   });
 
-  group.position.set(x, 0, z);
   scene.add(group);
   return group;
 }
 
 function createTruck(x, z, length, baseSpeed, lane) {
-  const mesh = createTruckMesh(x, z, length);
+  const mesh = createTruckMesh(length);
+  mesh.position.set(x, 0, z);
+  mesh.rotation.y = 0;
+
   return {
     mesh,
     length,
     width: TW,
     height: TH + 0.3,
     lane,
-    // Собственная физика грузовика
-    vx: (Math.random() - 0.5) * 2, // боковая скорость
-    vz: -baseSpeed, // скорость вперёд (отрицательная = к -Z)
+    speed: baseSpeed,
+    // Физика: поворот как у машины
+    angle: 0,
+    turnSpeed: 0,
+    targetX: x,
+    // Для коллизий
+    collided: false,
     jumped: false,
-    // Целевая полоса для дрейфа
-    targetLane: lane,
-    laneChangeTimer: Math.random() * 5,
   };
 }
 
@@ -341,6 +374,7 @@ function clearScene() {
   particles.forEach(p => scene.remove(p.mesh));
   particles = [];
   if (player) scene.remove(player);
+  if (finishLine) { scene.remove(finishLine); finishLine = null; }
   ct = null;
 }
 
@@ -355,14 +389,15 @@ function startEndless() {
   score = 0; lj = 0; lt = 999;
   gameTime = 0; active = true;
 
+  // Много грузовиков - кластер
   let z = -6;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 25; i++) {
     const lane = Math.floor(Math.random() * 3) - 1;
     const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
     const spd = 6 + Math.random() * 5;
-    const truck = createTruck(lane * 5, z, len, spd, lane);
+    const truck = createTruck(LANE_X[lane + 1], z, len, spd, lane);
     trucks.push(truck);
-    z -= len/2 + 4 + Math.random()*3 + len/2;
+    z -= len/2 + 3 + Math.random()*2 + len/2;
   }
 
   const first = trucks[0];
@@ -393,10 +428,19 @@ function startLevel(idx) {
     const lane = lv.l === 1 ? 0 : (Math.floor(Math.random() * lv.l) - Math.floor(lv.l / 2));
     const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
     const spd = lv.s * (0.85 + Math.random() * 0.3);
-    const truck = createTruck(lane * 5, z, len, spd, lane);
+    const truck = createTruck(LANE_X[lane + 1], z, len, spd, lane);
     trucks.push(truck);
-    z -= len/2 + lv.l === 1 ? 5 : 3.5 + len/2;
+    z -= len/2 + 3 + len/2;
   }
+
+  // Финишная платформа
+  const fg = new THREE.BoxGeometry(ROAD_W + 4, 0.5, 8);
+  const fm = new THREE.MeshStandardMaterial({ color: 0x44ff44, emissive: 0x22aa22, emissiveIntensity: 0.3, roughness: 0.5 });
+  finishLine = new THREE.Mesh(fg, fm);
+  finishLine.position.set(0, 0.25, z - 4);
+  finishLine.castShadow = true;
+  finishLine.receiveShadow = true;
+  scene.add(finishLine);
 
   const first = trucks[0];
   player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
@@ -500,30 +544,64 @@ function checkLanding() {
   return null;
 }
 
+// Коллизия игрока с боком грузовика
+function checkTruckSideCollision() {
+  const pp = player.position;
+  const pr = 0.4;
+
+  for (const t of trucks) {
+    if (t === ct) continue;
+    const tp = t.mesh.position;
+    const hl = t.length / 2;
+    const hw = t.width / 2;
+    const top = tp.y + t.height;
+    const pb = pp.y - 0.3;
+
+    // Проверяем боковое столкновение (игрок в воздухе, на уровне корпуса грузовика)
+    if (pb >= top - 1.5 && pb <= top + 0.5) {
+      if (Math.abs(pp.x - tp.x) < hw + pr && Math.abs(pp.z - tp.z) < hl + pr) {
+        // Отталкиваем игрока
+        const dx = pp.x - tp.x;
+        const dz = pp.z - tp.z;
+        if (Math.abs(dx) > Math.abs(dz)) {
+          pv.x = Math.sign(dx) * 5;
+        } else {
+          pv.z = Math.sign(dz) * 5;
+        }
+        pv.y = 3;
+        createParticles(player.position, 0xcccccc, 5);
+      }
+    }
+  }
+}
+
 // ===================== TRUCK PHYSICS =====================
 
 function updateTrucks(dt) {
   for (const t of trucks) {
-    // Дрейф между полосами
-    t.laneChangeTimer -= dt;
-    if (t.laneChangeTimer <= 0) {
-      t.targetLane = Math.floor(Math.random() * 3) - 1;
-      t.laneChangeTimer = 3 + Math.random() * 5;
+    // Плавный поворот к целевой полосе
+    const dx = t.targetX - t.mesh.position.x;
+    const turnRate = 1.5;
+    const desiredAngle = Math.atan2(dx, 10);
+    t.angle += (desiredAngle - t.angle) * turnRate * dt;
+    t.angle = Math.max(-0.3, Math.min(0.3, t.angle));
+
+    // Двигаем вперёд с поворотом
+    t.mesh.position.x += Math.sin(t.angle) * t.speed * dt;
+    t.mesh.position.z -= Math.cos(t.angle) * t.speed * dt;
+    t.mesh.rotation.y = t.angle;
+
+    // Ограничиваем дорогу
+    t.mesh.position.x = Math.max(-ROAD_W/2, Math.min(ROAD_W/2, t.mesh.position.x));
+
+    // Случайная смена полосы
+    if (Math.random() < dt * 0.15) {
+      const newLane = Math.floor(Math.random() * 3);
+      t.targetX = LANE_X[newLane];
     }
-    const targetX = t.targetLane * 5;
-    const dx = targetX - t.mesh.position.x;
-    t.vx += dx * 0.3 * dt;
-    t.vx *= 0.95;
-
-    // Двигаем грузовик
-    t.mesh.position.x += t.vx * dt;
-    t.mesh.position.z += t.vz * dt;
-
-    // Ограничиваем X
-    t.mesh.position.x = Math.max(-12, Math.min(12, t.mesh.position.x));
   }
 
-  // Столкновения между грузовиками
+  // Столкновения грузовиков
   for (let i = 0; i < trucks.length; i++) {
     for (let j = i + 1; j < trucks.length; j++) {
       const a = trucks[i], b = trucks[j];
@@ -536,18 +614,17 @@ function updateTrucks(dt) {
       const overlapZ = (ahl + bhl) - Math.abs(az - bz);
 
       if (overlapX > 0 && overlapZ > 0) {
-        // Столкновение!
-        const pushStrength = 3;
+        const push = 2;
         if (overlapX < overlapZ) {
-          // Боковое столкновение
           const dir = ax > bx ? 1 : -1;
-          a.vx += dir * pushStrength;
-          b.vx -= dir * pushStrength;
+          a.targetX += dir * 3;
+          b.targetX -= dir * 3;
+          a.speed *= 0.95;
+          b.speed *= 0.95;
         } else {
-          // Лобовое/заднее столкновение
           const dir = az > bz ? 1 : -1;
-          a.vz += dir * pushStrength * 0.5;
-          b.vz -= dir * pushStrength * 0.5;
+          a.speed += dir * 1;
+          b.speed -= dir * 1;
         }
       }
     }
@@ -568,7 +645,6 @@ function update() {
   gameTime += dt;
   score += dt * 10;
 
-  // Camera direction
   const fwd = new THREE.Vector3();
   camera.getWorldDirection(fwd);
   fwd.y = 0; fwd.normalize();
@@ -586,10 +662,11 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
-      // При прыжке: сохраняем скорость грузовика + импульс вперёд
+      // Импульс вперёд при прыжке
       if (ct) {
-        pv.z = ct.vz - 4; // ct.vz отрицательная, -4 это вперёд
-        pv.x = ct.vx;
+        pv.z = ct.mesh.position.z - (player.position.z + ct.speed * dt) - 2;
+        pv.z = -ct.speed - 2;
+        pv.x = ct.speed * Math.sin(ct.angle) * 0.3;
       }
       ct = null;
       audio.playJumpSound();
@@ -611,14 +688,12 @@ function update() {
   pv.y += G * dt;
 
   if (onGround && ct) {
-    // На грузовике: двигаемся вместе с ним
-    pv.x = ct.vx + md.x * MS;
-    pv.z = ct.vz + md.z * MS;
+    pv.x = ct.speed * Math.sin(ct.angle) + md.x * MS * 0.5;
+    pv.z = -ct.speed * Math.cos(ct.angle) + md.z * MS * 0.5;
   } else {
-    // В воздухе: инерция сохраняется, WASD слегка корректирует
-    pv.x += md.x * MS * 0.08;
-    pv.z += md.z * MS * 0.08;
-    pv.x *= 0.99;
+    pv.x += md.x * MS * 0.05;
+    pv.z += md.z * MS * 0.05;
+    pv.x *= 0.98;
   }
 
   player.position.add(pv.clone().multiplyScalar(dt));
@@ -649,6 +724,9 @@ function update() {
     onGround = false;
   }
 
+  // Side collision
+  if (!onGround) checkTruckSideCollision();
+
   // Truck physics
   updateTrucks(dt);
 
@@ -667,11 +745,21 @@ function update() {
     let minZ = 0;
     for (const t of trucks) { if (t.mesh.position.z < minZ) minZ = t.mesh.position.z; }
     if (minZ > player.position.z - 150) {
-      const lane = Math.floor(Math.random() * 3) - 1;
+      const lane = Math.floor(Math.random() * 3);
       const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
       const spd = 6 + Math.random() * 5;
-      const truck = createTruck(lane * 5, minZ - len/2 - 4 - Math.random()*6, len, spd, lane);
+      const truck = createTruck(LANE_X[lane], minZ - len/2 - 3 - Math.random()*3, len, spd, lane - 1);
       trucks.push(truck);
+    }
+  }
+
+  // Check finish line
+  if (mode === 'level' && finishLine) {
+    if (player.position.z < finishLine.position.z + 4 && player.position.z > finishLine.position.z - 4) {
+      if (player.position.y > -2) {
+        completeLevel();
+        return;
+      }
     }
   }
 
@@ -701,7 +789,7 @@ class Audio {
   init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.mg = this.ctx.createGain(); this.mg.gain.value = 0.25;
-    this.cp = this.ctx.createDynamicsCompressor(); this.cp.threshold.value = -20; this.cp.ratio.value = 8;
+    this.cp = new (this.ctx.createDynamicsCompressor)(); this.cp.threshold.value = -20; this.cp.ratio.value = 8;
     this.mg.connect(this.cp); this.cp.connect(this.ctx.destination);
     this.nbt = this.ctx.currentTime + 0.1; this.sched();
   }
