@@ -5,100 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Truck Jump - Cluster Style Game</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
-canvas { display: block; }
-#ui-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 10;
-}
-#score-display {
-  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-  color: #fff; font-size: 28px; font-weight: bold;
-  text-shadow: 0 0 10px rgba(255,100,0,0.8), 0 2px 4px rgba(0,0,0,0.8);
-  letter-spacing: 2px;
-}
-#speed-display {
-  position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-  color: #0ff; font-size: 16px;
-  text-shadow: 0 0 8px rgba(0,255,255,0.6);
-}
-#start-screen {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1628 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 100; pointer-events: all;
-}
-#start-screen h1 {
-  font-size: 72px; color: #ff6600; margin-bottom: 10px;
-  text-shadow: 0 0 30px rgba(255,102,0,0.8), 0 0 60px rgba(255,102,0,0.4);
-  letter-spacing: 4px; animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-#start-screen h2 {
-  font-size: 24px; color: #aaa; margin-bottom: 40px; font-weight: normal;
-}
-#start-screen .controls {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px; padding: 20px 40px; margin-bottom: 40px;
-}
-#start-screen .controls p {
-  color: #ccc; font-size: 16px; margin: 8px 0;
-}
-#start-screen .controls span {
-  color: #ff6600; font-weight: bold;
-}
-#start-btn {
-  background: linear-gradient(135deg, #ff6600, #ff3300);
-  border: none; color: #fff; font-size: 24px; padding: 15px 60px;
-  border-radius: 50px; cursor: pointer; pointer-events: all;
-  transition: all 0.3s; letter-spacing: 2px;
-  box-shadow: 0 0 20px rgba(255,102,0,0.5);
-}
-#start-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 40px rgba(255,102,0,0.8);
-}
-#death-screen {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(255,0,0,0.3); backdrop-filter: blur(5px);
-  display: none; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 100; pointer-events: all;
-}
-#death-screen h1 {
-  font-size: 64px; color: #ff3333; margin-bottom: 20px;
-  text-shadow: 0 0 30px rgba(255,0,0,0.8);
-}
-#death-screen .final-score {
-  font-size: 36px; color: #fff; margin-bottom: 40px;
-}
-#restart-btn {
-  background: linear-gradient(135deg, #ff3333, #cc0000);
-  border: none; color: #fff; font-size: 22px; padding: 15px 50px;
-  border-radius: 50px; cursor: pointer; pointer-events: all;
-  transition: all 0.3s; letter-spacing: 2px;
-}
-#restart-btn:hover { transform: scale(1.1); }
-#combo-display {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  color: #ffcc00; font-size: 48px; font-weight: bold; opacity: 0;
-  text-shadow: 0 0 20px rgba(255,204,0,0.8);
-  transition: opacity 0.3s, transform 0.3s;
-}
-#combo-display.show {
-  opacity: 1; transform: translate(-50%, -60%);
-}
-#music-toggle {
-  position: absolute; top: 20px; right: 20px;
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-  color: #fff; font-size: 24px; width: 50px; height: 50px;
-  border-radius: 50%; cursor: pointer; pointer-events: all;
-  display: flex; align-items: center; justify-content: center;
-}
-#music-toggle:hover { background: rgba(255,255,255,0.2); }
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#000;font-family:'Segoe UI',Arial,sans-serif}
+canvas{display:block}
+#ui-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#score-display{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:32px;font-weight:bold;text-shadow:0 0 10px rgba(255,100,0,.8),0 2px 4px rgba(0,0,0,.8);letter-spacing:3px}
+#speed-display{position:absolute;top:65px;left:50%;transform:translateX(-50%);color:#0ff;font-size:16px;text-shadow:0 0 8px rgba(0,255,255,.6)}
+#distance-display{position:absolute;top:90px;left:50%;transform:translateX(-50%);color:#ff8;font-size:14px;text-shadow:0 0 6px rgba(255,255,100,.5)}
+#start-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 50%,#0a1628 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#start-screen h1{font-size:72px;color:#ff6600;margin-bottom:10px;text-shadow:0 0 30px rgba(255,102,0,.8),0 0 60px rgba(255,102,0,.4);letter-spacing:4px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+#start-screen h2{font-size:24px;color:#aaa;margin-bottom:40px;font-weight:normal}
+#start-screen .controls{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 40px;margin-bottom:40px}
+#start-screen .controls p{color:#ccc;font-size:16px;margin:8px 0}
+#start-screen .controls span{color:#ff6600;font-weight:bold}
+#start-btn{background:linear-gradient(135deg,#ff6600,#ff3300);border:none;color:#fff;font-size:24px;padding:15px 60px;border-radius:50px;cursor:pointer;pointer-events:all;transition:all .3s;letter-spacing:2px;box-shadow:0 0 20px rgba(255,102,0,.5)}
+#start-btn:hover{transform:scale(1.1);box-shadow:0 0 40px rgba(255,102,0,.8)}
+#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,.3);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#death-screen h1{font-size:64px;color:#ff3333;margin-bottom:20px;text-shadow:0 0 30px rgba(255,0,0,.8)}
+#death-screen .final-score{font-size:36px;color:#fff;margin-bottom:10px}
+#death-screen .best-score{font-size:18px;color:#ff8;margin-bottom:30px}
+#restart-btn{background:linear-gradient(135deg,#ff3333,#cc0000);border:none;color:#fff;font-size:22px;padding:15px 50px;border-radius:50px;cursor:pointer;pointer-events:all;transition:all .3s;letter-spacing:2px}
+#restart-btn:hover{transform:scale(1.1)}
+#combo-display{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);color:#ffcc00;font-size:48px;font-weight:bold;opacity:0;text-shadow:0 0 20px rgba(255,204,0,.8);transition:opacity .3s,transform .3s}
+#combo-display.show{opacity:1;transform:translate(-50%,-60%)}
+#music-toggle{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:24px;width:50px;height:50px;border-radius:50%;cursor:pointer;pointer-events:all;display:flex;align-items:center;justify-content:center}
+#music-toggle:hover{background:rgba(255,255,255,.2)}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;pointer-events:none}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.5)}
+#crosshair::before{width:2px;height:20px;left:9px;top:0}
+#crosshair::after{width:20px;height:2px;top:9px;left:0}
+#jump-indicator{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:14px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -118,26 +55,38 @@ canvas { display: block; }
 <div id="death-screen">
   <h1>УПАЛ!</h1>
   <div class="final-score">Счёт: <span id="final-score-value">0</span></div>
+  <div class="best-score">Лучший: <span id="best-score-value">0</span></div>
   <button id="restart-btn">ЗАНОВО</button>
 </div>
 
 <div id="ui-overlay">
   <div id="score-display">0</div>
   <div id="speed-display">x1.0</div>
+  <div id="distance-display">0m</div>
   <div id="combo-display">COMBO x2!</div>
-  <button id="music-toggle">🔊</button>
+  <div id="crosshair"></div>
+  <div id="jump-indicator">Нажми на экран чтобы захватить мышь</div>
+  <button id="music-toggle">&#128266;</button>
 </div>
 
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
   }
 }
 </script>
 
 <script type="module">
 import * as THREE from 'three';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 
 // ============ AUDIO ENGINE ============
 class AudioEngine {
@@ -151,20 +100,26 @@ class AudioEngine {
     this.beatCount = 0;
     this.bassNotes = [55, 55, 73.42, 65.41, 55, 82.41, 73.42, 55];
     this.melodyNotes = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 349.23];
+    this.arpNotes = [440, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25];
   }
 
   init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.value = 0.4;
-    this.masterGain.connect(this.ctx.destination);
+    this.masterGain.gain.value = 0.35;
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -20;
+    this.compressor.knee.value = 10;
+    this.compressor.ratio.value = 8;
+    this.masterGain.connect(this.compressor);
+    this.compressor.connect(this.ctx.destination);
     this.nextBeatTime = this.ctx.currentTime + 0.1;
     this.playing = true;
     this.schedule();
   }
 
   schedule() {
-    while (this.nextBeatTime < this.ctx.currentTime + 0.2) {
+    while (this.nextBeatTime < this.ctx.currentTime + 0.3) {
       this.playBeat(this.nextBeatTime, this.beatCount);
       this.nextBeatTime += this.beatInterval;
       this.beatCount++;
@@ -175,138 +130,151 @@ class AudioEngine {
   playBeat(time, beat) {
     if (this.muted) return;
     const barPos = beat % 8;
+    const sixteenthPos = beat % 16;
 
-    // Kick on 0, 4
-    if (barPos === 0 || barPos === 4) {
-      this.playKick(time);
+    if (sixteenthPos === 0 || sixteenthPos === 4 || sixteenthPos === 8 || sixteenthPos === 12) {
+      this.playKick(time, sixteenthPos % 8 === 0 ? 0.9 : 0.6);
     }
-    // Snare on 2, 6
     if (barPos === 2 || barPos === 6) {
       this.playSnare(time);
     }
-    // Hi-hat every beat
-    this.playHiHat(time, barPos % 2 === 0 ? 0.15 : 0.08);
-
-    // Bass every beat
-    this.playBass(time, this.bassNotes[barPos]);
-
-    // Melody on some beats
+    this.playHiHat(time, sixteenthPos % 2 === 0 ? 0.12 : 0.06);
+    if (sixteenthPos % 2 === 0) {
+      this.playBass(time, this.bassNotes[barPos]);
+    }
     if (barPos % 2 === 0) {
       this.playMelody(time, this.melodyNotes[barPos]);
     }
+    if (sixteenthPos % 4 === 0) {
+      this.playArp(time, this.arpNotes[sixteenthPos % 8]);
+    }
   }
 
-  playKick(time) {
+  playKick(time, vol) {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(30, time + 0.15);
-    gain.gain.setValueAtTime(0.8, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+    osc.frequency.setValueAtTime(160, time);
+    osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
+    gain.gain.setValueAtTime(vol, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
     osc.connect(gain);
     gain.connect(this.masterGain);
     osc.start(time);
-    osc.stop(time + 0.2);
+    osc.stop(time + 0.25);
   }
 
   playSnare(time) {
-    const bufferSize = this.ctx.sampleRate * 0.1;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const bufSize = this.ctx.sampleRate * 0.12;
+    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
     const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.4, time);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 1000;
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(this.masterGain);
+    noise.buffer = buf;
+    const ng = this.ctx.createGain();
+    ng.gain.setValueAtTime(0.35, time);
+    ng.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+    const filt = this.ctx.createBiquadFilter();
+    filt.type = 'highpass';
+    filt.frequency.value = 1200;
+    noise.connect(filt);
+    filt.connect(ng);
+    ng.connect(this.masterGain);
     noise.start(time);
-    noise.stop(time + 0.1);
+    noise.stop(time + 0.12);
 
     const osc = this.ctx.createOscillator();
-    const oscGain = this.ctx.createGain();
+    const og = this.ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(200, time);
-    osc.frequency.exponentialRampToValueAtTime(100, time + 0.05);
-    oscGain.gain.setValueAtTime(0.3, time);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-    osc.connect(oscGain);
-    oscGain.connect(this.masterGain);
+    osc.frequency.setValueAtTime(180, time);
+    osc.frequency.exponentialRampToValueAtTime(80, time + 0.06);
+    og.gain.setValueAtTime(0.25, time);
+    og.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+    osc.connect(og);
+    og.connect(this.masterGain);
     osc.start(time);
     osc.stop(time + 0.08);
   }
 
   playHiHat(time, vol) {
-    const bufferSize = this.ctx.sampleRate * 0.05;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const bufSize = this.ctx.sampleRate * 0.04;
+    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
     const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(vol, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 5000;
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
+    noise.buffer = buf;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(vol, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'highpass';
+    f.frequency.value = 6000;
+    noise.connect(f);
+    f.connect(g);
+    g.connect(this.masterGain);
     noise.start(time);
-    noise.stop(time + 0.05);
+    noise.stop(time + 0.04);
   }
 
   playBass(time, freq) {
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const g = this.ctx.createGain();
     osc.type = 'sawtooth';
     osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.2, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.8);
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 400;
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
+    g.gain.setValueAtTime(0.18, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.85);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 350;
+    f.Q.value = 2;
+    osc.connect(f);
+    f.connect(g);
+    g.connect(this.masterGain);
     osc.start(time);
     osc.stop(time + this.beatInterval);
   }
 
   playMelody(time, freq) {
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const g = this.ctx.createGain();
     osc.type = 'square';
     osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.06, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.7);
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 2000;
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
+    g.gain.setValueAtTime(0.05, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.7);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 1800;
+    osc.connect(f);
+    f.connect(g);
+    g.connect(this.masterGain);
     osc.start(time);
     osc.stop(time + this.beatInterval);
+  }
+
+  playArp(time, freq) {
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.04, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.4);
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start(time);
+    osc.stop(time + this.beatInterval * 0.5);
   }
 
   playJumpSound() {
     if (!this.ctx || this.muted) return;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const g = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-    osc.connect(gain);
-    gain.connect(this.masterGain);
+    osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(500, this.ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+    osc.connect(g);
+    g.connect(this.masterGain);
     osc.start();
     osc.stop(this.ctx.currentTime + 0.15);
   }
@@ -314,138 +282,302 @@ class AudioEngine {
   playLandSound() {
     if (!this.ctx || this.muted) return;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const g = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-    osc.connect(gain);
-    gain.connect(this.masterGain);
+    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+    osc.connect(g);
+    g.connect(this.masterGain);
     osc.start();
-    osc.stop(this.ctx.currentTime + 0.15);
+    osc.stop(this.ctx.currentTime + 0.18);
   }
 
   playDeathSound() {
     if (!this.ctx || this.muted) return;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+      const g = this.ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(400 - i * 60, this.ctx.currentTime + i * 0.1);
-      gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.1 + 0.2);
-      osc.connect(gain);
-      gain.connect(this.masterGain);
-      osc.start(this.ctx.currentTime + i * 0.1);
-      osc.stop(this.ctx.currentTime + i * 0.1 + 0.2);
+      osc.frequency.setValueAtTime(500 - i * 70, this.ctx.currentTime + i * 0.08);
+      g.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.08 + 0.2);
+      osc.connect(g);
+      g.connect(this.masterGain);
+      osc.start(this.ctx.currentTime + i * 0.08);
+      osc.stop(this.ctx.currentTime + i * 0.08 + 0.2);
     }
+  }
+
+  playDashSound() {
+    if (!this.ctx || this.muted) return;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.15);
+    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
   }
 
   toggleMute() {
     this.muted = !this.muted;
-    if (this.masterGain) {
-      this.masterGain.gain.value = this.muted ? 0 : 0.4;
-    }
+    if (this.masterGain) this.masterGain.gain.value = this.muted ? 0 : 0.35;
     return this.muted;
   }
 
   setSpeedMultiplier(mult) {
-    this.bpm = 140 * mult;
+    this.bpm = 140 * Math.min(mult, 2.5);
     this.beatInterval = 60 / this.bpm;
   }
 }
 
-// ============ GAME ============
-const TRUCK_COLORS = [0xff3333, 0x3366ff, 0x33cc33, 0xffcc00, 0xff6600, 0xcc33ff, 0x00cccc];
-const TRUCK_WIDTH = 3;
-const TRUCK_HEIGHT = 2;
-const TRUCK_LENGTHS = [8, 10, 12];
-const GRAVITY = -25;
-const JUMP_FORCE = 12;
-const MOVE_SPEED = 8;
-const DASH_FORCE = 15;
-const LANE_COUNT = 4;
-const LANE_WIDTH = 5;
+// ============ LAVA SHADER ============
+const LavaShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    time: { value: 0 },
+    lavaColor1: { value: new THREE.Color(0xff2200) },
+    lavaColor2: { value: new THREE.Color(0xff8800) },
+    lavaColor3: { value: new THREE.Color(0xffcc00) },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    void main() {
+      vUv = uv;
+      vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform float time;
+    uniform vec3 lavaColor1;
+    uniform vec3 lavaColor2;
+    uniform vec3 lavaColor3;
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
 
-let scene, camera, renderer;
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+
+    float fbm(vec2 p) {
+      float v = 0.0, a = 0.5;
+      mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+      for (int i = 0; i < 5; i++) {
+        v += a * noise(p);
+        p = rot * p * 2.0;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    void main() {
+      vec2 uv = vUv * 20.0;
+      float t = time * 0.3;
+
+      float n1 = fbm(uv + vec2(t, t * 0.5));
+      float n2 = fbm(uv * 1.5 + vec2(-t * 0.7, t * 0.8));
+      float n = (n1 + n2) * 0.5;
+
+      vec3 col = mix(lavaColor1, lavaColor2, smoothstep(0.3, 0.6, n));
+      col = mix(col, lavaColor3, smoothstep(0.65, 0.85, n) * 0.6);
+
+      float glow = pow(n, 3.0) * 2.0;
+      col += vec3(1.0, 0.4, 0.1) * glow;
+
+      float dist = length(vUv - 0.5) * 2.0;
+      col *= 1.0 - dist * 0.3;
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `
+};
+
+// ============ GAME ============
+const TRUCK_COLORS = [0xff3333, 0x3366ff, 0x33cc33, 0xffcc00, 0xff6600, 0xcc33ff, 0x00cccc, 0xff6699, 0x66ff66];
+const TRUCK_WIDTH = 3;
+const TRUCK_HEIGHT = 2.2;
+const TRUCK_LENGTHS = [8, 10, 12, 14];
+const GRAVITY = -28;
+const JUMP_FORCE = 13;
+const MOVE_SPEED = 10;
+const DASH_FORCE = 18;
+const LANE_COUNT = 4;
+const LANE_WIDTH = 5.5;
+
+let scene, camera, renderer, controls, clock;
+let composer, bloomPass, vignettePass, fxaaPass, lavaPass;
 let player, playerVelocity, onGround;
 let trucks = [];
-let score = 0;
+let obstacles = [];
+let score = 0, bestScore = parseInt(localStorage.getItem('truckJumpBest') || '0');
 let gameSpeed = 1;
 let gameActive = false;
 let audio;
 let keys = {};
-let mouseX = 0, mouseY = 0;
-let cameraAngleX = 0, cameraAngleY = 0.3;
 let lastTruckZ = 0;
-let comboCount = 0;
-let comboTimer = 0;
+let comboCount = 0, comboTimer = 0;
 let particles = [];
+let lavaMesh, lavaLight;
+let dashCooldown = 0;
+let jumpCount = 0;
+let maxJumps = 2;
 
 function init() {
+  clock = new THREE.Clock();
+
+  // Scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.008);
+  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.006);
 
+  // Camera
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+  camera.position.set(0, 5, 10);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  // Renderer (per fundamentals skill)
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   document.body.appendChild(renderer.domElement);
 
-  // Lights
-  const ambientLight = new THREE.AmbientLight(0x334466, 0.6);
-  scene.add(ambientLight);
+  // Controls (per interaction skill)
+  controls = new PointerLockControls(camera, document.body);
+  controls.addEventListener('lock', () => {
+    document.getElementById('jump-indicator').style.display = 'none';
+  });
+  controls.addEventListener('unlock', () => {
+    if (gameActive) document.getElementById('jump-indicator').style.display = 'block';
+  });
 
-  const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+  setupLighting();
+  setupPostProcessing();
+  createEnvironment();
+  audio = new AudioEngine();
+  setupControls();
+  animate();
+}
+
+function setupLighting() {
+  // Hemisphere for outdoor feel (per lighting skill)
+  const hemiLight = new THREE.HemisphereLight(0x4466aa, 0x221100, 0.4);
+  scene.add(hemiLight);
+
+  // Ambient
+  const ambient = new THREE.AmbientLight(0x334466, 0.5);
+  scene.add(ambient);
+
+  // Directional with shadows
+  const dirLight = new THREE.DirectionalLight(0xffeedd, 1.0);
   dirLight.position.set(10, 30, 10);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width = 2048;
   dirLight.shadow.mapSize.height = 2048;
   dirLight.shadow.camera.near = 0.5;
-  dirLight.shadow.camera.far = 100;
+  dirLight.shadow.camera.far = 80;
   dirLight.shadow.camera.left = -30;
   dirLight.shadow.camera.right = 30;
   dirLight.shadow.camera.top = 30;
   dirLight.shadow.camera.bottom = -30;
+  dirLight.shadow.bias = -0.0001;
+  dirLight.shadow.normalBias = 0.02;
   scene.add(dirLight);
 
-  const pointLight1 = new THREE.PointLight(0xff6600, 2, 50);
-  pointLight1.position.set(-10, 10, -20);
-  scene.add(pointLight1);
+  // Lava light
+  lavaLight = new THREE.PointLight(0xff4400, 4, 60);
+  lavaLight.position.set(0, -2, -30);
+  scene.add(lavaLight);
 
-  const pointLight2 = new THREE.PointLight(0x0066ff, 2, 50);
-  pointLight2.position.set(10, 10, -40);
-  scene.add(pointLight2);
+  // Accent lights
+  const pl1 = new THREE.PointLight(0xff6600, 2, 40);
+  pl1.position.set(-10, 8, -20);
+  scene.add(pl1);
 
-  // Lava ground
-  const lavaGeo = new THREE.PlaneGeometry(200, 1000);
-  const lavaMat = new THREE.MeshStandardMaterial({
-    color: 0xff2200,
-    emissive: 0xff4400,
-    emissiveIntensity: 0.5,
-    roughness: 0.3,
-    metalness: 0.8
+  const pl2 = new THREE.PointLight(0x0066ff, 2, 40);
+  pl2.position.set(10, 8, -50);
+  scene.add(pl2);
+}
+
+function setupPostProcessing() {
+  composer = new EffectComposer(renderer);
+
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  // Bloom
+  bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.8, 0.4, 0.85
+  );
+  composer.addPass(bloomPass);
+
+  // Vignette
+  vignettePass = new ShaderPass(VignetteShader);
+  vignettePass.uniforms['offset'].value = 1.0;
+  vignettePass.uniforms['darkness'].value = 1.2;
+  composer.addPass(vignettePass);
+
+  // FXAA
+  fxaaPass = new ShaderPass(FXAAShader);
+  fxaaPass.material.uniforms['resolution'].value.set(
+    1 / (window.innerWidth * renderer.getPixelRatio()),
+    1 / (window.innerHeight * renderer.getPixelRatio())
+  );
+  composer.addPass(fxaaPass);
+}
+
+function createEnvironment() {
+  // Lava plane with custom shader
+  const lavaGeo = new THREE.PlaneGeometry(200, 800, 64, 64);
+  const lavaMat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      lavaColor1: { value: new THREE.Color(0xff1100) },
+      lavaColor2: { value: new THREE.Color(0xff6600) },
+      lavaColor3: { value: new THREE.Color(0xffaa00) },
+    },
+    vertexShader: LavaShader.vertexShader,
+    fragmentShader: LavaShader.fragmentShader,
   });
-  const lava = new THREE.Mesh(lavaGeo, lavaMat);
-  lava.rotation.x = -Math.PI / 2;
-  lava.position.y = -5;
-  lava.position.z = -200;
-  scene.add(lava);
+  lavaMesh = new THREE.Mesh(lavaGeo, lavaMat);
+  lavaMesh.rotation.x = -Math.PI / 2;
+  lavaMesh.position.y = -6;
+  lavaMesh.position.z = -200;
+  scene.add(lavaMesh);
 
-  // Lava glow
-  const lavaGlow = new THREE.PointLight(0xff4400, 3, 100);
-  lavaGlow.position.set(0, -3, -50);
-  scene.add(lavaGlow);
-
-  audio = new AudioEngine();
-
-  setupControls();
-  animate();
+  // Stars
+  const starsGeo = new THREE.BufferGeometry();
+  const starsPos = new Float32Array(2000 * 3);
+  for (let i = 0; i < 2000; i++) {
+    starsPos[i * 3] = (Math.random() - 0.5) * 400;
+    starsPos[i * 3 + 1] = 50 + Math.random() * 150;
+    starsPos[i * 3 + 2] = (Math.random() - 0.5) * 600;
+  }
+  starsGeo.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+  const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, sizeAttenuation: true });
+  scene.add(new THREE.Points(starsGeo, starsMat));
 }
 
 function createTruck(z) {
@@ -456,12 +588,12 @@ function createTruck(z) {
 
   const group = new THREE.Group();
 
-  // Truck body
+  // Cargo body (per geometry skill - BoxGeometry)
   const bodyGeo = new THREE.BoxGeometry(TRUCK_WIDTH, TRUCK_HEIGHT, length);
   const bodyMat = new THREE.MeshStandardMaterial({
     color: color,
-    roughness: 0.4,
-    metalness: 0.6
+    roughness: 0.35,
+    metalness: 0.65,
   });
   const body = new THREE.Mesh(bodyGeo, bodyMat);
   body.position.y = TRUCK_HEIGHT / 2;
@@ -469,157 +601,240 @@ function createTruck(z) {
   body.receiveShadow = true;
   group.add(body);
 
+  // Cargo lines
+  const lineGeo = new THREE.BoxGeometry(TRUCK_WIDTH + 0.05, 0.08, length + 0.05);
+  const lineMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.4 });
+  [0.3, 0.6].forEach(t => {
+    const line = new THREE.Mesh(lineGeo, lineMat);
+    line.position.y = TRUCK_HEIGHT * t;
+    group.add(line);
+  });
+
   // Cabin
-  const cabinGeo = new THREE.BoxGeometry(TRUCK_WIDTH - 0.5, TRUCK_HEIGHT * 0.8, 2);
+  const cabinGeo = new THREE.BoxGeometry(TRUCK_WIDTH - 0.4, TRUCK_HEIGHT * 0.7, 2.2);
   const cabinMat = new THREE.MeshStandardMaterial({
-    color: 0x333333,
-    roughness: 0.3,
-    metalness: 0.7
+    color: 0x2a2a2a,
+    roughness: 0.25,
+    metalness: 0.75,
   });
   const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-  cabin.position.set(0, TRUCK_HEIGHT + 0.4, length / 2 - 1);
+  cabin.position.set(0, TRUCK_HEIGHT + 0.35, length / 2 - 1.1);
   cabin.castShadow = true;
   group.add(cabin);
 
   // Windshield
-  const windshieldGeo = new THREE.PlaneGeometry(TRUCK_WIDTH - 1, 1);
+  const windshieldGeo = new THREE.PlaneGeometry(TRUCK_WIDTH - 0.8, 0.9);
   const windshieldMat = new THREE.MeshStandardMaterial({
     color: 0x88ccff,
     emissive: 0x224466,
     emissiveIntensity: 0.3,
-    roughness: 0.1,
-    metalness: 0.9,
+    roughness: 0.05,
+    metalness: 0.95,
     transparent: true,
-    opacity: 0.7
+    opacity: 0.6,
   });
   const windshield = new THREE.Mesh(windshieldGeo, windshieldMat);
-  windshield.position.set(0, TRUCK_HEIGHT + 0.6, length / 2 - 0.01);
+  windshield.position.set(0, TRUCK_HEIGHT + 0.5, length / 2 - 0.01);
   group.add(windshield);
 
-  // Wheels
-  const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 16);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+  // Roof deflector
+  const deflectorGeo = new THREE.BoxGeometry(TRUCK_WIDTH - 0.6, 0.3, 1.5);
+  const deflector = new THREE.Mesh(deflectorGeo, cabinMat);
+  deflector.position.set(0, TRUCK_HEIGHT + 0.85, length / 2 - 1.1);
+  group.add(deflector);
+
+  // Wheels (per geometry skill - CylinderGeometry)
+  const wheelGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.35, 16);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.85, metalness: 0.2 });
   const wheelPositions = [
-    [-TRUCK_WIDTH / 2 - 0.15, 0.5, length / 2 - 2],
-    [TRUCK_WIDTH / 2 + 0.15, 0.5, length / 2 - 2],
-    [-TRUCK_WIDTH / 2 - 0.15, 0.5, -length / 2 + 2],
-    [TRUCK_WIDTH / 2 + 0.15, 0.5, -length / 2 + 2],
+    [-TRUCK_WIDTH / 2 - 0.18, 0.55, length / 2 - 2.5],
+    [TRUCK_WIDTH / 2 + 0.18, 0.55, length / 2 - 2.5],
+    [-TRUCK_WIDTH / 2 - 0.18, 0.55, -length / 2 + 2.5],
+    [TRUCK_WIDTH / 2 + 0.18, 0.55, -length / 2 + 2.5],
+    [-TRUCK_WIDTH / 2 - 0.18, 0.55, -length / 2 + 1.2],
+    [TRUCK_WIDTH / 2 + 0.18, 0.55, -length / 2 + 1.2],
   ];
   wheelPositions.forEach(pos => {
     const wheel = new THREE.Mesh(wheelGeo, wheelMat);
     wheel.rotation.z = Math.PI / 2;
     wheel.position.set(...pos);
+    wheel.castShadow = true;
     group.add(wheel);
   });
 
   // Headlights
-  const headlightGeo = new THREE.SphereGeometry(0.2, 8, 8);
-  const headlightMat = new THREE.MeshStandardMaterial({
+  const hlGeo = new THREE.SphereGeometry(0.18, 8, 8);
+  const hlMat = new THREE.MeshStandardMaterial({
     color: 0xffffcc,
     emissive: 0xffffaa,
-    emissiveIntensity: 1
+    emissiveIntensity: 1.5,
   });
   [-1, 1].forEach(side => {
-    const headlight = new THREE.Mesh(headlightGeo, headlightMat);
-    headlight.position.set(side * (TRUCK_WIDTH / 2 - 0.3), TRUCK_HEIGHT * 0.6, length / 2 + 0.1);
-    group.add(headlight);
+    const hl = new THREE.Mesh(hlGeo, hlMat);
+    hl.position.set(side * (TRUCK_WIDTH / 2 - 0.4), TRUCK_HEIGHT * 0.55, length / 2 + 0.05);
+    group.add(hl);
   });
 
   // Tail lights
-  const tailMat = new THREE.MeshStandardMaterial({
+  const tlMat = new THREE.MeshStandardMaterial({
     color: 0xff0000,
     emissive: 0xff0000,
-    emissiveIntensity: 0.8
+    emissiveIntensity: 1.0,
   });
   [-1, 1].forEach(side => {
-    const tail = new THREE.Mesh(headlightGeo, tailMat);
-    tail.position.set(side * (TRUCK_WIDTH / 2 - 0.3), TRUCK_HEIGHT * 0.6, -length / 2 - 0.1);
-    group.add(tail);
+    const tl = new THREE.Mesh(hlGeo, tlMat);
+    tl.position.set(side * (TRUCK_WIDTH / 2 - 0.4), TRUCK_HEIGHT * 0.55, -length / 2 - 0.05);
+    group.add(tl);
   });
 
   group.position.set(x, 0, z);
 
-  const speed = (8 + Math.random() * 6) * (Math.random() > 0.5 ? 1 : -1);
+  const speed = (6 + Math.random() * 8) * (Math.random() > 0.5 ? 1 : -1);
 
   scene.add(group);
-  trucks.push({
+  const truck = {
     mesh: group,
-    lane: lane,
-    speed: speed,
-    length: length,
+    lane,
+    speed,
+    length,
     width: TRUCK_WIDTH,
     height: TRUCK_HEIGHT,
-    color: color
-  });
+    color,
+  };
+  trucks.push(truck);
 
-  return z - length / 2 - 6 - Math.random() * 8;
+  // Add obstacles on some trucks at higher speeds
+  if (gameSpeed > 1.3 && Math.random() > 0.6) {
+    createObstacleOnTruck(truck);
+  }
+
+  return z - length / 2 - 5 - Math.random() * 10;
+}
+
+function createObstacleOnTruck(truck) {
+  const types = ['barrier', 'ramp'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  const tPos = truck.mesh.position;
+
+  if (type === 'barrier') {
+    const geo = new THREE.BoxGeometry(truck.width - 0.5, 1.5, 0.5);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.3,
+      roughness: 0.4,
+      metalness: 0.6,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(tPos.x, tPos.y + truck.height + 0.75, tPos.z + (Math.random() - 0.5) * truck.length * 0.5);
+    mesh.castShadow = true;
+    scene.add(mesh);
+    obstacles.push({
+      mesh,
+      type: 'barrier',
+      truckRef: truck,
+      width: truck.width - 0.5,
+      height: 1.5,
+      depth: 0.5,
+    });
+  } else if (type === 'ramp') {
+    const geo = new THREE.BoxGeometry(truck.width - 0.5, 0.3, 3);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0xffcc00,
+      emissive: 0xff8800,
+      emissiveIntensity: 0.2,
+      roughness: 0.5,
+      metalness: 0.5,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(tPos.x, tPos.y + truck.height + 0.5, tPos.z);
+    mesh.rotation.x = -0.2;
+    mesh.castShadow = true;
+    scene.add(mesh);
+    obstacles.push({
+      mesh,
+      type: 'ramp',
+      truckRef: truck,
+      width: truck.width - 0.5,
+      height: 0.3,
+      depth: 3,
+    });
+  }
 }
 
 function createPlayer() {
   const group = new THREE.Group();
 
-  // Body
-  const bodyGeo = new THREE.CapsuleGeometry(0.4, 0.8, 8, 16);
+  // Body (CapsuleGeometry per geometry skill)
+  const bodyGeo = new THREE.CapsuleGeometry(0.35, 0.7, 6, 12);
   const bodyMat = new THREE.MeshStandardMaterial({
     color: 0x00ff88,
     emissive: 0x00aa44,
-    emissiveIntensity: 0.3,
-    roughness: 0.3,
-    metalness: 0.5
+    emissiveIntensity: 0.4,
+    roughness: 0.25,
+    metalness: 0.6,
   });
   const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.8;
+  body.position.y = 0.75;
   body.castShadow = true;
   group.add(body);
 
   // Head
-  const headGeo = new THREE.SphereGeometry(0.35, 16, 16);
+  const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
   const headMat = new THREE.MeshStandardMaterial({
     color: 0x00ff88,
     emissive: 0x00aa44,
-    emissiveIntensity: 0.3,
-    roughness: 0.3,
-    metalness: 0.5
+    emissiveIntensity: 0.4,
+    roughness: 0.25,
+    metalness: 0.6,
   });
   const head = new THREE.Mesh(headGeo, headMat);
-  head.position.y = 1.6;
+  head.position.y = 1.55;
   head.castShadow = true;
   group.add(head);
 
-  // Eyes
-  const eyeGeo = new THREE.SphereGeometry(0.08, 8, 8);
-  const eyeMat = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.5
+  // Visor
+  const visorGeo = new THREE.SphereGeometry(0.28, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.4);
+  const visorMat = new THREE.MeshStandardMaterial({
+    color: 0x111111,
+    emissive: 0x00ffff,
+    emissiveIntensity: 0.5,
+    roughness: 0.05,
+    metalness: 0.95,
+    transparent: true,
+    opacity: 0.7,
   });
-  [-0.12, 0.12].forEach(x => {
-    const eye = new THREE.Mesh(eyeGeo, eyeMat);
-    eye.position.set(x, 1.65, 0.25);
-    group.add(eye);
-  });
+  const visor = new THREE.Mesh(visorGeo, visorMat);
+  visor.position.set(0, 1.58, 0.05);
+  visor.rotation.x = -0.3;
+  group.add(visor);
 
-  group.position.set(0, 3, 0);
+  // Player light
+  const playerLight = new THREE.PointLight(0x00ff88, 1, 8);
+  playerLight.position.y = 1.5;
+  group.add(playerLight);
+
+  group.position.set(0, 4, 0);
   scene.add(group);
-
   return group;
 }
 
 function createParticles(position, color, count = 10) {
   for (let i = 0; i < count; i++) {
-    const geo = new THREE.SphereGeometry(0.1, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color: color });
+    const geo = new THREE.SphereGeometry(0.08 + Math.random() * 0.08, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color });
     const particle = new THREE.Mesh(geo, mat);
     particle.position.copy(position);
     scene.add(particle);
     particles.push({
       mesh: particle,
       velocity: new THREE.Vector3(
-        (Math.random() - 0.5) * 10,
-        Math.random() * 8,
-        (Math.random() - 0.5) * 10
+        (Math.random() - 0.5) * 12,
+        Math.random() * 8 + 2,
+        (Math.random() - 0.5) * 12
       ),
-      life: 1.0
+      life: 1.0,
+      decay: 1.5 + Math.random(),
     });
   }
 }
@@ -627,11 +842,12 @@ function createParticles(position, color, count = 10) {
 function updateParticles(delta) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.velocity.y -= 15 * delta;
+    p.velocity.y -= 18 * delta;
     p.mesh.position.add(p.velocity.clone().multiplyScalar(delta));
-    p.life -= delta * 2;
-    p.mesh.material.opacity = p.life;
+    p.life -= p.decay * delta;
+    p.mesh.material.opacity = Math.max(0, p.life);
     p.mesh.material.transparent = true;
+    p.mesh.scale.setScalar(p.life);
     if (p.life <= 0) {
       scene.remove(p.mesh);
       particles.splice(i, 1);
@@ -643,13 +859,15 @@ function startGame() {
   document.getElementById('start-screen').style.display = 'none';
   document.getElementById('death-screen').style.display = 'none';
 
-  // Clear old trucks
+  // Cleanup old objects
   trucks.forEach(t => scene.remove(t.mesh));
   trucks = [];
+  obstacles.forEach(o => scene.remove(o.mesh));
+  obstacles = [];
   particles.forEach(p => scene.remove(p.mesh));
   particles = [];
-
   if (player) scene.remove(player);
+
   player = createPlayer();
   playerVelocity = new THREE.Vector3(0, 0, 0);
   onGround = false;
@@ -658,24 +876,40 @@ function startGame() {
   comboCount = 0;
   comboTimer = 0;
   lastTruckZ = 10;
+  dashCooldown = 0;
+  jumpCount = 0;
 
-  // Create initial trucks
-  for (let i = 0; i < 15; i++) {
+  // Initial trucks
+  for (let i = 0; i < 20; i++) {
     lastTruckZ = createTruck(lastTruckZ);
   }
 
   gameActive = true;
   audio.init();
+
+  // Lock pointer
+  setTimeout(() => {
+    if (gameActive) controls.lock();
+  }, 100);
 }
 
 function die() {
   gameActive = false;
   audio.playDeathSound();
-  document.getElementById('final-score-value').textContent = Math.floor(score);
+  controls.unlock();
+
+  const finalScore = Math.floor(score);
+  if (finalScore > bestScore) {
+    bestScore = finalScore;
+    localStorage.setItem('truckJumpBest', bestScore.toString());
+  }
+
+  document.getElementById('final-score-value').textContent = finalScore;
+  document.getElementById('best-score-value').textContent = bestScore;
   document.getElementById('death-screen').style.display = 'flex';
 
-  // Explosion particles
-  createParticles(player.position, 0xff0000, 30);
+  createParticles(player.position, 0xff0000, 40);
+  createParticles(player.position, 0xff6600, 20);
 }
 
 function setupControls() {
@@ -687,47 +921,52 @@ function setupControls() {
     keys[e.code] = false;
   });
 
-  document.addEventListener('mousemove', e => {
-    if (document.pointerLockElement) {
-      cameraAngleX -= e.movementX * 0.002;
-      cameraAngleY = Math.max(-0.5, Math.min(1.2, cameraAngleY + e.movementY * 0.002));
-    }
-  });
-
-  renderer.domElement.addEventListener('click', () => {
-    if (gameActive) renderer.domElement.requestPointerLock();
-  });
-
   document.getElementById('start-btn').addEventListener('click', startGame);
   document.getElementById('restart-btn').addEventListener('click', startGame);
 
-  document.getElementById('music-toggle').addEventListener('click', () => {
+  document.getElementById('music-toggle').addEventListener('click', e => {
+    e.stopPropagation();
     const muted = audio.toggleMute();
-    document.getElementById('music-toggle').textContent = muted ? '🔇' : '🔊';
+    document.getElementById('music-toggle').textContent = muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+  });
+
+  // Click to lock pointer during game
+  renderer.domElement.addEventListener('click', () => {
+    if (gameActive && !controls.isLocked) {
+      controls.lock();
+    }
   });
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
+    if (fxaaPass) {
+      fxaaPass.material.uniforms['resolution'].value.set(
+        1 / (window.innerWidth * renderer.getPixelRatio()),
+        1 / (window.innerHeight * renderer.getPixelRatio())
+      );
+    }
   });
 }
 
 function checkTruckCollision() {
-  const playerPos = player.position;
-  const playerBottom = playerPos.y - 0.4;
+  const pPos = player.position;
+  const playerRadius = 0.5;
 
   for (const truck of trucks) {
     const tPos = truck.mesh.position;
     const halfLen = truck.length / 2;
     const halfWid = truck.width / 2;
 
-    const dx = Math.abs(playerPos.x - tPos.x);
-    const dz = Math.abs(playerPos.z - tPos.z);
+    const dx = Math.abs(pPos.x - tPos.x);
+    const dz = Math.abs(pPos.z - tPos.z);
 
-    if (dx < halfWid + 0.3 && dz < halfLen + 0.3) {
+    if (dx < halfWid + playerRadius && dz < halfLen + playerRadius) {
       const truckTop = tPos.y + truck.height;
-      if (playerBottom >= truckTop - 0.5 && playerBottom <= truckTop + 0.5 && playerVelocity.y <= 0) {
+      const playerBottom = pPos.y - 0.4;
+      if (playerBottom >= truckTop - 0.6 && playerBottom <= truckTop + 0.8 && playerVelocity.y <= 0.5) {
         return { truck, truckTop };
       }
     }
@@ -735,25 +974,64 @@ function checkTruckCollision() {
   return null;
 }
 
-function update(delta) {
+function checkObstacleCollision() {
+  const pPos = player.position;
+  const playerRadius = 0.4;
+
+  for (const obs of obstacles) {
+    const oPos = obs.mesh.position;
+    const halfW = obs.width / 2 + playerRadius;
+    const halfH = obs.height / 2;
+    const halfD = obs.depth / 2 + playerRadius;
+
+    if (Math.abs(pPos.x - oPos.x) < halfW &&
+        Math.abs(pPos.y - oPos.y) < halfH + 0.8 &&
+        Math.abs(pPos.z - oPos.z) < halfD) {
+      if (obs.type === 'barrier') {
+        return obs;
+      } else if (obs.type === 'ramp' && playerVelocity.y <= 0) {
+        // Launch off ramp
+        playerVelocity.y = JUMP_FORCE * 1.3;
+        playerVelocity.z -= 5;
+        onGround = false;
+        createParticles(pPos, 0xffcc00, 12);
+        audio.playJumpSound();
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function update() {
+  const delta = Math.min(clock.getDelta(), 0.05);
+  const elapsed = clock.getElapsedTime();
+
   if (!gameActive) {
     updateParticles(delta);
-    renderer.render(scene, camera);
+    composer.render();
     return;
   }
 
-  // Increase game speed over time
-  gameSpeed = 1 + score / 500;
+  // Game speed increases over time
+  gameSpeed = 1 + score / 600;
   audio.setSpeedMultiplier(gameSpeed);
 
   // Score
   score += delta * 10 * gameSpeed;
+  const distance = Math.floor(-player.position.z);
   document.getElementById('score-display').textContent = Math.floor(score);
   document.getElementById('speed-display').textContent = `x${gameSpeed.toFixed(1)}`;
+  document.getElementById('distance-display').textContent = `${distance}m`;
 
-  // Player movement
-  const forward = new THREE.Vector3(-Math.sin(cameraAngleX), 0, -Math.cos(cameraAngleX));
-  const right = new THREE.Vector3(Math.cos(cameraAngleX), 0, -Math.sin(cameraAngleX));
+  // Player movement using PointerLockControls direction
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  const right = new THREE.Vector3();
+  right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
 
   const moveDir = new THREE.Vector3(0, 0, 0);
   if (keys['KeyW'] || keys['ArrowUp']) moveDir.add(forward);
@@ -763,19 +1041,33 @@ function update(delta) {
 
   if (moveDir.length() > 0) moveDir.normalize();
 
-  // Jump
-  if (keys['Space'] && onGround) {
-    playerVelocity.y = JUMP_FORCE;
-    onGround = false;
-    audio.playJumpSound();
-    createParticles(player.position, 0x00ff88, 5);
+  // Jump (double jump)
+  if (keys['Space']) {
+    if (onGround) {
+      playerVelocity.y = JUMP_FORCE;
+      onGround = false;
+      jumpCount = 1;
+      audio.playJumpSound();
+      createParticles(player.position, 0x00ff88, 6);
+      keys['Space'] = false;
+    } else if (jumpCount < maxJumps) {
+      playerVelocity.y = JUMP_FORCE * 0.85;
+      jumpCount++;
+      audio.playJumpSound();
+      createParticles(player.position, 0x00ccff, 8);
+      keys['Space'] = false;
+    }
   }
 
   // Dash
-  if (keys['ShiftLeft'] && onGround) {
-    playerVelocity.add(moveDir.clone().multiplyScalar(DASH_FORCE));
+  dashCooldown = Math.max(0, dashCooldown - delta);
+  if (keys['ShiftLeft'] && dashCooldown <= 0) {
+    const dashDir = moveDir.length() > 0 ? moveDir.clone() : forward.clone();
+    playerVelocity.add(dashDir.multiplyScalar(DASH_FORCE));
+    dashCooldown = 0.8;
+    audio.playDashSound();
+    createParticles(player.position, 0xffcc00, 10);
     keys['ShiftLeft'] = false;
-    createParticles(player.position, 0xffcc00, 8);
   }
 
   // Apply movement
@@ -785,17 +1077,16 @@ function update(delta) {
 
   player.position.add(playerVelocity.clone().multiplyScalar(delta));
 
-  // Rotate player to face movement direction
+  // Rotate player to face movement
   if (moveDir.length() > 0) {
     const targetAngle = Math.atan2(moveDir.x, moveDir.z);
-    player.rotation.y = targetAngle;
+    player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, targetAngle, 0.15);
   }
 
-  // Check truck collision
+  // Truck collision
   const collision = checkTruckCollision();
   if (collision) {
     if (!onGround && playerVelocity.y < 0) {
-      // Just landed
       comboCount++;
       comboTimer = 2;
       audio.playLandSound();
@@ -812,12 +1103,23 @@ function update(delta) {
     player.position.y = collision.truckTop + 0.4;
     playerVelocity.y = 0;
     onGround = true;
+    jumpCount = 0;
 
     // Move with truck
     player.position.z += collision.truck.speed * delta * gameSpeed;
   } else {
     onGround = false;
     if (playerVelocity.y > 0) comboCount = 0;
+  }
+
+  // Obstacle collision
+  const hitObs = checkObstacleCollision();
+  if (hitObs) {
+    // Push player away
+    playerVelocity.z += 8;
+    playerVelocity.y += 5;
+    onGround = false;
+    createParticles(player.position, 0xff0000, 15);
   }
 
   // Combo timer
@@ -831,42 +1133,60 @@ function update(delta) {
     const truck = trucks[i];
     truck.mesh.position.z += truck.speed * delta * gameSpeed;
 
-    // Remove far behind trucks
-    if (truck.mesh.position.z > player.position.z + 50) {
+    if (truck.mesh.position.z > player.position.z + 60) {
       scene.remove(truck.mesh);
       trucks.splice(i, 1);
     }
   }
 
-  // Generate new trucks ahead
-  while (lastTruckZ > player.position.z - 200) {
+  // Update obstacles
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    const obs = obstacles[i];
+    obs.mesh.position.z += obs.truckRef.speed * delta * gameSpeed;
+
+    if (obs.mesh.position.z > player.position.z + 60) {
+      scene.remove(obs.mesh);
+      obstacles.splice(i, 1);
+    }
+  }
+
+  // Generate new content
+  while (lastTruckZ > player.position.z - 250) {
     lastTruckZ = createTruck(lastTruckZ);
   }
 
-  // Death check - fell into lava
-  if (player.position.y < -3) {
+  // Death check
+  if (player.position.y < -4) {
     die();
     return;
   }
 
-  // Camera
-  const camDist = 8;
-  const camHeight = 4 + cameraAngleY * 4;
-  const camX = player.position.x + Math.sin(cameraAngleX) * camDist;
-  const camZ = player.position.z + Math.cos(cameraAngleX) * camDist;
-  camera.position.lerp(new THREE.Vector3(camX, player.position.y + camHeight, camZ), 0.1);
-  camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+  // Camera follow (smooth damping per animation skill)
+  controls.getObject().position.lerp(
+    new THREE.Vector3(player.position.x, player.position.y + 2.5, player.position.z + 6),
+    0.08
+  );
 
-  // Update particles
+  // Update lava shader
+  if (lavaMesh) {
+    lavaMesh.material.uniforms.time.value = elapsed;
+  }
+
+  // Update lava light position
+  lavaLight.position.set(player.position.x, -2, player.position.z - 20);
+
+  // Bloom intensity based on game speed
+  bloomPass.strength = 0.6 + gameSpeed * 0.3;
+
+  // Particles
   updateParticles(delta);
 
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 function animate() {
   requestAnimationFrame(animate);
-  const delta = Math.min(0.05, 1 / 60);
-  update(delta);
+  update();
 }
 
 init();
