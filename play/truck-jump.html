@@ -632,6 +632,7 @@ function update() {
   gameTime += dt;
   score += dt * 10;
 
+  // Camera direction
   const fwd = new THREE.Vector3();
   camera.getWorldDirection(fwd);
   fwd.y = 0; fwd.normalize();
@@ -649,9 +650,9 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
-      // При прыжке: сохраняем скорость грузовика + небольшой импульс вперёд
+      // Сохраняем скорость грузовика + импульс вперёд
       if (ct) {
-        pv.z = -ct.speed - 1.5;
+        pv.z = -ct.speed - 2;
       }
       ct = null;
       audio.playJumpSound();
@@ -672,15 +673,15 @@ function update() {
   pv.y += G * dt;
 
   if (onGround && ct) {
-    // На грузовике: двигаемся вместе с ним
+    // На грузовике: скорость = скорость грузовика + WASD
     pv.x = md.x * MS;
     pv.z = -ct.speed + md.z * MS;
   } else {
-    // В воздухе: WASD добавляет управление
-    pv.x += md.x * MS * 0.1;
-    pv.z += md.z * MS * 0.1;
-    // Лёгкое затухание
-    pv.x *= 0.98;
+    // В воздухе: сохраняем текущую pv.z (скорость грузовика), WASD слегка корректирует
+    pv.x = md.x * MS * 0.5;
+    // pv.z НЕ перезаписываем - он уже содержит скорость грузовика от прыжка
+    // Только добавляем WASD влияние
+    pv.z += md.z * 0.3;
   }
 
   player.position.add(pv.clone().multiplyScalar(dt));
