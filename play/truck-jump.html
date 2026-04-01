@@ -3,50 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Truck Jump - Cluster Style Game</title>
+<title>Truck Jump</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{overflow:hidden;background:#000;font-family:'Segoe UI',Arial,sans-serif}
 canvas{display:block}
 #ui-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
-#score-display{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:28px;font-weight:bold;text-shadow:0 0 10px rgba(255,100,0,.8),0 2px 4px rgba(0,0,0,.8);letter-spacing:2px}
-#level-display{position:absolute;top:55px;left:50%;transform:translateX(-50%);color:#0ff;font-size:20px;text-shadow:0 0 8px rgba(0,255,255,.6)}
-#progress-display{position:absolute;top:82px;left:50%;transform:translateX(-50%);color:#ff8;font-size:16px;text-shadow:0 0 6px rgba(255,255,100,.5)}
-#menu-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 50%,#0a1628 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#menu-screen h1{font-size:72px;color:#ff6600;margin-bottom:10px;text-shadow:0 0 30px rgba(255,102,0,.8),0 0 60px rgba(255,102,0,.4);letter-spacing:4px;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-#menu-screen h2{font-size:22px;color:#aaa;margin-bottom:30px;font-weight:normal}
-.menu-buttons{display:flex;flex-direction:column;gap:12px;margin-bottom:30px}
-.menu-btn{background:linear-gradient(135deg,#ff6600,#ff3300);border:none;color:#fff;font-size:20px;padding:14px 50px;border-radius:50px;cursor:pointer;pointer-events:all;transition:all .3s;letter-spacing:1px;box-shadow:0 0 15px rgba(255,102,0,.4);min-width:280px}
-.menu-btn:hover{transform:scale(1.08);box-shadow:0 0 30px rgba(255,102,0,.7)}
-.menu-btn.secondary{background:linear-gradient(135deg,#3366ff,#0044cc);box-shadow:0 0 15px rgba(51,102,255,.4)}
-.menu-btn.secondary:hover{box-shadow:0 0 30px rgba(51,102,255,.7)}
-.controls-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 30px;margin-bottom:20px}
-.controls-box p{color:#ccc;font-size:15px;margin:6px 0}
-.controls-box span{color:#ff6600;font-weight:bold}
-#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,.3);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#death-screen h1{font-size:64px;color:#ff3333;margin-bottom:20px;text-shadow:0 0 30px rgba(255,0,0,.8)}
-#death-screen .final-score{font-size:36px;color:#fff;margin-bottom:10px}
-#death-screen .best-score{font-size:18px;color:#ff8;margin-bottom:30px}
-#death-buttons{display:flex;flex-direction:column;gap:10px}
-#level-complete-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,50,0,.5);backdrop-filter:blur(5px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#level-complete-screen h1{font-size:56px;color:#00ff88;margin-bottom:10px;text-shadow:0 0 30px rgba(0,255,100,.8)}
-#level-complete-screen .level-info{font-size:24px;color:#fff;margin-bottom:30px}
-#combo-display{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);color:#ffcc00;font-size:48px;font-weight:bold;opacity:0;text-shadow:0 0 20px rgba(255,204,0,.8);transition:opacity .3s,transform .3s}
+#score-display{position:absolute;top:15px;left:50%;transform:translateX(-50%);color:#fff;font-size:24px;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,.8);letter-spacing:2px}
+#level-display{position:absolute;top:45px;left:50%;transform:translateX(-50%);color:#aaddff;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#progress-display{position:absolute;top:68px;left:50%;transform:translateX(-50%);color:#ddd;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#menu-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#1a2a4a 0%,#0d1b2a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#menu-screen h1{font-size:64px;color:#ff6600;margin-bottom:8px;text-shadow:0 0 20px rgba(255,102,0,.6);letter-spacing:3px}
+#menu-screen h2{font-size:18px;color:#8899aa;margin-bottom:24px;font-weight:normal}
+.menu-buttons{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.menu-btn{background:linear-gradient(135deg,#ff6600,#cc4400);border:none;color:#fff;font-size:18px;padding:12px 40px;border-radius:8px;cursor:pointer;pointer-events:all;transition:all .2s;letter-spacing:1px;min-width:260px}
+.menu-btn:hover{transform:scale(1.05);background:linear-gradient(135deg,#ff7722,#dd5500)}
+.menu-btn.secondary{background:linear-gradient(135deg,#3366aa,#224488)}
+.menu-btn.secondary:hover{background:linear-gradient(135deg,#4477bb,#335599)}
+.controls-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 24px;margin-bottom:16px}
+.controls-box p{color:#aabbcc;font-size:14px;margin:4px 0}
+.controls-box span{color:#ff8844;font-weight:bold}
+#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(100,0,0,.4);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#death-screen h1{font-size:56px;color:#ff4444;margin-bottom:16px;text-shadow:0 0 15px rgba(255,0,0,.5)}
+#death-screen .final-score{font-size:28px;color:#fff;margin-bottom:8px}
+#death-screen .best-score{font-size:16px;color:#ccaa66;margin-bottom:24px}
+#death-buttons{display:flex;flex-direction:column;gap:8px}
+#level-complete-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,60,0,.4);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
+#level-complete-screen h1{font-size:48px;color:#44ff88;margin-bottom:8px;text-shadow:0 0 15px rgba(0,255,100,.5)}
+#level-complete-screen .level-info{font-size:20px;color:#fff;margin-bottom:20px}
+#combo-display{position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);color:#ffcc00;font-size:40px;font-weight:bold;opacity:0;text-shadow:0 0 15px rgba(255,200,0,.6);transition:opacity .2s,transform .2s}
 #combo-display.show{opacity:1;transform:translate(-50%,-60%)}
-#music-toggle{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:24px;width:50px;height:50px;border-radius:50%;cursor:pointer;pointer-events:all;display:flex;align-items:center;justify-content:center}
+#music-toggle{position:absolute;top:15px;right:15px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;pointer-events:all;display:flex;align-items:center;justify-content:center}
 #music-toggle:hover{background:rgba(255,255,255,.2)}
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;pointer-events:none}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.4)}
-#crosshair::before{width:2px;height:20px;left:9px;top:0}
-#crosshair::after{width:20px;height:2px;top:9px;left:0}
-#hint-text{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:14px;pointer-events:none}
-#level-select{display:none;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px;max-height:300px;overflow-y:auto;padding:10px}
-.level-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 30px;color:#fff;font-size:16px;cursor:pointer;pointer-events:all;transition:all .2s;min-width:250px;text-align:center}
-.level-item:hover{background:rgba(255,102,0,.2);border-color:#ff6600;transform:scale(1.05)}
-.level-item.locked{opacity:.4;cursor:not-allowed}
-.level-item.completed{border-color:#00ff88}
-.level-item .stars{color:#ffcc00;margin-left:8px}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;pointer-events:none}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.35)}
+#crosshair::before{width:2px;height:16px;left:7px;top:0}
+#crosshair::after{width:16px;height:2px;top:7px;left:0}
+#hint-text{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.35);font-size:13px;pointer-events:none}
+#level-select{display:none;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;max-height:280px;overflow-y:auto;padding:8px}
+.level-item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 24px;color:#fff;font-size:15px;cursor:pointer;pointer-events:all;transition:all .2s;min-width:240px;text-align:center}
+.level-item:hover{background:rgba(255,102,0,.15);border-color:#ff6600;transform:scale(1.03)}
+.level-item.locked{opacity:.35;cursor:not-allowed}
+.level-item.completed{border-color:#44ff88}
+.level-item .stars{color:#ffcc00;margin-left:6px}
+#speed-lines{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 50%,rgba(255,255,255,.05) 100%)}
 </style>
 </head>
 <body>
@@ -56,9 +56,9 @@ canvas{display:block}
   <h2>Прыгай по грузовикам. Пол — это лава!</h2>
   <div class="controls-box">
     <p><span>WASD</span> — Движение</p>
-    <p><span>SPACE</span> — Прыжок (двойной!)</p>
-    <p><span>SHIFT</span> — Рывок (Dash)</p>
-    <p><span>МЫШЬ</span> — Камера</p>
+    <p><span>SPACE</span> — Прыжок</p>
+    <p><span>SHIFT</span> — Рывок</p>
+    <p><span>МЫШЬ</span> — Обзор</p>
   </div>
   <div class="menu-buttons">
     <button class="menu-btn" id="btn-endless">БЕСКОНЕЧНЫЙ РЕЖИМ</button>
@@ -80,7 +80,7 @@ canvas{display:block}
 <div id="level-complete-screen">
   <h1>УРОВЕНЬ ПРОЙДЕН!</h1>
   <div class="level-info" id="level-complete-info"></div>
-  <div id="level-complete-stars" style="font-size:48px;margin-bottom:20px"></div>
+  <div id="level-complete-stars" style="font-size:40px;margin-bottom:16px"></div>
   <div class="menu-buttons">
     <button class="menu-btn" id="btn-next-level">СЛЕДУЮЩИЙ УРОВЕНЬ</button>
     <button class="menu-btn secondary" id="btn-menu2">МЕНЮ</button>
@@ -93,9 +93,10 @@ canvas{display:block}
   <div id="progress-display"></div>
   <div id="combo-display">COMBO x2!</div>
   <div id="crosshair"></div>
-  <div id="hint-text">Нажми на экран чтобы захватить мышь</div>
+  <div id="hint-text">Нажми чтобы начать</div>
   <button id="music-toggle">&#128266;</button>
 </div>
+<div id="speed-lines"></div>
 
 <script type="importmap">
 {
@@ -116,67 +117,60 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 
-// Яркие цвета грузовиков
+// ===================== CONFIG =====================
 const TRUCK_COLORS = [
-  0xff2222, 0x2266ff, 0x22dd44, 0xffdd00, 0xff6600,
-  0xcc33ff, 0x00dddd, 0xff4488, 0x44ff88, 0xff8844,
-  0x4488ff, 0xff4444
+  0xe83030, 0x2878e8, 0x28c848, 0xe8c828, 0xe87828,
+  0xb838e8, 0x28c8c8, 0xe84888, 0x48e888, 0xe8a848
 ];
-
-const TRUCK_WIDTH = 3;
-const TRUCK_HEIGHT = 2.2;
-const TRUCK_LENGTHS = [8, 10, 12];
-const GRAVITY = -28;
-const JUMP_FORCE = 13;
-const MOVE_SPEED = 10;
-const DASH_FORCE = 18;
-const LANE_COUNT = 3;
-const LANE_WIDTH = 6;
+const TRUCK_W = 3.0;
+const TRUCK_H = 2.4;
+const TRUCK_LENS = [8, 10, 12];
+const GRAVITY = -30;
+const JUMP_FORCE = 14;
+const MOVE_SPEED = 8;
+const DASH_FORCE = 15;
+const LANE_W = 0;
 
 const LEVELS = [
-  { name: 'Разминка', trucks: 8, speed: 5, gap: 10, lanes: 1 },
-  { name: 'Первый шаг', trucks: 10, speed: 6, gap: 10, lanes: 2 },
-  { name: 'Поток', trucks: 12, speed: 7, gap: 9, lanes: 2 },
-  { name: 'Зигзаг', trucks: 14, speed: 7, gap: 8, lanes: 3 },
-  { name: 'Ускорение', trucks: 15, speed: 8, gap: 8, lanes: 3 },
-  { name: 'Хаос', trucks: 16, speed: 9, gap: 7, lanes: 3 },
-  { name: 'Молния', trucks: 18, speed: 10, gap: 7, lanes: 3 },
-  { name: 'Безумие', trucks: 20, speed: 11, gap: 6, lanes: 3 },
-  { name: 'Финал', trucks: 22, speed: 12, gap: 6, lanes: 3 },
-  { name: 'Невозможное', trucks: 25, speed: 14, gap: 5, lanes: 3 },
+  { name:'Разминка', trucks:10, speed:8,  gap:5,  lanes:1, desc:'Одна линия. Просто прыгай вперёд!' },
+  { name:'Двойной ряд', trucks:12, speed:8,  gap:5,  lanes:2, desc:'Две полосы. Выбирай путь!' },
+  { name:'Зигзаг', trucks:14, speed:9,  gap:5,  lanes:3, desc:'Три полосы. Не промахнись!' },
+  { name:'Быстрее!', trucks:15, speed:10, gap:5,  lanes:3, desc:'Грузовики быстрее!' },
+  { name:'Хаос', trucks:16, speed:11, gap:4,  lanes:3, desc:'Меньше места для ошибки!' },
+  { name:'Молния', trucks:18, speed:12, gap:4,  lanes:3, desc:'Ещё быстрее!' },
+  { name:'Безумие', trucks:20, speed:13, gap:4,  lanes:3, desc:'Держись!' },
+  { name:'Финал', trucks:22, speed:14, gap:3,  lanes:3, desc:'Почти невозможно!' },
+  { name:'Невозможное', trucks:25, speed:15, gap:3,  lanes:3, desc:'Удачи...' },
+  { name:'Бог', trucks:30, speed:16, gap:3,  lanes:3, desc:'Только для мастеров!' },
 ];
 
+// ===================== STATE =====================
 let scene, camera, renderer, controls, clock;
-let composer, bloomPass, vignettePass, fxaaPass;
-let player, playerVelocity, onGround;
+let composer, bloomPass, vignettePass;
+let playerBody, playerVelocity, onGround;
 let trucks = [];
 let particles = [];
-let lavaMesh, lavaLight;
+let lavaMesh;
 let audio;
 let keys = {};
 let comboCount = 0, comboTimer = 0;
 let dashCooldown = 0;
-let jumpCount = 0;
-let maxJumps = 2;
-
 let gameMode = 'endless';
 let currentLevel = 0;
 let score = 0;
-let bestScore = parseInt(localStorage.getItem('truckJumpBest') || '0');
-let levelTrucksJumped = 0;
-let levelTrucksTotal = 0;
+let bestScore = parseInt(localStorage.getItem('tjBest') || '0');
+let levelJumped = 0, levelTotal = 0;
 let gameActive = false;
+let currentTruck = null;
 let trucksSpawned = 0;
 
-// На какой платформе стоит игрок
-let currentTruck = null;
-
+// ===================== INIT =====================
 function init() {
   clock = new THREE.Clock();
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.008);
+  scene.background = new THREE.Color(0x3a5a7a);
+  scene.fog = new THREE.FogExp2(0x3a5a7a, 0.006);
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
 
@@ -186,7 +180,7 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.1;
   document.body.appendChild(renderer.domElement);
 
   controls = new PointerLockControls(camera, document.body);
@@ -195,6 +189,7 @@ function init() {
   });
   controls.addEventListener('unlock', () => {
     if (gameActive) document.getElementById('hint-text').style.display = 'block';
+    else document.getElementById('hint-text').style.display = 'none';
   });
 
   setupLighting();
@@ -207,33 +202,26 @@ function init() {
 }
 
 function setupLighting() {
-  scene.add(new THREE.HemisphereLight(0x4466aa, 0x221100, 0.4));
-  scene.add(new THREE.AmbientLight(0x334466, 0.5));
+  scene.add(new THREE.HemisphereLight(0x88aacc, 0x443322, 0.6));
+  scene.add(new THREE.AmbientLight(0x556677, 0.7));
 
-  const dirLight = new THREE.DirectionalLight(0xffeedd, 1.0);
-  dirLight.position.set(10, 30, 10);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 2048;
-  dirLight.shadow.mapSize.height = 2048;
-  dirLight.shadow.camera.near = 0.5;
-  dirLight.shadow.camera.far = 80;
-  dirLight.shadow.camera.left = -30;
-  dirLight.shadow.camera.right = 30;
-  dirLight.shadow.camera.top = 30;
-  dirLight.shadow.camera.bottom = -30;
-  dirLight.shadow.bias = -0.0001;
-  scene.add(dirLight);
+  const sun = new THREE.DirectionalLight(0xffeedd, 1.2);
+  sun.position.set(15, 40, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width = 2048;
+  sun.shadow.mapSize.height = 2048;
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far = 100;
+  sun.shadow.camera.left = -40;
+  sun.shadow.camera.right = 40;
+  sun.shadow.camera.top = 40;
+  sun.shadow.camera.bottom = -40;
+  sun.shadow.bias = -0.0001;
+  scene.add(sun);
 
-  lavaLight = new THREE.PointLight(0xff4400, 4, 60);
-  lavaLight.position.set(0, -2, -30);
-  scene.add(lavaLight);
-
-  const pl1 = new THREE.PointLight(0xff6600, 2, 40);
-  pl1.position.set(-10, 8, -20);
-  scene.add(pl1);
-  const pl2 = new THREE.PointLight(0x0066ff, 2, 40);
-  pl2.position.set(10, 8, -50);
-  scene.add(pl2);
+  const lavaGlow = new THREE.PointLight(0xff4400, 2, 50);
+  lavaGlow.position.set(0, -8, -30);
+  scene.add(lavaGlow);
 }
 
 function setupPostProcessing() {
@@ -241,31 +229,32 @@ function setupPostProcessing() {
   composer.addPass(new RenderPass(scene, camera));
 
   bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight), 0.7, 0.4, 0.85
+    new THREE.Vector2(window.innerWidth, window.innerHeight), 0.4, 0.3, 0.85
   );
   composer.addPass(bloomPass);
 
   vignettePass = new ShaderPass(VignetteShader);
-  vignettePass.uniforms['offset'].value = 1.0;
-  vignettePass.uniforms['darkness'].value = 1.2;
+  vignettePass.uniforms['offset'].value = 1.2;
+  vignettePass.uniforms['darkness'].value = 0.8;
   composer.addPass(vignettePass);
 
-  fxaaPass = new ShaderPass(FXAAShader);
-  fxaaPass.material.uniforms['resolution'].value.set(
-    1 / (window.innerWidth * renderer.getPixelRatio()),
-    1 / (window.innerHeight * renderer.getPixelRatio())
+  const fxaa = new ShaderPass(FXAAShader);
+  fxaa.material.uniforms['resolution'].value.set(
+    1/(window.innerWidth*renderer.getPixelRatio()),
+    1/(window.innerHeight*renderer.getPixelRatio())
   );
-  composer.addPass(fxaaPass);
+  composer.addPass(fxaa);
 }
 
 function createEnvironment() {
-  const lavaGeo = new THREE.PlaneGeometry(200, 800, 64, 64);
+  // Лава - приглушённая
+  const lavaGeo = new THREE.PlaneGeometry(300, 1000, 32, 32);
   const lavaMat = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
-      lavaColor1: { value: new THREE.Color(0xff1100) },
-      lavaColor2: { value: new THREE.Color(0xff6600) },
-      lavaColor3: { value: new THREE.Color(0xffaa00) },
+      lavaColor1: { value: new THREE.Color(0x881100) },
+      lavaColor2: { value: new THREE.Color(0xcc4400) },
+      lavaColor3: { value: new THREE.Color(0xff8800) },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -280,200 +269,173 @@ function createEnvironment() {
       uniform vec3 lavaColor2;
       uniform vec3 lavaColor3;
       varying vec2 vUv;
-      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-      float noise(vec2 p) {
-        vec2 i = floor(p); vec2 f = fract(p);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(mix(hash(i), hash(i + vec2(1,0)), f.x), mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x), f.y);
+      float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float noise(vec2 p){
+        vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);
+        return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
       }
-      float fbm(vec2 p) {
-        float v = 0.0, a = 0.5; mat2 r = mat2(0.8, 0.6, -0.6, 0.8);
-        for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.0; a *= 0.5; }
-        return v;
+      float fbm(vec2 p){
+        float v=0.0,a=0.5;mat2 r=mat2(.8,.6,-.6,.8);
+        for(int i=0;i<4;i++){v+=a*noise(p);p=r*p*2.0;a*=.5;}return v;
       }
-      void main() {
-        vec2 uv = vUv * 20.0; float t = time * 0.3;
-        float n = (fbm(uv + vec2(t, t*0.5)) + fbm(uv*1.5 + vec2(-t*0.7, t*0.8))) * 0.5;
-        vec3 col = mix(lavaColor1, lavaColor2, smoothstep(0.3, 0.6, n));
-        col = mix(col, lavaColor3, smoothstep(0.65, 0.85, n) * 0.6);
-        col += vec3(1.0, 0.4, 0.1) * pow(n, 3.0) * 2.0;
-        float d = length(vUv - 0.5) * 2.0; col *= 1.0 - d * 0.3;
-        gl_FragColor = vec4(col, 1.0);
+      void main(){
+        vec2 uv=vUv*15.0;float t=time*0.2;
+        float n=(fbm(uv+vec2(t,t*.5))+fbm(uv*1.5+vec2(-t*.7,t*.8)))*.5;
+        vec3 col=mix(lavaColor1,lavaColor2,smoothstep(.3,.6,n));
+        col=mix(col,lavaColor3,smoothstep(.65,.85,n)*.5);
+        col+=vec3(1,.4,.1)*pow(n,3.0)*1.5;
+        float d=length(vUv-.5)*2.0;col*=1.0-d*.2;
+        gl_FragColor=vec4(col,1.0);
       }
     `,
   });
   lavaMesh = new THREE.Mesh(lavaGeo, lavaMat);
   lavaMesh.rotation.x = -Math.PI / 2;
-  lavaMesh.position.y = -6;
+  lavaMesh.position.y = -8;
   lavaMesh.position.z = -200;
   scene.add(lavaMesh);
 
-  const starsGeo = new THREE.BufferGeometry();
-  const sp = new Float32Array(2000 * 3);
-  for (let i = 0; i < 2000; i++) {
-    sp[i*3] = (Math.random()-0.5)*400;
-    sp[i*3+1] = 50+Math.random()*150;
-    sp[i*3+2] = (Math.random()-0.5)*600;
+  // Облака
+  for (let i = 0; i < 30; i++) {
+    const cloudGeo = new THREE.SphereGeometry(5 + Math.random() * 10, 8, 6);
+    const cloudMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.3, roughness: 1
+    });
+    const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+    cloud.position.set(
+      (Math.random() - 0.5) * 200,
+      30 + Math.random() * 40,
+      (Math.random() - 0.5) * 400
+    );
+    cloud.scale.set(1 + Math.random(), 0.3 + Math.random() * 0.3, 1 + Math.random());
+    scene.add(cloud);
   }
-  starsGeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-  scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({color:0xffffff,size:0.5,sizeAttenuation:true})));
+
+  // Далекие здания/горы
+  for (let i = 0; i < 40; i++) {
+    const h = 5 + Math.random() * 25;
+    const bGeo = new THREE.BoxGeometry(3 + Math.random() * 8, h, 3 + Math.random() * 8);
+    const bMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color().setHSL(0.6, 0.1, 0.15 + Math.random() * 0.1),
+      roughness: 0.9
+    });
+    const b = new THREE.Mesh(bGeo, bMat);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 80;
+    b.position.set(Math.cos(angle) * dist, h / 2 - 8, Math.sin(angle) * dist - 100);
+    scene.add(b);
+  }
 }
 
+// ===================== TRUCK CREATION =====================
 function createTruck(x, z, length, speed, color) {
   const group = new THREE.Group();
 
   // Яркий корпус
-  const bodyGeo = new THREE.BoxGeometry(TRUCK_WIDTH, TRUCK_HEIGHT, length);
+  const bodyGeo = new THREE.BoxGeometry(TRUCK_W, TRUCK_H, length);
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: color,
-    roughness: 0.3,
-    metalness: 0.7,
+    color: color, roughness: 0.4, metalness: 0.5
   });
   const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = TRUCK_HEIGHT / 2;
+  body.position.y = TRUCK_H / 2;
   body.castShadow = true;
   body.receiveShadow = true;
   group.add(body);
 
-  // Полосы на корпусе
-  const stripeGeo = new THREE.BoxGeometry(TRUCK_WIDTH + 0.05, 0.12, length + 0.05);
-  const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.5, transparent: true, opacity: 0.3 });
+  // Белая полоса
+  const stripeGeo = new THREE.BoxGeometry(TRUCK_W + 0.02, 0.1, length + 0.02);
+  const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.3, transparent: true, opacity: 0.25 });
   const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-  stripe.position.y = TRUCK_HEIGHT * 0.5;
+  stripe.position.y = TRUCK_H * 0.5;
   group.add(stripe);
 
   // Кабина
-  const cabinGeo = new THREE.BoxGeometry(TRUCK_WIDTH - 0.3, TRUCK_HEIGHT * 0.65, 2.2);
-  const cabinMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.25, metalness: 0.75 });
-  const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-  cabin.position.set(0, TRUCK_HEIGHT + 0.33, length / 2 - 1.1);
-  cabin.castShadow = true;
-  group.add(cabin);
+  const cabGeo = new THREE.BoxGeometry(TRUCK_W - 0.3, TRUCK_H * 0.6, 2.2);
+  const cabMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.3, metalness: 0.7 });
+  const cab = new THREE.Mesh(cabGeo, cabMat);
+  cab.position.set(0, TRUCK_H + 0.3, length / 2 - 1.1);
+  cab.castShadow = true;
+  group.add(cab);
 
-  // Лобовое стекло
-  const wsGeo = new THREE.PlaneGeometry(TRUCK_WIDTH - 0.7, 0.85);
+  // Стекло
+  const wsGeo = new THREE.PlaneGeometry(TRUCK_W - 0.7, 0.8);
   const wsMat = new THREE.MeshStandardMaterial({
-    color: 0x88ccff, emissive: 0x224466, emissiveIntensity: 0.3,
-    roughness: 0.05, metalness: 0.95, transparent: true, opacity: 0.6
+    color: 0x88bbdd, emissive: 0x224466, emissiveIntensity: 0.2,
+    roughness: 0.05, metalness: 0.9, transparent: true, opacity: 0.5
   });
   const ws = new THREE.Mesh(wsGeo, wsMat);
-  ws.position.set(0, TRUCK_HEIGHT + 0.5, length / 2 - 0.01);
+  ws.position.set(0, TRUCK_H + 0.45, length / 2 - 0.01);
   group.add(ws);
 
   // Колёса
-  const wheelGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.35, 16);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.85, metalness: 0.2 });
-  const wheelPositions = [
-    [-TRUCK_WIDTH/2-0.18, 0.55, length/2-2.5],
-    [TRUCK_WIDTH/2+0.18, 0.55, length/2-2.5],
-    [-TRUCK_WIDTH/2-0.18, 0.55, -length/2+2.5],
-    [TRUCK_WIDTH/2+0.18, 0.55, -length/2+2.5],
-  ];
-  wheelPositions.forEach(pos => {
-    const w = new THREE.Mesh(wheelGeo, wheelMat);
+  const whGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 12);
+  const whMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+  [[-TRUCK_W/2-.15,.5,length/2-2.5],[TRUCK_W/2+.15,.5,length/2-2.5],
+   [-TRUCK_W/2-.15,.5,-length/2+2.5],[TRUCK_W/2+.15,.5,-length/2+2.5]].forEach(p => {
+    const w = new THREE.Mesh(whGeo, whMat);
     w.rotation.z = Math.PI / 2;
-    w.position.set(...pos);
+    w.position.set(...p);
     group.add(w);
   });
 
   // Фары
-  const hlGeo = new THREE.SphereGeometry(0.18, 8, 8);
-  const hlMat = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 1.5 });
-  [-1, 1].forEach(s => {
+  const hlGeo = new THREE.SphereGeometry(0.15, 6, 6);
+  const hlMat = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 1 });
+  [-1,1].forEach(s => {
     const hl = new THREE.Mesh(hlGeo, hlMat);
-    hl.position.set(s * (TRUCK_WIDTH/2 - 0.4), TRUCK_HEIGHT * 0.55, length/2 + 0.05);
+    hl.position.set(s*(TRUCK_W/2-.4), TRUCK_H*.5, length/2+.05);
     group.add(hl);
-  });
-
-  // Задние огни
-  const tlMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.0 });
-  [-1, 1].forEach(s => {
-    const tl = new THREE.Mesh(hlGeo, tlMat);
-    tl.position.set(s * (TRUCK_WIDTH/2 - 0.4), TRUCK_HEIGHT * 0.55, -length/2 - 0.05);
-    group.add(tl);
   });
 
   group.position.set(x, 0, z);
   scene.add(group);
 
-  return {
-    mesh: group,
-    speed: speed,
-    length: length,
-    width: TRUCK_WIDTH,
-    height: TRUCK_HEIGHT,
-    color: color,
-    jumped: false,
-  };
+  return { mesh: group, speed, length, width: TRUCK_W, height: TRUCK_H, color, jumped: false };
 }
 
+// ===================== PLAYER =====================
 function createPlayer() {
+  // Невидимое тело для коллизий и тени
   const group = new THREE.Group();
-
-  const bodyGeo = new THREE.CapsuleGeometry(0.35, 0.7, 6, 12);
+  const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.6, 4, 8);
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0x00ff88, emissive: 0x00aa44, emissiveIntensity: 0.4,
-    roughness: 0.25, metalness: 0.6
+    color: 0x00ff88, emissive: 0x00aa44, emissiveIntensity: 0.3,
+    roughness: 0.3, metalness: 0.5
   });
   const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.75;
+  body.position.y = 0.6;
   body.castShadow = true;
   group.add(body);
-
-  const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
-  const head = new THREE.Mesh(headGeo, bodyMat.clone());
-  head.position.y = 1.55;
-  head.castShadow = true;
-  group.add(head);
-
-  const visorGeo = new THREE.SphereGeometry(0.28, 16, 8, 0, Math.PI*2, 0, Math.PI*0.4);
-  const visorMat = new THREE.MeshStandardMaterial({
-    color: 0x111111, emissive: 0x00ffff, emissiveIntensity: 0.5,
-    roughness: 0.05, metalness: 0.95, transparent: true, opacity: 0.7
-  });
-  const visor = new THREE.Mesh(visorGeo, visorMat);
-  visor.position.set(0, 1.58, 0.05);
-  visor.rotation.x = -0.3;
-  group.add(visor);
-
-  group.add(new THREE.PointLight(0x00ff88, 1, 8));
   scene.add(group);
   return group;
 }
 
-function createParticles(position, color, count) {
+// ===================== PARTICLES =====================
+function createParticles(pos, color, count) {
   for (let i = 0; i < count; i++) {
-    const geo = new THREE.SphereGeometry(0.08 + Math.random() * 0.08, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color: color });
-    const p = new THREE.Mesh(geo, mat);
-    p.position.copy(position);
+    const g = new THREE.SphereGeometry(0.06 + Math.random() * 0.06, 4, 4);
+    const m = new THREE.MeshBasicMaterial({ color });
+    const p = new THREE.Mesh(g, m);
+    p.position.copy(pos);
     scene.add(p);
     particles.push({
       mesh: p,
-      velocity: new THREE.Vector3(
-        (Math.random()-0.5)*12,
-        Math.random()*8+2,
-        (Math.random()-0.5)*12
-      ),
-      life: 1.0,
-      decay: 1.5 + Math.random()
+      vel: new THREE.Vector3((Math.random()-.5)*10, Math.random()*6+2, (Math.random()-.5)*10),
+      life: 1, decay: 1.5 + Math.random()
     });
   }
 }
 
-function updateParticles(delta) {
+function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.velocity.y -= 18 * delta;
-    p.mesh.position.add(p.velocity.clone().multiplyScalar(delta));
-    p.life -= p.decay * delta;
+    p.vel.y -= 15 * dt;
+    p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+    p.life -= p.decay * dt;
     p.mesh.material.opacity = Math.max(0, p.life);
     p.mesh.material.transparent = true;
     p.mesh.scale.setScalar(p.life);
-    if (p.life <= 0) {
-      scene.remove(p.mesh);
-      particles.splice(i, 1);
-    }
+    if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
   }
 }
 
@@ -482,39 +444,43 @@ function clearScene() {
   trucks = [];
   particles.forEach(p => scene.remove(p.mesh));
   particles = [];
-  if (player) scene.remove(player);
+  if (playerBody) scene.remove(playerBody);
   currentTruck = null;
 }
 
-// ============ GAME START ============
-
+// ===================== GAME START =====================
 function startEndless() {
   gameMode = 'endless';
-  document.getElementById('menu-screen').style.display = 'none';
-  document.getElementById('death-screen').style.display = 'none';
-  document.getElementById('level-complete-screen').style.display = 'none';
-  document.getElementById('level-select').style.display = 'none';
+  hideAllScreens();
   clearScene();
 
-  player = createPlayer();
+  playerBody = createPlayer();
   playerVelocity = new THREE.Vector3(0, 0, 0);
   onGround = true;
-  currentTruck = null;
   score = 0;
   comboCount = 0; comboTimer = 0;
-  dashCooldown = 0; jumpCount = 0;
+  dashCooldown = 0;
   trucksSpawned = 0;
   gameActive = true;
 
-  // Спавним цепочку грузовиков вперёд (-Z), все едут вперёд
-  spawnInitialTrucksEndless();
-
-  // Ставим игрока НА первый грузовик (ближайший к 0)
-  if (trucks.length > 0) {
-    const first = trucks[0];
-    player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
-    currentTruck = first;
+  // Строим цепочку грузовиков вперёд (-Z)
+  let z = -5;
+  for (let i = 0; i < 15; i++) {
+    const lane = Math.floor(Math.random() * 3) - 1;
+    const x = lane * LANE_W;
+    const len = TRUCK_LENS[Math.floor(Math.random() * TRUCK_LENS.length)];
+    const col = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
+    const spd = 6 + Math.random() * 6;
+    const truck = createTruck(x, z, len, spd, col);
+    trucks.push(truck);
+    z -= len / 2 + 4 + Math.random() * 4 + len / 2;
+    trucksSpawned++;
   }
+
+  // Ставим игрока на первый грузовик
+  const first = trucks[0];
+  playerBody.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
+  currentTruck = first;
 
   document.getElementById('level-display').textContent = 'БЕСКОНЕЧНЫЙ';
   document.getElementById('progress-display').textContent = '';
@@ -523,94 +489,54 @@ function startEndless() {
   setTimeout(() => { if (gameActive) controls.lock(); }, 100);
 }
 
-function spawnInitialTrucksEndless() {
-  let z = -6;
-  for (let i = 0; i < 15; i++) {
-    const lane = Math.floor(Math.random() * LANE_COUNT) - Math.floor(LANE_COUNT / 2);
-    const x = lane * LANE_WIDTH;
-    const length = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-    const color = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
-    const speed = 5 + Math.random() * 7;
-
-    const truck = createTruck(x, z, length, speed, color);
-    trucks.push(truck);
-    z -= length / 2 + 4 + Math.random() * 4 + length / 2;
-    trucksSpawned++;
-  }
-}
-
-function spawnNextTruckEndless() {
-  // Находим самый дальний грузовик (самый отрицательный Z)
-  let minZ = 0;
-  for (const t of trucks) {
-    if (t.mesh.position.z < minZ) minZ = t.mesh.position.z;
-  }
-
-  const lane = Math.floor(Math.random() * LANE_COUNT) - Math.floor(LANE_COUNT / 2);
-  const x = lane * LANE_WIDTH;
-  const length = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-  const color = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
-  const speed = 5 + Math.random() * 7;
-
-  const z = minZ - length / 2 - 4 - Math.random() * 6;
-  const truck = createTruck(x, z, length, speed, color);
-  trucks.push(truck);
-  trucksSpawned++;
-}
-
-function startLevel(levelIdx) {
+function startLevel(idx) {
   gameMode = 'level';
-  currentLevel = levelIdx;
-  const level = LEVELS[levelIdx];
-
-  document.getElementById('menu-screen').style.display = 'none';
-  document.getElementById('death-screen').style.display = 'none';
-  document.getElementById('level-complete-screen').style.display = 'none';
-  document.getElementById('level-select').style.display = 'none';
+  currentLevel = idx;
+  const lv = LEVELS[idx];
+  hideAllScreens();
   clearScene();
 
-  player = createPlayer();
+  playerBody = createPlayer();
   playerVelocity = new THREE.Vector3(0, 0, 0);
   onGround = true;
-  currentTruck = null;
   score = 0;
   comboCount = 0; comboTimer = 0;
-  dashCooldown = 0; jumpCount = 0;
-  levelTrucksJumped = 0;
-  levelTrucksTotal = level.trucks;
+  dashCooldown = 0;
+  levelJumped = 0;
+  levelTotal = lv.trucks;
+  trucksSpawned = 0;
   gameActive = true;
 
-  spawnLevelTrucks(level);
-
-  // Ставим игрока на первый грузовик
-  if (trucks.length > 0) {
-    const first = trucks[0];
-    player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
-    currentTruck = first;
+  // Строим уровень
+  let z = -5;
+  for (let i = 0; i < lv.trucks; i++) {
+    const lane = lv.lanes === 1 ? 0 : (Math.floor(Math.random() * lv.lanes) - Math.floor(lv.lanes / 2));
+    const x = lane * LANE_W;
+    const len = TRUCK_LENS[Math.floor(Math.random() * TRUCK_LENS.length)];
+    const col = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
+    const spd = lv.speed * (0.85 + Math.random() * 0.3);
+    const truck = createTruck(x, z, len, spd, col);
+    trucks.push(truck);
+    z -= len / 2 + lv.gap + len / 2;
+    trucksSpawned++;
   }
 
-  document.getElementById('level-display').textContent = `Уровень ${levelIdx + 1}: ${level.name}`;
-  document.getElementById('progress-display').textContent = `0 / ${level.trucks}`;
+  const first = trucks[0];
+  playerBody.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
+  currentTruck = first;
+
+  document.getElementById('level-display').textContent = `Уровень ${idx+1}: ${lv.name}`;
+  document.getElementById('progress-display').textContent = `0 / ${lv.trucks}`;
 
   audio.init();
   setTimeout(() => { if (gameActive) controls.lock(); }, 100);
 }
 
-function spawnLevelTrucks(level) {
-  const lanes = level.lanes;
-  let z = -6;
-  for (let i = 0; i < level.trucks; i++) {
-    const lane = lanes === 1 ? 0 : (Math.floor(Math.random() * lanes) - Math.floor(lanes / 2));
-    const x = lane * LANE_WIDTH;
-    const length = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-    const color = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
-    const speed = level.speed * (0.8 + Math.random() * 0.4);
-
-    const truck = createTruck(x, z, length, speed, color);
-    trucks.push(truck);
-    z -= length / 2 + level.gap + length / 2;
-    trucksSpawned++;
-  }
+function hideAllScreens() {
+  document.getElementById('menu-screen').style.display = 'none';
+  document.getElementById('death-screen').style.display = 'none';
+  document.getElementById('level-complete-screen').style.display = 'none';
+  document.getElementById('level-select').style.display = 'none';
 }
 
 function die() {
@@ -618,36 +544,27 @@ function die() {
   audio.playDeathSound();
   controls.unlock();
 
-  const finalScore = Math.floor(score);
-  if (finalScore > bestScore) {
-    bestScore = finalScore;
-    localStorage.setItem('truckJumpBest', bestScore.toString());
-  }
+  const fs = Math.floor(score);
+  if (fs > bestScore) { bestScore = fs; localStorage.setItem('tjBest', fs.toString()); }
 
-  document.getElementById('final-score-value').textContent = finalScore;
+  document.getElementById('final-score-value').textContent = fs;
   document.getElementById('best-score-value').textContent = bestScore;
   document.getElementById('death-screen').style.display = 'flex';
 
-  createParticles(player.position, 0xff0000, 40);
-  createParticles(player.position, 0xff6600, 20);
+  createParticles(playerBody.position, 0xff4444, 30);
 }
 
 function completeLevel() {
   gameActive = false;
   controls.unlock();
 
-  const stars = levelTrucksJumped >= levelTrucksTotal ? 3 :
-                levelTrucksJumped >= levelTrucksTotal * 0.7 ? 2 : 1;
+  const stars = levelJumped >= levelTotal ? 3 : levelJumped >= levelTotal * 0.7 ? 2 : 1;
+  const done = JSON.parse(localStorage.getItem('tjLevels') || '{}');
+  done[currentLevel] = Math.max(done[currentLevel] || 0, stars);
+  localStorage.setItem('tjLevels', JSON.stringify(done));
 
-  const completed = JSON.parse(localStorage.getItem('truckJumpLevels') || '{}');
-  const prev = completed[currentLevel] || 0;
-  completed[currentLevel] = Math.max(prev, stars);
-  localStorage.setItem('truckJumpLevels', JSON.stringify(completed));
-
-  document.getElementById('level-complete-info').textContent =
-    `Грузовиков: ${levelTrucksJumped} / ${levelTrucksTotal}`;
-  document.getElementById('level-complete-stars').textContent =
-    '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+  document.getElementById('level-complete-info').textContent = `Грузовиков: ${levelJumped} / ${levelTotal}`;
+  document.getElementById('level-complete-stars').textContent = '\u2B50'.repeat(stars) + '\u2606'.repeat(3-stars);
 
   if (currentLevel < LEVELS.length - 1) {
     document.getElementById('btn-next-level').style.display = 'block';
@@ -655,139 +572,116 @@ function completeLevel() {
   } else {
     document.getElementById('btn-next-level').style.display = 'none';
   }
-
   document.getElementById('level-complete-screen').style.display = 'flex';
 }
 
-function setupControls() {
-  document.addEventListener('keydown', e => {
-    keys[e.code] = true;
-    if (e.code === 'Space') e.preventDefault();
-  });
-  document.addEventListener('keyup', e => { keys[e.code] = false; });
-
-  document.getElementById('btn-endless').addEventListener('click', startEndless);
-  document.getElementById('btn-levels').addEventListener('click', () => {
-    const ls = document.getElementById('level-select');
-    ls.style.display = ls.style.display === 'flex' ? 'none' : 'flex';
-    buildLevelSelect();
-  });
-  document.getElementById('btn-restart').addEventListener('click', () => {
-    document.getElementById('death-screen').style.display = 'none';
-    if (gameMode === 'level') startLevel(currentLevel);
-    else startEndless();
-  });
-  document.getElementById('btn-menu').addEventListener('click', goToMenu);
-  document.getElementById('btn-menu2').addEventListener('click', goToMenu);
-
-  document.getElementById('music-toggle').addEventListener('click', e => {
-    e.stopPropagation();
-    const muted = audio.toggleMute();
-    document.getElementById('music-toggle').textContent = muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
-  });
-
-  renderer.domElement.addEventListener('click', () => {
-    if (gameActive && !controls.isLocked) controls.lock();
-  });
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
-    if (fxaaPass) {
-      fxaaPass.material.uniforms['resolution'].value.set(
-        1/(window.innerWidth*renderer.getPixelRatio()),
-        1/(window.innerHeight*renderer.getPixelRatio())
-      );
-    }
-  });
-}
-
 function goToMenu() {
-  document.getElementById('death-screen').style.display = 'none';
-  document.getElementById('level-complete-screen').style.display = 'none';
+  hideAllScreens();
   document.getElementById('menu-screen').style.display = 'flex';
-  document.getElementById('level-select').style.display = 'none';
   clearScene();
   gameActive = false;
 }
 
+// ===================== CONTROLS =====================
+function setupControls() {
+  document.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
+  document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+  document.getElementById('btn-endless').onclick = startEndless;
+  document.getElementById('btn-levels').onclick = () => {
+    const ls = document.getElementById('level-select');
+    ls.style.display = ls.style.display === 'flex' ? 'none' : 'flex';
+    buildLevelSelect();
+  };
+  document.getElementById('btn-restart').onclick = () => {
+    document.getElementById('death-screen').style.display = 'none';
+    if (gameMode === 'level') startLevel(currentLevel); else startEndless();
+  };
+  document.getElementById('btn-menu').onclick = goToMenu;
+  document.getElementById('btn-menu2').onclick = goToMenu;
+
+  document.getElementById('music-toggle').onclick = e => {
+    e.stopPropagation();
+    const m = audio.toggleMute();
+    document.getElementById('music-toggle').textContent = m ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+  };
+
+  renderer.domElement.onclick = () => { if (gameActive && !controls.isLocked) controls.lock(); };
+
+  window.onresize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
+  };
+}
+
 function buildLevelSelect() {
   const ls = document.getElementById('level-select');
-  const completed = JSON.parse(localStorage.getItem('truckJumpLevels') || '{}');
+  const done = JSON.parse(localStorage.getItem('tjLevels') || '{}');
   ls.innerHTML = '';
-
-  LEVELS.forEach((level, i) => {
-    const div = document.createElement('div');
-    div.className = 'level-item';
-    const stars = completed[i] || 0;
-    const unlocked = i === 0 || (completed[i-1] || 0) > 0;
-
-    if (!unlocked) div.classList.add('locked');
-    if (stars > 0) div.classList.add('completed');
-
-    div.innerHTML = `Уровень ${i+1}: ${level.name} <span class="stars">${'\u2B50'.repeat(stars)}${'\u2606'.repeat(3-stars)}</span>`;
-
-    if (unlocked) {
-      div.onclick = () => startLevel(i);
-    }
-    ls.appendChild(div);
+  LEVELS.forEach((lv, i) => {
+    const d = document.createElement('div');
+    d.className = 'level-item';
+    const s = done[i] || 0;
+    const unlocked = i === 0 || (done[i-1] || 0) > 0;
+    if (!unlocked) d.classList.add('locked');
+    if (s > 0) d.classList.add('completed');
+    d.innerHTML = `${i+1}. ${lv.name} <span class="stars">${'\u2B50'.repeat(s)}${'\u2606'.repeat(3-s)}</span>`;
+    if (unlocked) d.onclick = () => startLevel(i);
+    ls.appendChild(d);
   });
 }
 
-// ============ COLLISION ============
+// ===================== COLLISION =====================
+function checkLanding() {
+  const pp = playerBody.position;
+  const pr = 0.4;
 
-function checkTruckLanding() {
-  const pPos = player.position;
-  const pr = 0.5;
+  for (const t of trucks) {
+    const tp = t.mesh.position;
+    const hl = t.length / 2;
+    const hw = t.width / 2;
 
-  for (const truck of trucks) {
-    const tPos = truck.mesh.position;
-    const hl = truck.length / 2;
-    const hw = truck.width / 2;
-
-    if (Math.abs(pPos.x - tPos.x) < hw + pr && Math.abs(pPos.z - tPos.z) < hl + pr) {
-      const truckTop = tPos.y + truck.height;
-      const pb = pPos.y - 0.4;
-      if (pb >= truckTop - 0.6 && pb <= truckTop + 0.8 && playerVelocity.y <= 0.5) {
-        return { truck, truckTop };
+    if (Math.abs(pp.x - tp.x) < hw + pr && Math.abs(pp.z - tp.z) < hl + pr) {
+      const top = tp.y + t.height;
+      const pb = pp.y - 0.3;
+      if (pb >= top - 0.5 && pb <= top + 0.6 && playerVelocity.y <= 0.5) {
+        return { truck: t, top };
       }
     }
   }
   return null;
 }
 
-// ============ MAIN LOOP ============
-
+// ===================== MAIN LOOP =====================
 function update() {
-  const delta = Math.min(clock.getDelta(), 0.05);
+  const dt = Math.min(clock.getDelta(), 0.05);
   const elapsed = clock.getElapsedTime();
 
   if (!gameActive) {
-    updateParticles(delta);
+    updateParticles(dt);
     composer.render();
     return;
   }
 
-  score += delta * 10;
+  score += dt * 10;
   document.getElementById('score-display').textContent = Math.floor(score);
 
   if (gameMode === 'level') {
-    document.getElementById('progress-display').textContent =
-      `${levelTrucksJumped} / ${levelTrucksTotal}`;
+    document.getElementById('progress-display').textContent = `${levelJumped} / ${levelTotal}`;
   }
 
-  // Направление камеры
-  const forward = new THREE.Vector3();
-  camera.getWorldDirection(forward);
-  forward.y = 0;
-  forward.normalize();
-  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0,1,0)).normalize();
+  // Направление от камеры (FPS)
+  const fwd = new THREE.Vector3();
+  camera.getWorldDirection(fwd);
+  fwd.y = 0;
+  fwd.normalize();
+  const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
 
   const moveDir = new THREE.Vector3();
-  if (keys['KeyW'] || keys['ArrowUp']) moveDir.add(forward);
-  if (keys['KeyS'] || keys['ArrowDown']) moveDir.sub(forward);
+  if (keys['KeyW'] || keys['ArrowUp']) moveDir.add(fwd);
+  if (keys['KeyS'] || keys['ArrowDown']) moveDir.sub(fwd);
   if (keys['KeyA'] || keys['ArrowLeft']) moveDir.sub(right);
   if (keys['KeyD'] || keys['ArrowRight']) moveDir.add(right);
   if (moveDir.length() > 0) moveDir.normalize();
@@ -797,142 +691,119 @@ function update() {
     if (onGround) {
       playerVelocity.y = JUMP_FORCE;
       onGround = false;
-      jumpCount = 1;
       currentTruck = null;
       audio.playJumpSound();
-      createParticles(player.position, 0x00ff88, 6);
-      keys['Space'] = false;
-    } else if (jumpCount < maxJumps) {
-      playerVelocity.y = JUMP_FORCE * 0.85;
-      jumpCount++;
-      audio.playJumpSound();
-      createParticles(player.position, 0x00ccff, 8);
+      createParticles(playerBody.position, 0x00ff88, 5);
       keys['Space'] = false;
     }
   }
 
   // Dash
-  dashCooldown = Math.max(0, dashCooldown - delta);
+  dashCooldown = Math.max(0, dashCooldown - dt);
   if (keys['ShiftLeft'] && dashCooldown <= 0) {
-    const dd = moveDir.length() > 0 ? moveDir.clone() : forward.clone();
+    const dd = moveDir.length() > 0 ? moveDir.clone() : fwd.clone();
     playerVelocity.add(dd.multiplyScalar(DASH_FORCE));
-    dashCooldown = 0.8;
+    dashCooldown = 1.0;
     audio.playDashSound();
-    createParticles(player.position, 0xffcc00, 10);
+    createParticles(playerBody.position, 0xffcc00, 8);
     keys['ShiftLeft'] = false;
   }
 
-  // Применяем движение
+  // Физика
   playerVelocity.x = moveDir.x * MOVE_SPEED;
   playerVelocity.z = moveDir.z * MOVE_SPEED;
-  playerVelocity.y += GRAVITY * delta;
+  playerVelocity.y += GRAVITY * dt;
 
-  // Если стоим на грузовике — добавляем его скорость к игроку
-  // (как в Clustertruck — игрок движется вместе с грузовиком)
+  // Инерция от грузовика (Clustertruck style)
   if (onGround && currentTruck) {
     playerVelocity.z -= currentTruck.speed;
   }
 
-  player.position.add(playerVelocity.clone().multiplyScalar(delta));
+  playerBody.position.add(playerVelocity.clone().multiplyScalar(dt));
 
-  // Поворот игрока
+  // Поворот
   if (moveDir.length() > 0) {
-    player.rotation.y = THREE.MathUtils.lerp(
-      player.rotation.y,
-      Math.atan2(moveDir.x, moveDir.z),
-      0.15
-    );
+    playerBody.rotation.y = THREE.MathUtils.lerp(playerBody.rotation.y, Math.atan2(moveDir.x, moveDir.z), 0.15);
   }
 
-  // Проверка приземления
-  const collision = checkTruckLanding();
-  if (collision) {
+  // Приземление
+  const col = checkLanding();
+  if (col) {
     if (!onGround && playerVelocity.y < 0) {
-      // Приземлились на новый грузовик
-      if (!collision.truck.jumped) {
-        collision.truck.jumped = true;
-        levelTrucksJumped++;
+      if (!col.truck.jumped) {
+        col.truck.jumped = true;
+        levelJumped++;
       }
       comboCount++;
       comboTimer = 2;
       audio.playLandSound();
-      createParticles(player.position, collision.truck.color, 8);
+      createParticles(playerBody.position, col.truck.color, 6);
 
       if (comboCount >= 2) {
         const el = document.getElementById('combo-display');
         el.textContent = `COMBO x${comboCount}!`;
         el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 1000);
+        setTimeout(() => el.classList.remove('show'), 800);
         score += comboCount * 50;
       }
 
-      if (gameMode === 'level' && levelTrucksJumped >= levelTrucksTotal) {
-        setTimeout(() => completeLevel(), 500);
+      if (gameMode === 'level' && levelJumped >= levelTotal) {
+        setTimeout(() => completeLevel(), 400);
       }
     }
-
-    // Ставим на поверхность грузовика
-    player.position.y = collision.truckTop + 0.4;
+    playerBody.position.y = col.top + 0.3;
     playerVelocity.y = 0;
     onGround = true;
-    jumpCount = 0;
-    currentTruck = collision.truck;
+    currentTruck = col.truck;
   } else {
     onGround = false;
     if (playerVelocity.y > 0) comboCount = 0;
   }
 
-  // Combo timer
-  if (comboTimer > 0) {
-    comboTimer -= delta;
-    if (comboTimer <= 0) comboCount = 0;
-  }
+  if (comboTimer > 0) { comboTimer -= dt; if (comboTimer <= 0) comboCount = 0; }
 
-  // Обновляем грузовики — все едут ВПЕРЁД (-Z)
+  // Двигаем грузовики ВПЕРЁД (-Z)
   for (let i = trucks.length - 1; i >= 0; i--) {
     const t = trucks[i];
-    t.mesh.position.z -= t.speed * delta;
+    t.mesh.position.z -= t.speed * dt;
 
-    // Удаляем ушедшие далеко ВПЕРЁД (-Z)
-    if (t.mesh.position.z < player.position.z - 80) {
+    if (t.mesh.position.z < playerBody.position.z - 80) {
       scene.remove(t.mesh);
       trucks.splice(i, 1);
       if (currentTruck === t) currentTruck = null;
     }
   }
 
-  // Спавним новые в бесконечном режиме
+  // Спавн новых в endless
   if (gameMode === 'endless') {
     let minZ = 0;
-    for (const t of trucks) {
-      if (t.mesh.position.z < minZ) minZ = t.mesh.position.z;
-    }
-    if (minZ > player.position.z - 150) {
-      spawnNextTruckEndless();
+    for (const t of trucks) { if (t.mesh.position.z < minZ) minZ = t.mesh.position.z; }
+    if (minZ > playerBody.position.z - 150) {
+      const lane = Math.floor(Math.random() * 3) - 1;
+      const len = TRUCK_LENS[Math.floor(Math.random() * TRUCK_LENS.length)];
+      const col2 = TRUCK_COLORS[Math.floor(Math.random() * TRUCK_COLORS.length)];
+      const spd = 6 + Math.random() * 6;
+      const z = minZ - len / 2 - 4 - Math.random() * 6;
+      const truck = createTruck(lane * LANE_W, z, len, spd, col2);
+      trucks.push(truck);
+      trucksSpawned++;
     }
   }
 
   // Смерть
-  if (player.position.y < -4) {
-    die();
-    return;
-  }
+  if (playerBody.position.y < -6) { die(); return; }
 
-  // Камера следует за игроком
-  controls.getObject().position.lerp(
-    new THREE.Vector3(
-      player.position.x,
-      player.position.y + 2.5,
-      player.position.z + 6
-    ),
-    0.08
+  // Камера от первого лица
+  controls.getObject().position.set(
+    playerBody.position.x,
+    playerBody.position.y + 1.6,
+    playerBody.position.z
   );
 
   // Лава
   if (lavaMesh) lavaMesh.material.uniforms.time.value = elapsed;
-  lavaLight.position.set(player.position.x, -2, player.position.z - 20);
 
-  updateParticles(delta);
+  updateParticles(dt);
   composer.render();
 }
 
@@ -941,215 +812,55 @@ function animate() {
   update();
 }
 
-// ============ AUDIO ENGINE ============
+// ===================== AUDIO =====================
 class AudioEngine {
   constructor() {
-    this.ctx = null;
-    this.playing = false;
-    this.muted = false;
-    this.bpm = 140;
-    this.beatInterval = 60 / this.bpm;
-    this.nextBeatTime = 0;
-    this.beatCount = 0;
-    this.bassNotes = [55, 55, 73.42, 65.41, 55, 82.41, 73.42, 55];
-    this.melodyNotes = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 349.23];
-    this.arpNotes = [440, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25];
+    this.ctx = null; this.muted = false;
+    this.bpm = 138; this.beatInterval = 60 / this.bpm;
+    this.nextBeatTime = 0; this.beatCount = 0;
+    this.bass = [55, 55, 73.42, 65.41, 55, 82.41, 73.42, 55];
+    this.melody = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 349.23];
+    this.arp = [440, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25];
   }
-
   init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.value = 0.35;
-    this.compressor = this.ctx.createDynamicsCompressor();
-    this.compressor.threshold.value = -20;
-    this.compressor.knee.value = 10;
-    this.compressor.ratio.value = 8;
-    this.masterGain.connect(this.compressor);
-    this.compressor.connect(this.ctx.destination);
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.3;
+    this.comp = this.ctx.createDynamicsCompressor();
+    this.comp.threshold.value = -20; this.comp.ratio.value = 8;
+    this.master.connect(this.comp); this.comp.connect(this.ctx.destination);
     this.nextBeatTime = this.ctx.currentTime + 0.1;
-    this.playing = true;
     this.schedule();
   }
-
   schedule() {
     while (this.nextBeatTime < this.ctx.currentTime + 0.3) {
       this.playBeat(this.nextBeatTime, this.beatCount);
-      this.nextBeatTime += this.beatInterval;
-      this.beatCount++;
+      this.nextBeatTime += this.beatInterval; this.beatCount++;
     }
-    if (this.playing) requestAnimationFrame(() => this.schedule());
+    requestAnimationFrame(() => this.schedule());
   }
-
   playBeat(time, beat) {
     if (this.muted) return;
-    const barPos = beat % 8;
-    const sixteenthPos = beat % 16;
-
-    if (sixteenthPos === 0 || sixteenthPos === 4 || sixteenthPos === 8 || sixteenthPos === 12) {
-      this.playKick(time, sixteenthPos % 8 === 0 ? 0.9 : 0.6);
-    }
-    if (barPos === 2 || barPos === 6) this.playSnare(time);
-    this.playHiHat(time, sixteenthPos % 2 === 0 ? 0.12 : 0.06);
-    if (sixteenthPos % 2 === 0) this.playBass(time, this.bassNotes[barPos]);
-    if (barPos % 2 === 0) this.playMelody(time, this.melodyNotes[barPos]);
-    if (sixteenthPos % 4 === 0) this.playArp(time, this.arpNotes[sixteenthPos % 8]);
+    const bp = beat % 8, sp = beat % 16;
+    if (sp===0||sp===4||sp===8||sp===12) this.kick(time, sp%8===0?.8:.5);
+    if (bp===2||bp===6) this.snare(time);
+    this.hihat(time, sp%2===0?.1:.05);
+    if (sp%2===0) this.bassNote(time, this.bass[bp]);
+    if (bp%2===0) this.melNote(time, this.melody[bp]);
+    if (sp%4===0) this.arpNote(time, this.arp[sp%8]);
   }
-
-  playKick(time, vol) {
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(160, time);
-    osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
-    g.gain.setValueAtTime(vol, time);
-    g.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-    osc.connect(g); g.connect(this.masterGain);
-    osc.start(time); osc.stop(time + 0.25);
-  }
-
-  playSnare(time) {
-    const bufSize = this.ctx.sampleRate * 0.12;
-    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buf;
-    const ng = this.ctx.createGain();
-    ng.gain.setValueAtTime(0.35, time);
-    ng.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
-    const filt = this.ctx.createBiquadFilter();
-    filt.type = 'highpass'; filt.frequency.value = 1200;
-    noise.connect(filt); filt.connect(ng); ng.connect(this.masterGain);
-    noise.start(time); noise.stop(time + 0.12);
-
-    const osc = this.ctx.createOscillator();
-    const og = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(180, time);
-    osc.frequency.exponentialRampToValueAtTime(80, time + 0.06);
-    og.gain.setValueAtTime(0.25, time);
-    og.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-    osc.connect(og); og.connect(this.masterGain);
-    osc.start(time); osc.stop(time + 0.08);
-  }
-
-  playHiHat(time, vol) {
-    const bufSize = this.ctx.sampleRate * 0.04;
-    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buf;
-    const g = this.ctx.createGain();
-    g.gain.setValueAtTime(vol, time);
-    g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-    const f = this.ctx.createBiquadFilter();
-    f.type = 'highpass'; f.frequency.value = 6000;
-    noise.connect(f); f.connect(g); g.connect(this.masterGain);
-    noise.start(time); noise.stop(time + 0.04);
-  }
-
-  playBass(time, freq) {
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.18, time);
-    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.85);
-    const f = this.ctx.createBiquadFilter();
-    f.type = 'lowpass'; f.frequency.value = 350; f.Q.value = 2;
-    osc.connect(f); f.connect(g); g.connect(this.masterGain);
-    osc.start(time); osc.stop(time + this.beatInterval);
-  }
-
-  playMelody(time, freq) {
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.05, time);
-    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.7);
-    const f = this.ctx.createBiquadFilter();
-    f.type = 'lowpass'; f.frequency.value = 1800;
-    osc.connect(f); f.connect(g); g.connect(this.masterGain);
-    osc.start(time); osc.stop(time + this.beatInterval);
-  }
-
-  playArp(time, freq) {
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.04, time);
-    g.gain.exponentialRampToValueAtTime(0.001, time + this.beatInterval * 0.4);
-    osc.connect(g); g.connect(this.masterGain);
-    osc.start(time); osc.stop(time + this.beatInterval * 0.5);
-  }
-
-  playJumpSound() {
-    if (!this.ctx || this.muted) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(250, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(500, this.ctx.currentTime + 0.12);
-    g.gain.setValueAtTime(0.15, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-    osc.connect(g); g.connect(this.masterGain);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.15);
-  }
-
-  playLandSound() {
-    if (!this.ctx || this.muted) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.12);
-    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
-    osc.connect(g); g.connect(this.masterGain);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.18);
-  }
-
-  playDeathSound() {
-    if (!this.ctx || this.muted) return;
-    for (let i = 0; i < 6; i++) {
-      const osc = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(500 - i * 70, this.ctx.currentTime + i * 0.08);
-      g.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.08);
-      g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.08 + 0.2);
-      osc.connect(g); g.connect(this.masterGain);
-      osc.start(this.ctx.currentTime + i * 0.08);
-      osc.stop(this.ctx.currentTime + i * 0.08 + 0.2);
-    }
-  }
-
-  playDashSound() {
-    if (!this.ctx || this.muted) return;
-    const osc = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.15);
-    g.gain.setValueAtTime(0.12, this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-    osc.connect(g); g.connect(this.masterGain);
-    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
-  }
-
-  toggleMute() {
-    this.muted = !this.muted;
-    if (this.masterGain) this.masterGain.gain.value = this.muted ? 0 : 0.35;
-    return this.muted;
-  }
-
-  setSpeedMultiplier(mult) {
-    this.bpm = 140 * Math.min(mult, 2.5);
-    this.beatInterval = 60 / this.bpm;
-  }
+  kick(t,v){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(35,t+.12);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+.2);}
+  snare(t){const b=this.ctx.createBuffer(1,this.ctx.sampleRate*.1,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=b;const g=this.ctx.createGain();g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);const f=this.ctx.createBiquadFilter();f.type='highpass';f.frequency.value=1000;n.connect(f);f.connect(g);g.connect(this.master);n.start(t);n.stop(t+.1);}
+  hihat(t,v){const b=this.ctx.createBuffer(1,this.ctx.sampleRate*.03,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=b;const g=this.ctx.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.03);const f=this.ctx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);g.connect(this.master);n.start(t);n.stop(t+.03);}
+  bassNote(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+this.beatInterval*.8);const fl=this.ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=300;o.connect(fl);fl.connect(g);g.connect(this.master);o.start(t);o.stop(t+this.beatInterval);}
+  melNote(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.04,t);g.gain.exponentialRampToValueAtTime(.001,t+this.beatInterval*.7);const fl=this.ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1500;o.connect(fl);fl.connect(g);g.connect(this.master);o.start(t);o.stop(t+this.beatInterval);}
+  arpNote(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.03,t);g.gain.exponentialRampToValueAtTime(.001,t+this.beatInterval*.4);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+this.beatInterval*.5);}
+  playJumpSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(250,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(500,this.ctx.currentTime+.1);g.gain.setValueAtTime(.12,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.12);o.connect(g);g.connect(this.master);o.start();o.stop(this.ctx.currentTime+.12);}
+  playLandSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(180,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(60,this.ctx.currentTime+.1);g.gain.setValueAtTime(.2,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.15);o.connect(g);g.connect(this.master);o.start();o.stop(this.ctx.currentTime+.15);}
+  playDeathSound(){if(!this.ctx||this.muted)return;for(let i=0;i<5;i++){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(400-i*60,this.ctx.currentTime+i*.08);g.gain.setValueAtTime(.12,this.ctx.currentTime+i*.08);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+i*.08+.15);o.connect(g);g.connect(this.master);o.start(this.ctx.currentTime+i*.08);o.stop(this.ctx.currentTime+i*.08+.15);}}
+  playDashSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+.12);g.gain.setValueAtTime(.1,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.15);o.connect(g);g.connect(this.master);o.start();o.stop(this.ctx.currentTime+.15);}
+  toggleMute(){this.muted=!this.muted;if(this.master)this.master.gain.value=this.muted?0:.3;return this.muted;}
+  setSpeed(m){this.bpm=138*Math.min(m,2.5);this.beatInterval=60/this.bpm;}
 }
 
 init();
