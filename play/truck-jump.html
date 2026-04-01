@@ -627,10 +627,8 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
-      // Инерция от грузовика при прыжке
-      if (ct) {
-        pv.z -= ct.speed * 0.5;
-      }
+      // При прыжке сохраняем полную инерцию грузовика
+      // pv.z уже содержит скорость грузовика, просто отпускаем
       ct = null;
       audio.playJumpSound();
       createParticles(player.position, 0xffffff, 4);
@@ -648,13 +646,22 @@ function update() {
   }
 
   // Physics
-  pv.x = md.x * MS;
-  pv.z = md.z * MS;
   pv.y += G * dt;
 
-  // Inertia from truck - игрок движется вместе с грузовиком
+  // Управление движением (WASD)
+  const inputX = md.x * MS;
+  const inputZ = md.z * MS;
+
   if (onGround && ct) {
-    pv.z -= ct.speed;
+    // На грузовике: позиция = скорость грузовика + ввод
+    pv.x = inputX;
+    pv.z = -ct.speed + inputZ;
+  } else {
+    // В воздухе: инерция сохраняется, WASD добавляет небольшое управление
+    pv.x += (inputX - pv.x) * 0.1;
+    pv.z += inputZ * 0.15;
+    // Очень лёгкое затухание только по X
+    pv.x *= 0.98;
   }
 
   player.position.add(pv.clone().multiplyScalar(dt));
