@@ -120,6 +120,7 @@ let trucks = [], particles = [], roadLines = [], finishLine = null;
 let audio, keys = {};
 let mode = 'endless', cLevel = 0, score = 0, best = +localStorage.getItem('tjB') || 0;
 let lj = 0, lt = 0, active = false, ct = null, gameTime = 0;
+let jumpSpeedZ = 0; // Сохраняем скорость грузовика при прыжке
 
 function init() {
   clock = new THREE.Clock();
@@ -650,9 +651,9 @@ function update() {
     if (onGround) {
       pv.y = JF;
       onGround = false;
-      // Сохраняем скорость грузовика + импульс вперёд
+      // Запоминаем скорость грузовика при прыжке
       if (ct) {
-        pv.z = -ct.speed - 2;
+        jumpSpeedZ = -ct.speed;
       }
       ct = null;
       audio.playJumpSound();
@@ -663,7 +664,7 @@ function update() {
 
   // Dash
   if (keys['ShiftLeft'] && onGround) {
-    pv.z -= DF;
+    jumpSpeedZ -= 5;
     audio.playDashSound();
     createParticles(player.position, 0xffcc00, 6);
     keys['ShiftLeft'] = false;
@@ -673,18 +674,15 @@ function update() {
   pv.y += G * dt;
 
   if (onGround && ct) {
-    // На грузовике: скорость = скорость грузовика + WASD
-    pv.x = md.x * MS;
-    pv.z = -ct.speed + md.z * MS;
+    // На грузовике: двигаемся вместе с ним
+    player.position.x += md.x * MS * dt;
+    player.position.z += (-ct.speed + md.z * MS) * dt;
   } else {
-    // В воздухе: сохраняем текущую pv.z (скорость грузовика), WASD слегка корректирует
-    pv.x = md.x * MS * 0.5;
-    // pv.z НЕ перезаписываем - он уже содержит скорость грузовика от прыжка
-    // Только добавляем WASD влияние
-    pv.z += md.z * 0.3;
+    // В воздухе: гравитация + сохранённая скорость грузовика + WASD
+    player.position.y += pv.y * dt;
+    player.position.x += md.x * MS * dt;
+    player.position.z += (jumpSpeedZ + md.z * MS) * dt;
   }
-
-  player.position.add(pv.clone().multiplyScalar(dt));
 
   if (md.length() > 0) {
     player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, Math.atan2(md.x, md.z), 0.15);
