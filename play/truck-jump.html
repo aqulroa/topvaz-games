@@ -4,36 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clustertruck Web Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #050510; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #050510; font-family: 'Outfit', 'Segoe UI', sans-serif; user-select: none; }
         canvas { display: block; width: 100vw; height: 100vh; }
         #ui { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); mix-blend-mode: difference; }
         
-        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(5,5,10,0.85); backdrop-filter: blur(8px); pointer-events: auto; }
+        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; }
         .hidden { display: none !important; }
         
-        h1 { font-size: 72px; color: #ff3333; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,50,50,0.6); }
-        .subtitle { color: #aaa; font-size: 20px; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
+        /* === MAIN MENU === */
+        #menu-screen {
+            background: linear-gradient(135deg, rgba(10,5,25,0.95), rgba(20,10,40,0.95));
+            backdrop-filter: blur(12px);
+        }
+        .menu-title {
+            font-size: 80px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 6px;
+            margin: 0; line-height: 1;
+            background: linear-gradient(135deg, #ff4444, #ff8800, #ff4444);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(255,68,68,0.4));
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        @keyframes titlePulse {
+            0%,100% { filter: drop-shadow(0 0 30px rgba(255,68,68,0.4)); }
+            50% { filter: drop-shadow(0 0 50px rgba(255,136,0,0.6)); }
+        }
+        .menu-subtitle {
+            color: rgba(255,255,255,0.4); font-size: 16px; letter-spacing: 8px;
+            text-transform: uppercase; margin: 8px 0 30px 0;
+        }
         
-        .btn-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; max-width: 800px; padding: 20px; }
-        button { background: rgba(255,255,255,0.05); border: 2px solid #555; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; transition: all 0.2s ease; backdrop-filter: blur(4px); }
-        button:hover { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: scale(1.05); }
-        button.primary { border-color: #ff3333; color: #ff3333; background: rgba(255,50,50,0.1); }
-        button.primary:hover { border-color: #ff3333; background: #ff3333; color: white; box-shadow: 0 0 30px rgba(255,50,50,0.8); }
+        /* Tabs */
+        .tab-bar {
+            display: flex; gap: 0; margin-bottom: 24px; border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab-btn {
+            padding: 14px 36px; font-size: 15px; font-weight: 600; cursor: pointer;
+            background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5);
+            border: none; text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.3s ease; font-family: inherit;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); transform: none; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(255,68,68,0.3), rgba(255,136,0,0.2));
+            color: #ff6644; box-shadow: inset 0 -2px 0 #ff4444;
+        }
         
-        #hud { position: absolute; top: 20px; left: 20px; font-size: 24px; color: white; font-weight: bold; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
-        #center-msg { position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 54px; font-weight: 900; color: white; background: rgba(0,30,50,0.6); padding: 5px 30px; border-left: 10px solid white; border-right: 10px solid white; text-transform: uppercase; font-family: 'Arial Black', sans-serif; opacity: 1; transition: opacity 0.3s; z-index: 10; }
+        /* Level Grid */
+        .level-panel {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 24px; max-width: 560px; width: 90%;
+            max-height: 50vh; overflow-y: auto;
+        }
+        .level-panel::-webkit-scrollbar { width: 6px; }
+        .level-panel::-webkit-scrollbar-track { background: transparent; }
+        .level-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
         
-        .controls-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; }
-        .controls-hint b { color: #ff9900; }
+        .biome-section { margin-bottom: 16px; }
+        .biome-label {
+            font-size: 12px; color: rgba(255,255,255,0.35); letter-spacing: 3px;
+            text-transform: uppercase; margin-bottom: 8px; padding-left: 4px;
+        }
+        .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .level-cell {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; border-radius: 10px; cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.02); transition: all 0.2s ease;
+            position: relative; overflow: hidden;
+        }
+        .level-cell.unlocked {
+            border-color: rgba(255,255,255,0.2); color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+        .level-cell.unlocked:hover {
+            border-color: #ff6644; background: rgba(255,68,68,0.15);
+            transform: scale(1.1); box-shadow: 0 0 20px rgba(255,68,68,0.3);
+        }
+        .level-cell.completed {
+            border-color: rgba(0,255,170,0.3); background: rgba(0,255,170,0.08);
+        }
+        .level-cell.completed::after {
+            content: '✓'; position: absolute; top: 2px; right: 4px;
+            font-size: 10px; color: #00ffaa;
+        }
+        .level-cell.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        
+        /* Infinite Panel */
+        .infinite-panel {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 32px; max-width: 420px; width: 90%;
+            text-align: center;
+        }
+        .infinite-panel .inf-icon { font-size: 48px; margin-bottom: 12px; }
+        .inf-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+        .inf-desc { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 8px; line-height: 1.5; }
+        .inf-best {
+            font-size: 14px; color: rgba(255,136,0,0.8); margin-bottom: 20px;
+            padding: 8px 16px; background: rgba(255,136,0,0.08); border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .play-btn {
+            padding: 16px 48px; font-size: 18px; font-weight: 800; cursor: pointer;
+            background: linear-gradient(135deg, #ff4444, #ff6600); color: white;
+            border: none; border-radius: 12px; text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.25s ease; font-family: inherit;
+            box-shadow: 0 4px 20px rgba(255,68,0,0.3);
+        }
+        .play-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(255,68,0,0.5); background: linear-gradient(135deg, #ff5555, #ff7700);
+            color: white;
+        }
+        
+        /* Progress bar */
+        .progress-bar-wrap {
+            width: 100%; height: 6px; background: rgba(255,255,255,0.06);
+            border-radius: 3px; margin: 16px 0 8px; overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(90deg, #ff4444, #00ffaa);
+            transition: width 0.5s ease;
+        }
+        .progress-text { font-size: 12px; color: rgba(255,255,255,0.3); }
+        
+        /* HUD */
+        #hud { position: absolute; top: 20px; left: 20px; font-size: 22px; color: white; font-weight: 700; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; line-height: 1.4; }
+        #center-msg { position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: 900; color: white; background: linear-gradient(90deg, rgba(255,68,68,0.4), rgba(0,30,50,0.6)); padding: 8px 30px; border-left: 4px solid #ff4444; border-right: 4px solid #ff4444; text-transform: uppercase; font-family: 'Outfit', sans-serif; opacity: 1; transition: opacity 0.3s; z-index: 10; border-radius: 4px; }
+        
+        .controls-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; letter-spacing: 1px; }
+        .controls-hint b { color: #ff8844; }
 
-        #win-screen h1 { color: #00ffaa; text-shadow: 0 0 20px rgba(0,255,170,0.6); }
-        #win-screen button.primary { border-color: #00ffaa; color: #00ffaa; background: rgba(0,255,170,0.1); }
-        #win-screen button.primary:hover { background: #00ffaa; border-color: #00ffaa; color: black; box-shadow: 0 0 30px rgba(0,255,170,0.8); }
+        /* Death/Win/Victory screens */
+        .overlay-screen {
+            background: rgba(5,5,15,0.88); backdrop-filter: blur(12px);
+        }
+        .overlay-screen h1 { font-size: 64px; margin: 0 0 8px; font-weight: 900; }
+        .overlay-screen .subtitle { color: rgba(255,255,255,0.4); font-size: 16px; margin-bottom: 28px; text-transform: uppercase; letter-spacing: 3px; }
+        #death-screen h1 { color: #ff3333; text-shadow: 0 0 30px rgba(255,50,50,0.5); }
+        #win-screen h1 { color: #00ffaa; text-shadow: 0 0 30px rgba(0,255,170,0.5); }
+        #victory-screen h1 { color: #ffd700; text-shadow: 0 0 40px rgba(255,215,0,0.6); font-size: 80px; }
         
-        #victory-screen h1 { color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.8); font-size: 90px; }
-        
+        .overlay-btn { display: flex; gap: 12px; }
+        .overlay-btn button {
+            padding: 14px 32px; font-size: 16px; font-weight: 700; cursor: pointer;
+            border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.2s ease; font-family: inherit;
+        }
+        .btn-primary-red { background: linear-gradient(135deg, #ff3333, #ff5500); border: none; color: white; }
+        .btn-primary-red:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255,50,50,0.5); color: white; background: linear-gradient(135deg, #ff4444, #ff6600); }
+        .btn-primary-green { background: linear-gradient(135deg, #00cc88, #00ffaa); border: none; color: #000; }
+        .btn-primary-green:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(0,255,170,0.5); color: #000; background: linear-gradient(135deg, #00dd99, #33ffbb); }
+        .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); color: white; transform: scale(1.05); }
     </style>
     <script type="importmap">
     {
@@ -55,37 +185,66 @@
 </div>
 
 <div id="menu-screen" class="screen">
-    <h1>Clustertruck</h1>
-    <div class="subtitle">Procedural Web Edition</div>
-    <div class="btn-container">
-        <button class="primary" id="btn-campaign">Campaign Mode</button>
-        <button id="btn-infinite">Infinite Mode</button>
+    <h1 class="menu-title">Clustertruck</h1>
+    <div class="menu-subtitle">Web Edition</div>
+    
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tab-campaign">Кампания</button>
+        <button class="tab-btn" id="tab-infinite">Бесконечный</button>
+    </div>
+    
+    <!-- Campaign Tab -->
+    <div id="campaign-panel" class="level-panel">
+        <div class="biome-section">
+            <div class="biome-label">🏙️ Город — Уровни 1-5</div>
+            <div class="level-grid" id="levels-urban"></div>
+        </div>
+        <div class="biome-section">
+            <div class="biome-label">🏜️ Пустыня — Уровни 6-15</div>
+            <div class="level-grid" id="levels-desert"></div>
+        </div>
+        <div class="biome-section">
+            <div class="biome-label">❄️ Зима — Уровни 16-25</div>
+            <div class="level-grid" id="levels-winter"></div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <div class="progress-text" id="progress-text">0 / 25 уровней пройдено</div>
+    </div>
+    
+    <!-- Infinite Tab -->
+    <div id="infinite-panel" class="infinite-panel hidden">
+        <div class="inf-icon">∞</div>
+        <div class="inf-title">Бесконечный Режим</div>
+        <div class="inf-desc">Бегите как можно дальше! Препятствия появляются с 300 очков и усложняются.</div>
+        <div class="inf-best" id="inf-best-score">Лучший результат: 0</div>
+        <br>
+        <button class="play-btn" id="btn-infinite">Играть</button>
     </div>
 </div>
 
-<div id="death-screen" class="screen hidden">
-    <h1>Wasted</h1>
-    <div class="subtitle">The floor is lava</div>
-    <div class="btn-container">
-        <button class="primary" id="btn-restart-death">Restart Level</button>
-        <button id="btn-menu-death">Main Menu</button>
+<div id="death-screen" class="screen overlay-screen hidden">
+    <h1>Провал</h1>
+    <div class="subtitle">Пол — это лава</div>
+    <div class="overlay-btn">
+        <button class="btn-primary-red" id="btn-restart-death">Рестарт</button>
+        <button class="btn-secondary" id="btn-menu-death">Меню</button>
     </div>
 </div>
 
-<div id="win-screen" class="screen hidden">
-    <h1>Level Cleared!</h1>
-    <div class="subtitle">Nice jumping</div>
-    <div class="btn-container">
-        <button class="primary" id="btn-next-level">Next Level</button>
-        <button id="btn-menu-win">Main Menu</button>
+<div id="win-screen" class="screen overlay-screen hidden">
+    <h1>Уровень Пройден!</h1>
+    <div class="subtitle">Отличный прыжок</div>
+    <div class="overlay-btn">
+        <button class="btn-primary-green" id="btn-next-level">Далее</button>
+        <button class="btn-secondary" id="btn-menu-win">Меню</button>
     </div>
 </div>
 
-<div id="victory-screen" class="screen hidden">
-    <h1>VICTORY!</h1>
-    <div class="subtitle">You completed all 20 levels!</div>
-    <div class="btn-container">
-        <button class="primary" id="btn-menu-vic">Return to Menu</button>
+<div id="victory-screen" class="screen overlay-screen hidden">
+    <h1>Победа!</h1>
+    <div class="subtitle">Все 25 уровней пройдены!</div>
+    <div class="overlay-btn">
+        <button class="btn-primary-green" id="btn-menu-vic">В Меню</button>
     </div>
 </div>
 
@@ -101,6 +260,40 @@ let mode = 'campaign'; // 'campaign' or 'infinite'
 let currentLevel = 1;
 const MAX_LEVELS = 25;
 
+// --- SAVE SYSTEM ---
+const SaveManager = {
+    _key: 'clustertruck_save',
+    _load() {
+        try { return JSON.parse(localStorage.getItem(this._key)) || {}; } catch(e) { return {}; }
+    },
+    _save(data) {
+        try { localStorage.setItem(this._key, JSON.stringify(data)); } catch(e) {}
+    },
+    getCompletedLevels() {
+        return this._load().completedLevels || [];
+    },
+    getMaxUnlocked() {
+        const completed = this.getCompletedLevels();
+        return completed.length > 0 ? Math.max(...completed) + 1 : 1;
+    },
+    completeLevel(lvl) {
+        const data = this._load();
+        if(!data.completedLevels) data.completedLevels = [];
+        if(!data.completedLevels.includes(lvl)) data.completedLevels.push(lvl);
+        this._save(data);
+    },
+    getBestInfiniteScore() {
+        return this._load().bestInfinite || 0;
+    },
+    setBestInfiniteScore(score) {
+        const data = this._load();
+        if(score > (data.bestInfinite || 0)) {
+            data.bestInfinite = score;
+            this._save(data);
+        }
+    }
+};
+
 // --- GLOBALS ---
 let scene, camera, renderer, world, controls;
 let clock = new THREE.Clock();
@@ -108,6 +301,7 @@ let playerBody;
 let entities = []; // Syncs Physics -> Three
 let trucks = [];
 let keys = { w:false, a:false, s:false, d:false, space:false, shift:false };
+const MAX_TRUCKS = 60; // Hard limit for performance
 
 // Physics Materials
 const physWorldMat = new CANNON.Material("world");
@@ -125,6 +319,15 @@ let spawnZ = -50;
 let lastTruckSpawnZ = 0;
 const BASE_FOV = 80;
 const MAX_FOV = 100;
+
+// Pre-allocated temp objects to avoid GC pressure
+const _tmpVec3 = new THREE.Vector3();
+const _tmpEuler = new THREE.Euler();
+const _tmpCannonVec = new CANNON.Vec3();
+const _rayStart = new CANNON.Vec3();
+const _rayEnd = new CANNON.Vec3();
+const _inputVec = new THREE.Vector3();
+const _forceVec = new CANNON.Vec3();
 
 // ============================
 // === THEME MANAGER ===
@@ -193,80 +396,72 @@ class ThemeManager {
     }
     
     createBiomeDecorations(scene, biome) {
+        this._decoGroup = new THREE.Group();
+        scene.add(this._decoGroup);
         if(biome === 'urban') {
-            // Neon street lights along the road
+            // Neon street lights - reduced count, NO point lights for perf
             const neonColors = [0xff0066, 0x00ffcc, 0xff6600, 0x6600ff];
-            for(let i = 0; i < 30; i++) {
+            const poleGeo = new THREE.BoxGeometry(0.3, 12, 0.3);
+            const poleMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const lightGeo = new THREE.BoxGeometry(3, 0.3, 0.3);
+            for(let i = 0; i < 15; i++) {
                 const side = i % 2 === 0 ? 1 : -1;
-                const zPos = 50 - i * 120;
-                // Light pole
-                const poleGeo = new THREE.BoxGeometry(0.3, 12, 0.3);
-                const poleMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+                const zPos = 50 - i * 240;
                 const pole = new THREE.Mesh(poleGeo, poleMat);
                 pole.position.set(side * 25, 6, zPos);
-                scene.add(pole);
-                // Neon light
+                this._decoGroup.add(pole);
                 const neonColor = neonColors[i % neonColors.length];
-                const lightGeo = new THREE.BoxGeometry(3, 0.3, 0.3);
                 const lightMat = new THREE.MeshBasicMaterial({ color: neonColor });
                 const light = new THREE.Mesh(lightGeo, lightMat);
                 light.position.set(side * 24, 12, zPos);
-                scene.add(light);
-                // Point light glow
-                const pl = new THREE.PointLight(neonColor, 0.5, 15);
-                pl.position.copy(light.position);
-                scene.add(pl);
+                this._decoGroup.add(light);
             }
-            // Skyscraper silhouettes
+            // Skyscraper silhouettes - reduced count
             const bldgMat = new THREE.MeshLambertMaterial({ color: 0x222233 });
-            for(let i = 0; i < 20; i++) {
+            for(let i = 0; i < 12; i++) {
                 const side = i % 2 === 0 ? 1 : -1;
                 const h = 80 + Math.random() * 120;
                 const geo = new THREE.BoxGeometry(20 + Math.random()*20, h, 20 + Math.random()*20);
                 const m = new THREE.Mesh(geo, bldgMat);
-                m.position.set(side * (60 + Math.random()*40), h/2, 100 - i * 200);
-                scene.add(m);
+                m.position.set(side * (60 + Math.random()*40), h/2, 100 - i * 300);
+                this._decoGroup.add(m);
             }
         } else if(biome === 'desert') {
-            // Sandstone pillars
+            // Sandstone pillars - reduced
             const pillarMat = new THREE.MeshLambertMaterial({ color: 0xc4944a, flatShading: true });
-            for(let i = 0; i < 15; i++) {
+            for(let i = 0; i < 10; i++) {
                 const side = i % 2 === 0 ? 1 : -1;
                 const h = 20 + Math.random() * 40;
-                const geo = new THREE.CylinderGeometry(3 + Math.random()*4, 4 + Math.random()*5, h, 6);
+                const geo = new THREE.CylinderGeometry(3 + Math.random()*4, 4 + Math.random()*5, h, 5);
                 const m = new THREE.Mesh(geo, pillarMat);
-                m.position.set(side * (35 + Math.random()*30), h/2, 50 - i * 180);
-                m.castShadow = true;
-                scene.add(m);
+                m.position.set(side * (35 + Math.random()*30), h/2, 50 - i * 250);
+                this._decoGroup.add(m);
             }
         } else if(biome === 'winter') {
-            // Pine tree silhouettes
             const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3520 });
             const pineMat = new THREE.MeshLambertMaterial({ color: 0x2a5530 });
-            for(let i = 0; i < 25; i++) {
+            const trunkGeo = new THREE.CylinderGeometry(0.5, 0.7, 8, 5);
+            for(let i = 0; i < 15; i++) {
                 const side = i % 2 === 0 ? 1 : -1;
                 const x = side * (30 + Math.random()*30);
-                const z = 50 - i * 130;
-                // Trunk
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 8, 6), trunkMat);
+                const z = 50 - i * 200;
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
                 trunk.position.set(x, 4, z);
-                scene.add(trunk);
-                // Pine cone layers
-                for(let j = 0; j < 3; j++) {
+                this._decoGroup.add(trunk);
+                for(let j = 0; j < 2; j++) {
                     const coneH = 5 - j;
                     const coneR = 4 - j * 1.2;
-                    const cone = new THREE.Mesh(new THREE.ConeGeometry(coneR, coneH, 6), pineMat);
-                    cone.position.set(x, 8 + j * 3, z);
-                    cone.castShadow = true;
-                    scene.add(cone);
+                    const cone = new THREE.Mesh(new THREE.ConeGeometry(coneR, coneH, 5), pineMat);
+                    cone.position.set(x, 8 + j * 3.5, z);
+                    this._decoGroup.add(cone);
                 }
             }
-            // Snow particles
+            // Snow particles - reduced count
             this.snowGroup = new THREE.Group();
-            scene.add(this.snowGroup);
-            const snowGeo = new THREE.SphereGeometry(0.1, 4, 4);
+            this._decoGroup.add(this.snowGroup);
+            const snowGeo = new THREE.SphereGeometry(0.1, 3, 3);
             const snowMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
-            for(let i = 0; i < 200; i++) {
+            for(let i = 0; i < 80; i++) {
                 const flake = new THREE.Mesh(snowGeo, snowMat);
                 flake.position.set(
                     (Math.random()-0.5) * 60,
@@ -504,7 +699,7 @@ class VFXManager {
         scene.add(this.windGroup);
         const streakGeo = new THREE.BoxGeometry(0.03, 0.03, 2.0);
         const streakMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
-        for(let i = 0; i < 40; i++) {
+        for(let i = 0; i < 20; i++) {
             const streak = new THREE.Mesh(streakGeo, streakMat.clone());
             streak.visible = false;
             this.windGroup.add(streak);
@@ -518,7 +713,9 @@ class VFXManager {
         this.windParticles.forEach(p => {
             if(p.life > 0) {
                 p.life -= dt;
-                p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+                p.mesh.position.x += p.vel.x * dt;
+                p.mesh.position.y += p.vel.y * dt;
+                p.mesh.position.z += p.vel.z * dt;
                 p.mesh.material.opacity = p.life * 0.4 * intensity;
                 if(p.life <= 0) p.mesh.visible = false;
             } else if(intensity > 0.1 && Math.random() < intensity * 0.5) {
@@ -537,10 +734,10 @@ class VFXManager {
     
     spawnExplosion(pos) {
         const colors = [0xff4400, 0xff8800, 0xffcc00, 0x333333];
-        for(let i = 0; i < 15; i++) {
+        for(let i = 0; i < 8; i++) {
             const size = 0.3 + Math.random()*0.8;
             const geo = new THREE.BoxGeometry(size,size,size);
-            const mat = new THREE.MeshBasicMaterial({ color: colors[Math.floor(Math.random()*colors.length)], transparent:true, opacity:1});
+            const mat = new THREE.MeshBasicMaterial({ color: colors[i % colors.length], transparent:true, opacity:1});
             const mesh = new THREE.Mesh(geo, mat); mesh.position.copy(pos); scene.add(mesh);
             this.explosionParticles.push({
                 mesh, vel: new THREE.Vector3((Math.random()-0.5)*20, 5+Math.random()*15, (Math.random()-0.5)*20), life: 0.5+Math.random()
@@ -551,7 +748,10 @@ class VFXManager {
     updateExplosions(dt) {
         for(let i = this.explosionParticles.length-1; i >= 0; i--) {
             const p = this.explosionParticles[i];
-            p.life -= dt; p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+            p.life -= dt;
+            p.mesh.position.x += p.vel.x * dt;
+            p.mesh.position.y += p.vel.y * dt;
+            p.mesh.position.z += p.vel.z * dt;
             p.vel.y -= 20*dt; p.mesh.material.opacity = Math.max(0, p.life);
             p.mesh.rotation.x += dt*5; p.mesh.rotation.z += dt*3;
             if(p.life <= 0) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); this.explosionParticles.splice(i,1); }
@@ -580,24 +780,14 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = false; // Disabled for performance — no objects cast shadows
     document.body.appendChild(renderer.domElement);
 
     // Lights
-    const ambientInfo = new THREE.AmbientLight(0xffffff, 0.2);
+    const ambientInfo = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientInfo);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(100, 200, 50);
-    dirLight.castShadow = true;
-    dirLight.shadow.camera.near = 10;
-    dirLight.shadow.camera.far = 500;
-    dirLight.shadow.camera.left = -100;
-    dirLight.shadow.camera.right = 100;
-    dirLight.shadow.camera.top = 100;
-    dirLight.shadow.camera.bottom = -100;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
     scene.add(dirLight);
 
     // Fill Light
@@ -625,13 +815,27 @@ function init() {
     controls = new PointerLockControls(camera, document.body);
     
     // UI Event Listeners
-    document.getElementById('btn-campaign').addEventListener('click', () => { mode = 'campaign'; currentLevel = 1; startGame(); });
     document.getElementById('btn-infinite').addEventListener('click', () => { mode = 'infinite'; startGame(); });
     document.getElementById('btn-restart-death').addEventListener('click', () => { startGame(); });
     document.getElementById('btn-menu-death').addEventListener('click', showMenu);
     document.getElementById('btn-next-level').addEventListener('click', () => { currentLevel++; startGame(); });
     document.getElementById('btn-menu-win').addEventListener('click', showMenu);
     document.getElementById('btn-menu-vic').addEventListener('click', showMenu);
+    
+    // Tab switching
+    document.getElementById('tab-campaign').addEventListener('click', () => {
+        document.getElementById('tab-campaign').classList.add('active');
+        document.getElementById('tab-infinite').classList.remove('active');
+        document.getElementById('campaign-panel').classList.remove('hidden');
+        document.getElementById('infinite-panel').classList.add('hidden');
+    });
+    document.getElementById('tab-infinite').addEventListener('click', () => {
+        document.getElementById('tab-infinite').classList.add('active');
+        document.getElementById('tab-campaign').classList.remove('active');
+        document.getElementById('infinite-panel').classList.remove('hidden');
+        document.getElementById('campaign-panel').classList.add('hidden');
+        document.getElementById('inf-best-score').textContent = `Лучший результат: ${SaveManager.getBestInfiniteScore()}`;
+    });
     
     document.addEventListener('keydown', (e) => {
         if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
@@ -661,7 +865,54 @@ function init() {
     // Init VFX
     vfxMgr.init(scene);
     
+    // Render level grid on first load
+    renderLevelGrid();
+    
     animate();
+}
+
+// === LEVEL GRID RENDERING ===
+function renderLevelGrid() {
+    const completed = SaveManager.getCompletedLevels();
+    const maxUnlocked = SaveManager.getMaxUnlocked();
+    
+    const containers = {
+        urban: document.getElementById('levels-urban'),
+        desert: document.getElementById('levels-desert'),
+        winter: document.getElementById('levels-winter')
+    };
+    // Clear
+    Object.values(containers).forEach(c => c.innerHTML = '');
+    
+    for(let lvl = 1; lvl <= MAX_LEVELS; lvl++) {
+        const biome = lvl <= 5 ? 'urban' : lvl <= 15 ? 'desert' : 'winter';
+        const cell = document.createElement('div');
+        cell.className = 'level-cell';
+        cell.textContent = lvl;
+        
+        if(completed.includes(lvl)) {
+            cell.classList.add('completed', 'unlocked');
+        } else if(lvl <= maxUnlocked) {
+            cell.classList.add('unlocked');
+        } else {
+            cell.classList.add('locked');
+        }
+        
+        cell.addEventListener('click', () => {
+            if(lvl <= maxUnlocked || completed.includes(lvl)) {
+                mode = 'campaign';
+                currentLevel = lvl;
+                startGame();
+            }
+        });
+        
+        containers[biome].appendChild(cell);
+    }
+    
+    // Progress bar
+    const pct = (completed.length / MAX_LEVELS) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = `${completed.length} / ${MAX_LEVELS} уровней пройдено`;
 }
 
 function showMenu() {
@@ -669,6 +920,7 @@ function showMenu() {
     document.exitPointerLock();
     hideAllScreens();
     document.getElementById('menu-screen').classList.remove('hidden');
+    renderLevelGrid(); // Refresh level grid with latest save data
     clearWorld();
 }
 
@@ -695,21 +947,62 @@ function showPauseMenu() {
     document.getElementById('crosshair').classList.add('hidden');
 }
 
+function disposeObject(obj) {
+    if(!obj) return;
+    if(obj.geometry) obj.geometry.dispose();
+    if(obj.material) {
+        if(Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+    }
+    if(obj.children) {
+        for(let i = obj.children.length - 1; i >= 0; i--) disposeObject(obj.children[i]);
+    }
+}
+
 function clearWorld() {
-    // Remove physics bodies and threejs meshes
+    // Stop audio oscillators that may leak
+    audioMgr.stopBGM();
+    if(audioMgr.engineOsc) {
+        try { audioMgr.engineOsc.stop(); } catch(e) {}
+        audioMgr.engineOsc = null;
+    }
+    
+    // Remove physics bodies and dispose threejs meshes
     entities.forEach(e => {
         if(e.body) world.removeBody(e.body);
-        if(e.mesh) scene.remove(e.mesh);
+        if(e.mesh) { scene.remove(e.mesh); disposeObject(e.mesh); }
     });
-    // Remove constraints
-    world.constraints.forEach(c => world.removeConstraint(c));
+    
+    // Remove ALL constraints
+    while(world.constraints.length > 0) world.removeConstraint(world.constraints[0]);
+    // Remove any leftover bodies (safety)
+    while(world.bodies.length > 0) world.removeBody(world.bodies[0]);
+    
     entities = [];
     trucks = [];
     
-    if(playerBody) {
-        world.removeBody(playerBody);
-        playerBody = null;
+    // Clean biome decorations
+    if(themeMgr._decoGroup) {
+        scene.remove(themeMgr._decoGroup);
+        disposeObject(themeMgr._decoGroup);
+        themeMgr._decoGroup = null;
     }
+    themeMgr.snowParticles = [];
+    themeMgr.snowGroup = null;
+    
+    // Clean VFX explosion particles
+    vfxMgr.explosionParticles.forEach(p => { scene.remove(p.mesh); disposeObject(p.mesh); });
+    vfxMgr.explosionParticles = [];
+    
+    // Remove ALL scene children except camera, lights, and wind group
+    for(let i = scene.children.length - 1; i >= 0; i--) {
+        const child = scene.children[i];
+        if(child === camera || child.isLight || child === vfxMgr.windGroup) continue;
+        scene.remove(child);
+        disposeObject(child);
+    }
+    
+    playerBody = null;
 }
 
 function startGame() {
@@ -731,8 +1024,11 @@ function startGame() {
     
     // Center message
     const msg = document.getElementById('center-msg');
-    msg.innerHTML = mode === 'campaign' ? `УРОВЕНЬ ${Math.floor((currentLevel-1)/5)+1}:${((currentLevel-1)%5)+1}` : "УРОВЕНЬ БЕСКОНЕЧНЫЙ";
+    const biomeNames = { urban: 'ГОРОД', desert: 'ПУСТЫНЯ', winter: 'ЗИМА' };
+    const biome2 = mode === 'campaign' ? themeMgr.getBiome(currentLevel) : 'desert';
+    msg.innerHTML = mode === 'campaign' ? `${biomeNames[biome2] || ''} — УРОВЕНЬ ${currentLevel}` : "♾️ БЕСКОНЕЧНЫЙ";
     msg.style.opacity = '1';
+    setTimeout(() => { msg.style.opacity = '0'; }, 2500);
 
     // Setup Environment with biome theme
     createEnvironment(biome);
@@ -743,6 +1039,7 @@ function startGame() {
     spawnZ = -10;
     distanceTraveled = 0;
     lastTruckSpawnZ = 0;
+    lastObstacleZ = 0;
 
     if(mode === 'campaign') {
         loadCampaignLevel(currentLevel);
@@ -842,7 +1139,7 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     // Main cab body
     const cabMain = new THREE.Mesh(new THREE.BoxGeometry(cabW, cabH, cabD), matBody);
     cabMain.position.set(0, cabH/2, 0);
-    cabMain.castShadow = true; cabMain.receiveShadow = true;
+    cabMain.castShadow = false; cabMain.receiveShadow = true;
     cabGrp.add(cabMain);
     
     // Windshield (front face, slightly inset)
@@ -866,11 +1163,11 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     // Cab front wheels (2)
     const wheelRadius = 0.55;
     const wheelThick = 0.4;
-    const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelThick, 10);
+    const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelThick, 6);
     wheelGeo.rotateZ(Math.PI / 2);
     
-    const fwl = new THREE.Mesh(wheelGeo, matWheelBlack); fwl.position.set(-cabW/2 - 0.1, wheelRadius, -cabD/2 + 0.6); fwl.castShadow = true;
-    const fwr = new THREE.Mesh(wheelGeo, matWheelBlack); fwr.position.set(cabW/2 + 0.1, wheelRadius, -cabD/2 + 0.6); fwr.castShadow = true;
+    const fwl = new THREE.Mesh(wheelGeo, matWheelBlack); fwl.position.set(-cabW/2 - 0.1, wheelRadius, -cabD/2 + 0.6);
+    const fwr = new THREE.Mesh(wheelGeo, matWheelBlack); fwr.position.set(cabW/2 + 0.1, wheelRadius, -cabD/2 + 0.6);
     truckGrp.add(fwl); truckGrp.add(fwr);
 
     if(hasTrailer) {
@@ -889,7 +1186,7 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
         // Main trailer body
         const trailerMain = new THREE.Mesh(new THREE.BoxGeometry(trW, trH, trD), matBody);
         trailerMain.position.set(0, trH/2, trailerZ);
-        trailerMain.castShadow = true; trailerMain.receiveShadow = true;
+        trailerMain.castShadow = false; trailerMain.receiveShadow = true;
         trailerGrp.add(trailerMain);
         
         // Rear door (dark panel at back)
@@ -964,7 +1261,7 @@ function loadCampaignLevel(lvl) {
     playerBody.velocity.set(0, 0, -22);
     
     // Spawn Level Trucks in proper column formations
-    const truckCount = Math.min(20 + lvl * 5, 80);
+    const truckCount = Math.min(20 + lvl * 4, MAX_TRUCKS - 1);
     let curZ = -30;
     // 3 main lanes as in Clustertruck (wide spacing so no overlap)
     const lanes = [-8, 0, 8];
@@ -1006,7 +1303,6 @@ function spawnVariedObstacle(z) {
         world.addBody(body);
         
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-        mesh.castShadow = true; mesh.receiveShadow = true;
         scene.add(mesh);
         entities.push({ mesh: mesh, body: body });
     };
@@ -1068,21 +1364,32 @@ function spawnInitialTrucksInfinite() {
     fillInfiniteTrucks();
 }
 
+let lastObstacleZ = 0; // Track last obstacle position for infinite mode
+
 function fillInfiniteTrucks() {
-    const spawnAhead = playerBody.position.z - 300;
-    const lanes = [-8, 0, 8]; // 3-lane formation
+    if(trucks.length >= MAX_TRUCKS) return;
+    const spawnAhead = playerBody.position.z - 250;
+    const lanes = [-8, 0, 8];
     
-    while(lastTruckSpawnZ > spawnAhead) {
-        lastTruckSpawnZ -= (18 + Math.random() * 10); // Row spacing
-        
-        // Spawn 2-3 trucks per row (sometimes a gap in one lane)
-        const numInRow = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    while(lastTruckSpawnZ > spawnAhead && trucks.length < MAX_TRUCKS) {
+        lastTruckSpawnZ -= (18 + Math.random() * 10);
+        const numInRow = 2 + Math.floor(Math.random() * 2);
         const shuffledLanes = lanes.slice().sort(() => Math.random() - 0.5);
         
-        for(let i = 0; i < numInRow && i < shuffledLanes.length; i++) {
-            let tkSpeed = 20 + Math.random() * 4 + (distanceTraveled / 400); // 10% speed boost
+        for(let i = 0; i < numInRow && i < shuffledLanes.length && trucks.length < MAX_TRUCKS; i++) {
+            let tkSpeed = 20 + Math.random() * 4 + (distanceTraveled / 400);
             let offset = (Math.random() - 0.5) * 1.0;
             spawnTruck(shuffledLanes[i] + offset, LAVA_Y + 0.5, lastTruckSpawnZ + (Math.random()-0.5)*3, tkSpeed);
+        }
+        
+        // Spawn obstacles in infinite mode starting at 300 pts, increasing frequency
+        if(distanceTraveled >= 300 && lastTruckSpawnZ < lastObstacleZ - 120) {
+            const difficulty = Math.min((distanceTraveled - 300) / 500, 1.0); // 0..1 over 500m
+            const chance = 0.15 + difficulty * 0.35; // 15% to 50% chance
+            if(Math.random() < chance) {
+                spawnVariedObstacle(lastTruckSpawnZ - 20);
+                lastObstacleZ = lastTruckSpawnZ;
+            }
         }
     }
 }
@@ -1092,12 +1399,21 @@ function die() {
     document.exitPointerLock();
     hideAllScreens();
     document.getElementById('death-screen').classList.remove('hidden');
+    // Save infinite score
+    if(mode === 'infinite') {
+        SaveManager.setBestInfiniteScore(distanceTraveled);
+    }
 }
 
 function win() {
     currentState = GAME_STATE.WON;
     document.exitPointerLock();
     hideAllScreens();
+    
+    // Save campaign progress
+    if(mode === 'campaign') {
+        SaveManager.completeLevel(currentLevel);
+    }
     
     if(currentLevel >= MAX_LEVELS) {
         document.getElementById('victory-screen').classList.remove('hidden');
@@ -1114,7 +1430,7 @@ let contactVelocity = new CANNON.Vec3();
 function updatePhysics(dt) {
     if(currentState !== GAME_STATE.PLAYING) return;
 
-    world.step(1/60, dt, 3);
+    world.step(1/60, dt, 1); // Reduced substeps for performance
     
     // Sync Three -> Cannon
     entities.forEach(e => {
@@ -1146,21 +1462,72 @@ function updatePhysics(dt) {
         t.cab.quaternion.set(0, 0, 0, 1);
         t.cab.angularVelocity.set(0, 0, 0);
         
-        // Drive forward at constant speed (hard-set Z) — 10% speed boost
+        // Drive forward at constant speed
         t.cab.velocity.z = -t.speed;
         
-        // === STUCK DETECTION: If truck barely moves forward for 3s, evade ===
+        // === SMART RECOVERY AI (prompt2) ===
+        // Obstacle Awareness: if speed drops below 20% of target for 1.5s → steer out
         if(!t.stuckTimer) t.stuckTimer = 0;
-        if(Math.abs(t.cab.velocity.z) < 1.0) {
-            t.stuckTimer += dt;
-            if(t.stuckTimer > 3.0) {
-                // Evasive maneuver — hard steer left or right
-                const evadeDir = (Math.random() > 0.5 ? 1 : -1) * 15;
-                t.cab.velocity.x = evadeDir;
-                t.stuckTimer = 0;
+        if(!t.slowTimer) t.slowTimer = 0;
+        
+        const actualSpeedZ = Math.abs(t.cab.velocity.z);
+        const targetSpeedZ = t.speed;
+        const isSlowed = actualSpeedZ < targetSpeedZ * 0.2;
+        
+        if(isSlowed) {
+            t.slowTimer += dt;
+            if(t.slowTimer > 1.5) {
+                // Check left/right lanes for clearance
+                const lanes = [-8, 0, 8];
+                const curLane = t.cab.position.x;
+                let bestDir = 0;
+                let bestDist = 0;
+                
+                for(const lane of lanes) {
+                    if(Math.abs(lane - curLane) < 2) continue; // Same lane
+                    let clear = true;
+                    for(const other of trucks) {
+                        if(other === t || other.exploded) continue;
+                        const dxLane = Math.abs(other.cab.position.x - lane);
+                        const dzNear = Math.abs(other.cab.position.z - t.cab.position.z);
+                        if(dxLane < 3 && dzNear < 12) { clear = false; break; }
+                    }
+                    if(clear) {
+                        const dist = Math.abs(lane - curLane);
+                        if(dist > bestDist) { bestDist = dist; bestDir = lane - curLane; }
+                    }
+                }
+                
+                // Apply steer-out force
+                if(bestDir !== 0) {
+                    t.cab.velocity.x = Math.sign(bestDir) * 12;
+                } else {
+                    t.cab.velocity.x = (Math.random() > 0.5 ? 1 : -1) * 15;
+                }
+                t.slowTimer = 0;
             }
         } else {
-            t.stuckTimer = 0;
+            t.slowTimer = 0;
+        }
+        
+        // === PROACTIVE MERGE: rows behind detect stopped trucks ahead ===
+        if(!t.exploded && t.speed > 0) {
+            for(const ahead of trucks) {
+                if(ahead === t || ahead.exploded) continue;
+                const dz = ahead.cab.position.z - t.cab.position.z;
+                // Ahead truck is in front, same lane-ish, and stopped/very slow
+                if(dz < 0 && dz > -25 && Math.abs(ahead.cab.position.x - t.cab.position.x) < 4) {
+                    if(Math.abs(ahead.cab.velocity.z) < 5) {
+                        // Start merging 1-2s before impact
+                        const timeToImpact = Math.abs(dz) / Math.max(1, t.speed);
+                        if(timeToImpact < 2.0) {
+                            const mergeDir = t.cab.position.x > 0 ? -1 : 1;
+                            t.cab.velocity.x += mergeDir * 6 * dt * 60;
+                            break; // Only react to one ahead truck
+                        }
+                    }
+                }
+            }
         }
         
         // === CLUSTERTRUCK DRIFT: All trucks pull toward center ===
@@ -1168,10 +1535,8 @@ function updatePhysics(dt) {
         const diffToCenter = 0 - t.cab.position.x;
         
         // Apply lateral FORCE so physics collisions work naturally
-        t.cab.applyForce(
-            new CANNON.Vec3(diffToCenter * centerPull * t.cab.mass * 0.4, 0, 0),
-            t.cab.position
-        );
+        _forceVec.set(diffToCenter * centerPull * t.cab.mass * 0.4, 0, 0);
+        t.cab.applyForce(_forceVec, t.cab.position);
         
         // Damp lateral velocity
         t.cab.velocity.x *= 0.90;
@@ -1181,18 +1546,21 @@ function updatePhysics(dt) {
             t.cab.velocity.x += Math.sign(-t.cab.position.x) * 8;
         }
         
-        // === COLLISION DETECTION: Anti-clipping + Explosions ===
-        // Check against nearby trucks for high-speed impact
-        for(let j = ti + 1; j < trucks.length; j++) {
+        // === COLLISION DETECTION: only check nearby trucks (limit to 8 closest) ===
+        let checksLeft = 8;
+        for(let j = ti + 1; j < trucks.length && checksLeft > 0; j++) {
             const other = trucks[j];
             if(other.exploded) continue;
             
             const dx = t.cab.position.x - other.cab.position.x;
             const dz = t.cab.position.z - other.cab.position.z;
-            const dist = Math.sqrt(dx*dx + dz*dz);
+            const distSq = dx*dx + dz*dz;
             
-            if(dist < 6) {
-                // Anti-rear-end-clipping: If one truck is directly behind another, repulse
+            if(distSq > 400) continue; // Skip trucks more than 20 units away
+            checksLeft--;
+            
+            if(distSq < 36) {
+                const dist = Math.sqrt(distSq);
                 if(Math.abs(dx) < 2.5 && Math.abs(dz) < 14) {
                     const repulse = dz > 0 ? 5 : -5;
                     t.cab.velocity.z += repulse;
@@ -1200,16 +1568,13 @@ function updatePhysics(dt) {
                     audioMgr.playClang(0.15);
                 }
                 
-                // High-speed lateral collision = explosion
                 const relVelX = Math.abs(t.cab.velocity.x - other.cab.velocity.x);
                 if(relVelX > 12 && dist < 4) {
-                    // EXPLODE the lighter/slower truck
                     const victim = (t.speed < other.speed) ? t : other;
                     explodeTruck(victim);
                     audioMgr.playExplosion();
                 }
                 
-                // Side-slam clang
                 if(Math.abs(dx) < 3.5 && Math.abs(dx) > 1.5 && relVelX > 3) {
                     audioMgr.playClang(Math.min(relVelX / 20, 0.5));
                 }
@@ -1231,13 +1596,12 @@ function updatePhysics(dt) {
     contactVelocity.set(0,0,0);
     let hitBody = null;
     
-    // Start raycast at player's center to ensure it hits the top of trucks reliably
-    const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y, playerBody.position.z);
-    const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 1.2, playerBody.position.z);
+    // Reuse pre-allocated vectors
+    _rayStart.set(playerBody.position.x, playerBody.position.y, playerBody.position.z);
+    _rayEnd.set(playerBody.position.x, playerBody.position.y - 1.2, playerBody.position.z);
     
     const result = new CANNON.RaycastResult();
-    // Mask 1|4 = ground + trucks (player is group 2, excluded)
-    world.raycastClosest(start, end, { skipBackfaces: true, collisionFilterMask: 1 | 4 }, result);
+    world.raycastClosest(_rayStart, _rayEnd, { skipBackfaces: true, collisionFilterMask: 1 | 4 }, result);
     if (result.hasHit) {
         isGrounded = true;
         hitBody = result.body;
@@ -1245,42 +1609,37 @@ function updatePhysics(dt) {
     }
 
     // 3. Player Input & Movement
-    let speed = keys.shift ? 36 : 20; // 20% maxSpeed nerf
+    let speed = keys.shift ? 36 : 20;
 
-    // Calc input direction based on camera yaw
-    const camEuler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
-    const yaw = camEuler.y;
+    _tmpEuler.setFromQuaternion(camera.quaternion, 'YXZ');
+    const yaw = _tmpEuler.y;
     
-    let inputVec = new THREE.Vector3(0,0,0);
-    if(keys.w) inputVec.z -= 1;
-    if(keys.s) inputVec.z += 1;
-    if(keys.a) inputVec.x -= 1;
-    if(keys.d) inputVec.x += 1;
+    _inputVec.set(0,0,0);
+    if(keys.w) _inputVec.z -= 1;
+    if(keys.s) _inputVec.z += 1;
+    if(keys.a) _inputVec.x -= 1;
+    if(keys.d) _inputVec.x += 1;
     
-    if(inputVec.lengthSq() > 0) {
-        inputVec.normalize();
-        inputVec.applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+    if(_inputVec.lengthSq() > 0) {
+        _inputVec.normalize();
+        _inputVec.applyAxisAngle(_tmpVec3.set(0,1,0), yaw);
     }
 
     if(isGrounded) {
-        // Snappy movement relative to truck
-        let targetVX = contactVelocity.x + inputVec.x * speed;
-        let targetVZ = contactVelocity.z + inputVec.z * speed;
+        let targetVX = contactVelocity.x + _inputVec.x * speed;
+        let targetVZ = contactVelocity.z + _inputVec.z * speed;
         
         playerBody.velocity.x += (targetVX - playerBody.velocity.x) * 0.4;
         playerBody.velocity.z += (targetVZ - playerBody.velocity.z) * 0.4;
         
-        // Auto-Jump (if holding space)
         if(keys.space) {
-            playerBody.velocity.y = 22; // High jump
+            playerBody.velocity.y = 22;
         }
     } else {
-        // Nerfed Air Control
-        if(inputVec.lengthSq() > 0) {
-            playerBody.applyForce(new CANNON.Vec3(inputVec.x * 600, 0, inputVec.z * 600), playerBody.position);
+        if(_inputVec.lengthSq() > 0) {
+            _forceVec.set(_inputVec.x * 600, 0, _inputVec.z * 600);
+            playerBody.applyForce(_forceVec, playerBody.position);
         }
-        
-        // Let player keep momentum in the air like true Clustertruck
         playerBody.velocity.x *= 0.998;
         playerBody.velocity.z *= 0.998;
     }
@@ -1328,26 +1687,30 @@ function updatePhysics(dt) {
 function cleanOldTrucks() {
     for(let i = trucks.length-1; i >= 0; i--) {
         let t = trucks[i];
-        if(t.cab.position.z > playerBody.position.z + 100) {
-            // Remove
+        if(t.cab.position.z > playerBody.position.z + 80) {
             world.removeBody(t.cab);
             scene.remove(t.meshGrp);
+            disposeObject(t.meshGrp);
+            // Also remove from entities
+            for(let j = entities.length-1; j >= 0; j--) {
+                if(entities[j].body === t.cab) { entities.splice(j, 1); break; }
+            }
             trucks.splice(i, 1);
         }
     }
 }
 
 // === EXPLOSION SYSTEM ===
+// Shared material for exploded trucks — avoid creating new ones
+const _explodeMat = new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.8 });
+
 function explodeTruck(t) {
     if(t.exploded) return;
     t.exploded = true;
-    t.explodeTimer = 2.0; // Remove after 2s
+    t.explodeTimer = 1.5;
     
-    // Disable forward drive
     t.speed = 0;
-    
-    // Launch upward/outward
-    t.cab.fixedRotation = false; // Allow tumbling for explosion
+    t.cab.fixedRotation = false;
     t.cab.velocity.set(
         (Math.random()-0.5) * 15,
         15 + Math.random() * 10,
@@ -1359,26 +1722,26 @@ function explodeTruck(t) {
         (Math.random()-0.5) * 8
     );
     
-    // Spawn fire/explosion particles
-    vfxMgr.spawnExplosion(new THREE.Vector3(
-        t.cab.position.x, t.cab.position.y + 2, t.cab.position.z
-    ));
+    _tmpVec3.set(t.cab.position.x, t.cab.position.y + 2, t.cab.position.z);
+    vfxMgr.spawnExplosion(_tmpVec3);
     
-    // Tint truck orange/red
+    // Reuse shared material
     t.meshGrp.traverse(child => {
-        if(child.isMesh && child.material) {
-            child.material = new THREE.MeshBasicMaterial({ 
-                color: 0xff4400, transparent: true, opacity: 0.8 
-            });
-        }
+        if(child.isMesh) child.material = _explodeMat;
     });
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    const dt = Math.min(clock.getDelta(), 0.1);
+    const dt = Math.min(clock.getDelta(), 0.05); // Cap delta to avoid spiral of death
     
     updatePhysics(dt);
+    
+    // Update snow only when playing
+    if(currentState === GAME_STATE.PLAYING && playerBody) {
+        themeMgr.updateSnow(dt, playerBody.position.z);
+    }
+    
     renderer.render(scene, camera);
 }
 
