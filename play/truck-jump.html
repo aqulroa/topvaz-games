@@ -328,6 +328,8 @@ function createEnvironment() {
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     groundBody.position.set(0, LAVA_Y - 0.5, 0);
+    groundBody.collisionFilterGroup = 1; // Ground group
+    groundBody.collisionFilterMask = 2 | 4; // Collide with player and trucks
     world.addBody(groundBody);
     
     entities.push({ mesh: null, body: groundBody });
@@ -341,100 +343,140 @@ function createPlayer() {
     playerBody.linearDamping = 0; // Custom damping applied in update loop
     playerBody.fixedRotation = true;
     playerBody.collisionFilterGroup = 2; // Player group
+    playerBody.collisionFilterMask = 1 | 4; // Collide with ground and trucks
     playerBody.updateMassProperties();
     world.addBody(playerBody);
 }
 
 function spawnTruck(x, y, z, speed, hasTrailer = true) {
     const truckGrp = new THREE.Group();
-    truckGrp.position.set(x, y, z);
     
-    // Physics Body (Single Body for Stability)
+    // Physics Body — locked rotation, no truck-to-truck collision
     const truckBody = new CANNON.Body({ mass: hasTrailer ? 8000 : 5000, material: physTruckMat });
     truckBody.linearDamping = 0.05;
-    truckBody.angularDamping = 0.9; // Prevent spinning loops
+    truckBody.angularDamping = 0.99;
+    truckBody.fixedRotation = true;
+    // Collision group 4 = trucks. Mask = 1|2 = ground + player only (NOT other trucks)
+    truckBody.collisionFilterGroup = 4;
+    truckBody.collisionFilterMask = 1 | 2; // collide with ground(1) and player(2), NOT trucks(4)
 
-    // Toon/Flat materials matching the screenshot
-    const matCabWhite = new THREE.MeshLambertMaterial({ color: 0xffffff });
-    const matGlass = new THREE.MeshLambertMaterial({ color: 0x222222 });
-    const matTrailerWhite = new THREE.MeshLambertMaterial({ color: 0xddeeff });
-    const matDark = new THREE.MeshLambertMaterial({ color: 0x444444 });
-    const matWheelBlack = new THREE.MeshLambertMaterial({ color: 0x202020 });
+    // === CLUSTERTRUCK-ACCURATE TRUCK MODEL ===
+    // Materials — clean white flat-shaded like the original
+    const matBody = new THREE.MeshLambertMaterial({ color: 0xf0f0f0 });
+    const matBodySide = new THREE.MeshLambertMaterial({ color: 0xe8e8e8 });
+    const matGlass = new THREE.MeshLambertMaterial({ color: 0x1a1a2e });
+    const matWheelBlack = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
+    const matBumper = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+    const matUnder = new THREE.MeshLambertMaterial({ color: 0x555555 });
+
+    // --- CAB (Front, small box) ---
+    // In Clustertruck the cab is a compact box at the front
+    // Dimensions: W=2.4, H=2.8, D=3.0
+    const cabW = 2.4, cabH = 2.8, cabD = 3.0;
     
-    // Cab shape (Front is -Z)
-    const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
-    truckBody.addShape(cabShape, new CANNON.Vec3(0, 0, -2.5));
+    // Physics cab collider
+    const cabShape = new CANNON.Box(new CANNON.Vec3(cabW/2, cabH/2, cabD/2));
+    truckBody.addShape(cabShape, new CANNON.Vec3(0, cabH/2, 0));
     
-    // Cab Mesh Group
-    const cabMesh = new THREE.Group();
-    // Lower body
-    const cabBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.0, 4.0), matCabWhite);
-    cabBase.position.set(0, -0.5, 0);
-    // Upper cabin
-    const cabTop = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.0, 2.0), matCabWhite);
-    cabTop.position.set(0, 1.0, 1.0); // Shifted back (+Z)
-    // Windshield
-    const wsMesh = new THREE.Mesh(new THREE.BoxGeometry(2.45, 0.9, 0.1), matGlass);
-    wsMesh.position.set(0, 1.0, -0.05); // Face front (-Z)
+    const cabGrp = new THREE.Group();
     
-    cabMesh.add(cabBase); 
-    cabMesh.add(cabTop); 
-    cabMesh.add(wsMesh);
+    // Main cab body
+    const cabMain = new THREE.Mesh(new THREE.BoxGeometry(cabW, cabH, cabD), matBody);
+    cabMain.position.set(0, cabH/2, 0);
+    cabMain.castShadow = true; cabMain.receiveShadow = true;
+    cabGrp.add(cabMain);
     
-    cabMesh.position.set(0, 0, -2.5); // Placed at front
-    cabMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
-    truckGrp.add(cabMesh);
+    // Windshield (front face, slightly inset)
+    const wsW = cabW * 0.9, wsH = cabH * 0.35;
+    const wsMesh = new THREE.Mesh(new THREE.BoxGeometry(wsW, wsH, 0.15), matGlass);
+    wsMesh.position.set(0, cabH * 0.65, -cabD/2 - 0.05);
+    cabGrp.add(wsMesh);
     
-    if(hasTrailer) {
-        // Trailer shape (Back is +Z)
-        const trailerShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.5, 4.5));
-        truckBody.addShape(trailerShape, new CANNON.Vec3(0, 0, 4.0));
-        
-        // Trailer Mesh Group
-        const trailerMesh = new THREE.Group();
-        // Main box
-        const trailerBox = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.0, 9.0), matTrailerWhite);
-        // Back door (At the extreme +Z)
-        const doorBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 0.1), matDark);
-        doorBase.position.set(0, 0, 4.5);
-        // Vertical bars
-        const barGeo = new THREE.BoxGeometry(0.1, 2.8, 0.2);
-        const barMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
-        const bar1 = new THREE.Mesh(barGeo, barMat); bar1.position.set(-0.6, 0, 4.55);
-        const bar2 = new THREE.Mesh(barGeo, barMat); bar2.position.set(0.6, 0, 4.55);
-        
-        trailerMesh.add(trailerBox); 
-        trailerMesh.add(doorBase); 
-        trailerMesh.add(bar1); 
-        trailerMesh.add(bar2);
-        
-        trailerMesh.position.set(0, 0, 4.0); // Placed at back
-        trailerMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
-        truckGrp.add(trailerMesh);
-    }
+    // Front bumper
+    const bumper = new THREE.Mesh(new THREE.BoxGeometry(cabW + 0.2, 0.5, 0.3), matBumper);
+    bumper.position.set(0, 0.25, -cabD/2 - 0.1);
+    cabGrp.add(bumper);
     
-    truckBody.position.set(x, y + 2, z);
-    world.addBody(truckBody);
+    // Chassis/undercarriage visible between cab and trailer
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, cabD + 1), matUnder);
+    chassis.position.set(0, 0.2, 0);
+    cabGrp.add(chassis);
     
-    // Wheels
-    const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.6, 12);
+    truckGrp.add(cabGrp);
+    
+    // Cab front wheels (2)
+    const wheelRadius = 0.55;
+    const wheelThick = 0.4;
+    const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelThick, 10);
     wheelGeo.rotateZ(Math.PI / 2);
-    const wheelPos = [ [-1.4, -1.0, -3.5], [1.4, -1.0, -3.5] ]; // Front cab wheels (-Z)
+    
+    const fwl = new THREE.Mesh(wheelGeo, matWheelBlack); fwl.position.set(-cabW/2 - 0.1, wheelRadius, -cabD/2 + 0.6); fwl.castShadow = true;
+    const fwr = new THREE.Mesh(wheelGeo, matWheelBlack); fwr.position.set(cabW/2 + 0.1, wheelRadius, -cabD/2 + 0.6); fwr.castShadow = true;
+    truckGrp.add(fwl); truckGrp.add(fwr);
+
     if(hasTrailer) {
-        wheelPos.push([-1.4, -1.0, 6.5], [1.4, -1.0, 6.5]); // Rear wheels (+Z)
-        wheelPos.push([-1.4, -1.0, 7.8], [1.4, -1.0, 7.8]);
+        // --- TRAILER (long box behind cab with gap) ---
+        // Clustertruck trailer: W=2.6, H=3.2, D=10.0 — long and tall
+        const trW = 2.6, trH = 3.2, trD = 10.0;
+        const gapD = 1.5; // Gap between cab and trailer (coupling space)
+        const trailerZ = cabD/2 + gapD + trD/2; // Center Z of trailer
+        
+        // Physics trailer collider
+        const trailerShape = new CANNON.Box(new CANNON.Vec3(trW/2, trH/2, trD/2));
+        truckBody.addShape(trailerShape, new CANNON.Vec3(0, trH/2, trailerZ));
+        
+        const trailerGrp = new THREE.Group();
+        
+        // Main trailer body
+        const trailerMain = new THREE.Mesh(new THREE.BoxGeometry(trW, trH, trD), matBody);
+        trailerMain.position.set(0, trH/2, trailerZ);
+        trailerMain.castShadow = true; trailerMain.receiveShadow = true;
+        trailerGrp.add(trailerMain);
+        
+        // Rear door (dark panel at back)
+        const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(trW - 0.2, trH - 0.3, 0.12), matGlass);
+        doorMesh.position.set(0, trH/2, trailerZ + trD/2 + 0.05);
+        trailerGrp.add(doorMesh);
+        
+        // Bottom rail under trailer
+        const railMesh = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.3, trD + gapD), matUnder);
+        railMesh.position.set(0, 0.15, trailerZ - gapD/2);
+        trailerGrp.add(railMesh);
+        
+        truckGrp.add(trailerGrp);
+        
+        // Rear wheels (4: dual axle at back of trailer)
+        const rearZ1 = trailerZ + trD/2 - 1.5;
+        const rearZ2 = trailerZ + trD/2 - 2.8;
+        const rearOffs = trW/2 + 0.1;
+        
+        [[- rearOffs, wheelRadius, rearZ1], [rearOffs, wheelRadius, rearZ1],
+         [- rearOffs, wheelRadius, rearZ2], [rearOffs, wheelRadius, rearZ2]].forEach(p => {
+            const w = new THREE.Mesh(wheelGeo, matWheelBlack);
+            w.position.set(p[0], p[1], p[2]); w.castShadow = true;
+            truckGrp.add(w);
+        });
+        
+        // Cab rear wheels (behind cab body)
+        const cabRearZ = cabD/2 - 0.3;
+        const crl = new THREE.Mesh(wheelGeo, matWheelBlack); crl.position.set(-cabW/2 - 0.1, wheelRadius, cabRearZ); crl.castShadow = true;
+        const crr = new THREE.Mesh(wheelGeo, matWheelBlack); crr.position.set(cabW/2 + 0.1, wheelRadius, cabRearZ); crr.castShadow = true;
+        truckGrp.add(crl); truckGrp.add(crr);
     }
-    wheelPos.forEach(p => {
-        const w = new THREE.Mesh(wheelGeo, matWheelBlack);
-        w.position.set(p[0], p[1], p[2]);
-        w.castShadow = true;
-        truckGrp.add(w);
-    });
+    
+    // Position body — truck origin is at ground level at the cab front
+    truckBody.position.set(x, y, z);
+    truckBody.velocity.set(0, 0, -speed);
+    world.addBody(truckBody);
     
     scene.add(truckGrp);
     entities.push({ mesh: truckGrp, body: truckBody });
     
-    const truckObj = { cab: truckBody, speed: speed, meshGrp: truckGrp, targetX: x };
+    const truckObj = { 
+        cab: truckBody, speed: speed, meshGrp: truckGrp, 
+        targetX: x, // STAYS as spawn lane — NO lane changes
+        spawnX: x   // Original lane for reference
+    };
     trucks.push(truckObj);
     return truckObj;
 }
@@ -455,39 +497,36 @@ function loadCampaignLevel(lvl) {
     let trackLen = 300 + (lvl * 50);
     buildBaseTrack(trackLen);
     
-    // Spawn Player safely (directly on the trailer, height 5.15)
-    const safeTruck = spawnTruck(0, LAVA_Y + 1, -10, 20); // speed 20
+    // Spawn Player safely on first truck
+    const safeTruck = spawnTruck(0, LAVA_Y + 0.5, -10, 20);
     safeTruck.isSafe = true;
     safeTruck.cab.velocity.set(0, 0, -20);
-    playerBody.position.set(0, safeTruck.cab.position.y + 2.15, safeTruck.cab.position.z);
+    playerBody.position.set(0, safeTruck.cab.position.y + 4.5, safeTruck.cab.position.z + 6);
     playerBody.velocity.set(0, 0, -20);
     
-    // Spawn Level Trucks
+    // Spawn Level Trucks in proper column formations
     const truckCount = Math.min(20 + lvl * 5, 80);
     let curZ = -30;
-    const lanes = [-15, -7.5, 0, 7.5, 15];
+    // 3 main lanes as in Clustertruck (wide spacing so no overlap)
+    const lanes = [-8, 0, 8];
     
     for(let i=0; i<truckCount; i++) {
-        let lane = lanes[Math.floor(Math.random() * lanes.length)];
-        let tkSpeed = 20 + Math.random() * 5 + (lvl * 0.5); // Fixed speed closer to player
-        if(lvl < 5) {
-            // Organized lines early on
-            lane = lanes[i % 5];
-            curZ -= 18; // Tighter pack
-            spawnTruck(lane, LAVA_Y + 1, curZ, tkSpeed);
-        } else {
-            // More chaotic later
-            curZ -= (12 + Math.random() * 8); // Tighter pack for collisions
-            let offset = (Math.random() - 0.5) * 5;
-            spawnTruck(lane + offset, LAVA_Y + 1, curZ, tkSpeed);
-            
-            // Random obstacles starting from level 2
-            if(lvl >= 2 && Math.random() < 0.2 && curZ > goalZ + 50) {
-                spawnVariedObstacle(curZ - 10);
-            }
+        let lane = lanes[i % lanes.length];
+        let tkSpeed = 18 + Math.random() * 3 + (lvl * 0.3); // Tight speed variance
+        
+        if(i % lanes.length === 0) {
+            // New row — advance Z 
+            curZ -= (18 + Math.random() * 6);
         }
         
-        // Performance Fix: Stop generating massive truck jams far past the finish line goal.
+        let offset = (Math.random() - 0.5) * 1.0; // Tiny offset for natural look
+        spawnTruck(lane + offset, LAVA_Y + 0.5, curZ + (Math.random()-0.5)*2, tkSpeed);
+        
+        // Random obstacles starting from level 3
+        if(lvl >= 3 && Math.random() < 0.15 && curZ > goalZ + 50 && i % lanes.length === 0) {
+            spawnVariedObstacle(curZ - 15);
+        }
+        
         if (curZ < goalZ - 20) break;
     }
 }
@@ -512,48 +551,55 @@ function spawnVariedObstacle(z) {
     let lvlDiff = mode === 'campaign' ? currentLevel : 5;
 
     if (type === 0) {
-        // Narrow passage (The Funnel/Needle) -> width decreases with level
         let squeeze = Math.min(10, lvlDiff * 1.2); 
         spawnBlock(-20 + squeeze, LAVA_Y + 10, 15, 20, 10);
         spawnBlock(20 - squeeze, LAVA_Y + 10, 15, 20, 10);
     } else if (type === 1) {
-        // Staggered Slalom walls
         const side = Math.random() > 0.5 ? 1 : -1;
         spawnBlock(side * 12, LAVA_Y + 10, 22, 20, 10);
         if (lvlDiff >= 3) {
-            spawnBlock(-side * 12, LAVA_Y + 10, 22, 20, 10, -30); // Staggered pillar further down
+            spawnBlock(-side * 12, LAVA_Y + 10, 22, 20, 10, -30);
         }
     } else if (type === 2) {
-        // Middle Pillar / Splitter
         let width = Math.min(18, 5 + lvlDiff * 2);
         spawnBlock((Math.random() - 0.5) * 5, LAVA_Y + 10, width, 20, 8);
     }
 }
 
 function spawnInitialTrucksInfinite() {
-    // Initial platform
-    const t1 = spawnTruck(0, LAVA_Y + 1, -10, 20); // speed 20
+    // 3-lane formation like Clustertruck
+    const lanes = [-8, 0, 8];
+    
+    // Center truck — player starts here
+    const t1 = spawnTruck(0, LAVA_Y + 0.5, -10, 20);
     t1.isSafe = true;
     t1.cab.velocity.set(0, 0, -20);
-    playerBody.position.set(0, t1.cab.position.y + 2.15, -10);
+    playerBody.position.set(0, t1.cab.position.y + 4.5, -10 + 6);
     playerBody.velocity.set(0, 0, -20);
-    spawnTruck(-10, LAVA_Y + 1, -10, 20);
-    spawnTruck(10, LAVA_Y + 1, -10, 20);
+    
+    // Flanking trucks in lanes
+    spawnTruck(-8, LAVA_Y + 0.5, -10, 20);
+    spawnTruck(8, LAVA_Y + 0.5, -10, 20);
+    
     lastTruckSpawnZ = -10;
     fillInfiniteTrucks();
 }
 
 function fillInfiniteTrucks() {
     const spawnAhead = playerBody.position.z - 300;
+    const lanes = [-8, 0, 8]; // 3-lane formation
+    
     while(lastTruckSpawnZ > spawnAhead) {
-        lastTruckSpawnZ -= (12 + Math.random() * 10); // Tighter pack
-        let x = (Math.random() - 0.5) * 40;
-        let tkSpeed = 20 + Math.random() * 8 + (distanceTraveled / 200);
-        spawnTruck(x, LAVA_Y + 1, lastTruckSpawnZ, tkSpeed);
+        lastTruckSpawnZ -= (18 + Math.random() * 10); // Row spacing
         
-        // Sometimes spawn a flying truck or pileup
-        if(Math.random() < 0.1) {
-            spawnTruck(x + (Math.random()-0.5)*10, LAVA_Y + 15, lastTruckSpawnZ, tkSpeed * 0.5, false);
+        // Spawn 2-3 trucks per row (sometimes a gap in one lane)
+        const numInRow = 2 + Math.floor(Math.random() * 2); // 2 or 3
+        const shuffledLanes = lanes.slice().sort(() => Math.random() - 0.5);
+        
+        for(let i = 0; i < numInRow && i < shuffledLanes.length; i++) {
+            let tkSpeed = 18 + Math.random() * 4 + (distanceTraveled / 400);
+            let offset = (Math.random() - 0.5) * 1.0;
+            spawnTruck(shuffledLanes[i] + offset, LAVA_Y + 0.5, lastTruckSpawnZ + (Math.random()-0.5)*3, tkSpeed);
         }
     }
 }
@@ -587,52 +633,42 @@ function updatePhysics(dt) {
 
     world.step(1/60, dt, 3);
     
-    // Sync Three -> Cannon & Special Animations
+    // Sync Three -> Cannon
     entities.forEach(e => {
         if(e.body && e.mesh) {
             e.mesh.position.copy(e.body.position);
             e.mesh.quaternion.copy(e.body.quaternion);
         }
-        if(!e.body && e.mesh && e.mesh.userData && e.mesh.userData.isHighway) {
-            e.mesh.position.z = (playerBody.position.z - (playerBody.position.z % 50));
-        }
     });
 
-    // 1. Truck AI & Propulsion (Chaotic Clustertruck behavior)
+    // 1. Truck AI — drive STRAIGHT, stay in lane, no lane changes
     trucks.forEach(t => {
         t.cab.wakeUp();
         
-        if (!t.isSafe) {
-            // AI Weaving
-            if(Math.random() < 0.1) {
-                // Periodically adjust drift target more wildly
-                t.targetX += (Math.random() - 0.5) * 15; 
-                // Keep loosely within road bounds
-                t.targetX = Math.max(-25, Math.min(25, t.targetX));
-            }
-            
-            // Bodanie (Aggressive Lateral Shove without spinning out of control)
-            if(Math.random() < 0.02) {
-                const shoveX = (Math.random() > 0.5 ? 1 : -1) * 15;
-                t.cab.velocity.x += shoveX; 
-                t.cab.angularVelocity.y += shoveX * 0.05; // Gentle tilt triggering jackknife organically
-            }
-        }
-
-        // Steer laterally towards target lane
+        // Lock rotation — no spin ever
+        t.cab.quaternion.set(0, 0, 0, 1);
+        t.cab.angularVelocity.set(0, 0, 0);
+        
+        // Drive forward at constant speed
+        t.cab.velocity.z = -t.speed;
+        
+        // Stay in assigned lane (gentle correction, NO lane changes)
         const diffX = t.targetX - t.cab.position.x;
-        t.cab.applyForce(new CANNON.Vec3(diffX * 1500, 0, 0), t.cab.position);
-        t.cab.velocity.x *= 0.92; // Damp lateral velocity
+        if(Math.abs(diffX) > 0.3) {
+            // Only correct if drifted more than 0.3 units
+            t.cab.velocity.x = diffX * 2.0; // Smooth return to lane
+        } else {
+            t.cab.velocity.x = 0; // Stay put
+        }
         
-        // Push forward
-        t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
-        
-        // Anti-Spin Auto-Align: Spring mechanism to keep trucks facing forward (-Z axis)
-        const currentEuler = new CANNON.Vec3();
-        t.cab.quaternion.toEuler(currentEuler);
-        // Correct Y axis rotation back to 0
-        const torqueY = -currentEuler.y * 50000;
-        t.cab.applyTorque(new CANNON.Vec3(0, torqueY, 0));
+        // Lock Y — trucks are on the ground, period
+        t.cab.velocity.y = 0;
+        if(t.cab.position.y < LAVA_Y + 0.5) {
+            t.cab.position.y = LAVA_Y + 0.5;
+        }
+        if(t.cab.position.y > LAVA_Y + 2) {
+            t.cab.position.y = LAVA_Y + 0.5;
+        }
     });
 
     // 2. Player Raycast (Grounded Check & Momentum)
@@ -645,8 +681,8 @@ function updatePhysics(dt) {
     const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 1.2, playerBody.position.z);
     
     const result = new CANNON.RaycastResult();
-    // Mask 1 ensures we hit trucks (group 1) and ignore player (group 2)
-    world.raycastClosest(start, end, { skipBackfaces: true, collisionFilterMask: 1 }, result);
+    // Mask 1|4 = ground + trucks (player is group 2, excluded)
+    world.raycastClosest(start, end, { skipBackfaces: true, collisionFilterMask: 1 | 4 }, result);
     if (result.hasHit) {
         isGrounded = true;
         hitBody = result.body;
