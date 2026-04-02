@@ -132,8 +132,8 @@ let lastTruckSpawnZ = 0;
 function init() {
     // 1. Three.js Setup
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a14);
-    scene.fog = new THREE.FogExp2(0x0a0a14, 0.005);
+    scene.background = new THREE.Color(0x87CEEB);
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.003);
     
     camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 800);
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -297,11 +297,47 @@ function startGame() {
 }
 
 function createEnvironment() {
-    // Graphic Ground
-    const geoFloor = new THREE.PlaneGeometry(2000, 10000, 10, 50);
-    const lavaMesh = new THREE.Mesh(geoFloor, matLava);
+    // Gradient Sky
+    const canvas = document.createElement('canvas');
+    canvas.width = 2; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 512);
+    grad.addColorStop(0, '#00001a'); // Deep Space Blue
+    grad.addColorStop(1, '#ff3300'); // Sunset/Neon Orange
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 2, 512);
+    const bgTex = new THREE.CanvasTexture(canvas);
+    bgTex.colorSpace = THREE.SRGBColorSpace;
+    scene.background = bgTex;
+    scene.fog = new THREE.FogExp2(0xff3300, 0.0015);
+
+    // Sun
+    const sunGeom = new THREE.SphereGeometry(200, 32, 32);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd00 });
+    const sunMesh = new THREE.Mesh(sunGeom, sunMat);
+    sunMesh.position.set(0, 300, -3000);
+    scene.add(sunMesh);
+
+    // Landscape (Canyon / Mountain silhouette)
+    const matM = new THREE.MeshStandardMaterial({color: 0x110522, roughness: 1.0, flatShading: true});
+    for(let i=0; i<60; i++) {
+        const side = i % 2 === 0 ? 1 : -1;
+        const zPos = 100 - i * 100;
+        const geoM = new THREE.BoxGeometry(100 + Math.random()*150, 150 + Math.random()*300, 100 + Math.random()*150);
+        const meshM = new THREE.Mesh(geoM, matM);
+        meshM.position.set(side * (120 + Math.random()*80), LAVA_Y, zPos);
+        meshM.rotation.y = Math.random();
+        scene.add(meshM);
+        entities.push({ mesh: meshM, body: null });
+    }
+
+    // Glowing Grid Highway
+    const geoFloor = new THREE.PlaneGeometry(300, 10000, 15, 200);
+    const gridMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true, transparent: true, opacity: 0.2 });
+    const lavaMesh = new THREE.Mesh(geoFloor, gridMat);
     lavaMesh.rotation.x = -Math.PI / 2;
     lavaMesh.position.y = LAVA_Y - 0.5;
+    lavaMesh.userData.isHighway = true;
     scene.add(lavaMesh);
     
     // Physics Ground (Catch everything)
@@ -312,6 +348,7 @@ function createEnvironment() {
     groundBody.position.set(0, LAVA_Y - 0.5, 0);
     world.addBody(groundBody);
     
+    entities.push({ mesh: sunMesh, body: null });
     entities.push({ mesh: lavaMesh, body: null });
     entities.push({ mesh: null, body: groundBody });
 }
@@ -385,7 +422,7 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     scene.add(truckGrp);
     entities.push({ mesh: truckGrp, body: truckBody });
     
-    const truckObj = { cab: truckBody, speed: speed, meshGrp: truckGrp };
+    const truckObj = { cab: truckBody, speed: speed, meshGrp: truckGrp, targetX: x };
     trucks.push(truckObj);
     return truckObj;
 }
@@ -430,27 +467,50 @@ function loadCampaignLevel(lvl) {
             let offset = (Math.random() - 0.5) * 5;
             spawnTruck(lane + offset, LAVA_Y + 1, curZ, tkSpeed);
             
-            // Random obstacles
-            if(Math.random() < 0.1 && curZ > goalZ + 50) {
-                spawnWallObstacle(curZ - 10);
+            // Random obstacles starting from level 2
+            if(lvl >= 2 && Math.random() < 0.2 && curZ > goalZ + 50) {
+                spawnVariedObstacle(curZ - 10);
             }
         }
     }
 }
 
-function spawnWallObstacle(z) {
-    const width = 10 + Math.random() * 20;
-    const shape = new CANNON.Box(new CANNON.Vec3(width/2, 5, 2));
-    const body = new CANNON.Body({ mass: 0 });
-    body.addShape(shape);
-    body.position.set((Math.random()-0.5)*20, LAVA_Y + 3, z);
-    world.addBody(body);
+function spawnVariedObstacle(z) {
+    const type = Math.floor(Math.random() * 3);
+    const mat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8, metalness: 0.5});
     
-    const geo = new THREE.BoxGeometry(width, 10, 4);
-    const mat = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.8});
-    const mesh = new THREE.Mesh(geo, mat);
-    scene.add(mesh);
-    entities.push({ mesh: mesh, body: body });
+    const spawnBlock = (x, y, w, h, d, zOffset = 0) => {
+        const shape = new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2));
+        const body = new CANNON.Body({ mass: 0 });
+        body.addShape(shape);
+        body.position.set(x, y, z + zOffset);
+        world.addBody(body);
+        
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        scene.add(mesh);
+        entities.push({ mesh: mesh, body: body });
+    };
+
+    let lvlDiff = mode === 'campaign' ? currentLevel : 5;
+
+    if (type === 0) {
+        // Narrow passage (The Funnel/Needle) -> width decreases with level
+        let squeeze = Math.min(10, lvlDiff * 1.2); 
+        spawnBlock(-20 + squeeze, LAVA_Y + 10, 15, 20, 10);
+        spawnBlock(20 - squeeze, LAVA_Y + 10, 15, 20, 10);
+    } else if (type === 1) {
+        // Staggered Slalom walls
+        const side = Math.random() > 0.5 ? 1 : -1;
+        spawnBlock(side * 12, LAVA_Y + 10, 22, 20, 10);
+        if (lvlDiff >= 3) {
+            spawnBlock(-side * 12, LAVA_Y + 10, 22, 20, 10, -30); // Staggered pillar further down
+        }
+    } else if (type === 2) {
+        // Middle Pillar / Splitter
+        let width = Math.min(18, 5 + lvlDiff * 2);
+        spawnBlock((Math.random() - 0.5) * 5, LAVA_Y + 10, width, 20, 8);
+    }
 }
 
 function spawnInitialTrucksInfinite() {
@@ -508,27 +568,43 @@ function updatePhysics(dt) {
 
     world.step(1/60, dt, 3);
     
-    // Sync Three -> Cannon
+    // Sync Three -> Cannon & Special Animations
     entities.forEach(e => {
         if(e.body && e.mesh) {
             e.mesh.position.copy(e.body.position);
             e.mesh.quaternion.copy(e.body.quaternion);
         }
+        if(!e.body && e.mesh && e.mesh.userData && e.mesh.userData.isHighway) {
+            e.mesh.position.z = (playerBody.position.z - (playerBody.position.z % 50));
+        }
     });
 
-    // 1. Truck AI & Propulsion
+    // 1. Truck AI & Propulsion (Chaotic Clustertruck behavior)
     trucks.forEach(t => {
-        // Enforce strong forward velocity on trucks
-        const localFwd = new CANNON.Vec3(0, 0, -1);
-        const worldFwd = t.cab.quaternion.vmult(localFwd);
-        
-        // Wake up
         t.cab.wakeUp();
         
-        // Smoothly enforce target velocity (drastically reduces jerking)
+        // 3-Lane Formation Logic (Boid-like lane keeping)
+        if(Math.random() < 0.02) {
+            const lanes = [-15, 0, 15]; // 3 parallel lines
+            t.targetX = lanes[Math.floor(Math.random() * lanes.length)];
+        }
+        
+        // Side-Slamming / Nudging Neighbors (Torque Physics)
+        if(Math.random() < 0.015) {
+            const slamForce = (Math.random() > 0.5 ? 1 : -1) * (10 + Math.random() * 5);
+            t.cab.velocity.x += slamForce * 0.5; // Lateral nudge
+            t.cab.angularVelocity.y += slamForce * 0.05; // Spin torque
+            t.cab.angularVelocity.z += slamForce * 0.02; // Roll torque for pile-ups
+        }
+
+        // Steer laterally towards target lane
+        const diffX = t.targetX - t.cab.position.x;
+        t.cab.velocity.x += diffX * 0.05; // Lateral steering
+        
+        // Push forward
         t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
         
-        // Optional: auto-correct yaw rotation slowly to keep them driving forward
+        // Correct forward facing (but loosely so they can drift/crash)
         t.cab.angularVelocity.y -= t.cab.angularVelocity.y * 0.05;
     });
 
@@ -551,7 +627,7 @@ function updatePhysics(dt) {
     }
 
     // 3. Player Input & Movement
-    let speed = keys.shift ? 45 : 25; // Clustertrucks are fast! High sprint speed
+    let speed = keys.shift ? 36 : 20; // 20% maxSpeed nerf
 
     // Calc input direction based on camera yaw
     const camEuler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
@@ -581,14 +657,14 @@ function updatePhysics(dt) {
             playerBody.velocity.y = 22; // High jump
         }
     } else {
-        // High Air Control: apply a massive air strafing force (Clustertruck mechanic)
+        // Nerfed Air Control (40% reduction)
         if(inputVec.lengthSq() > 0) {
-            playerBody.applyForce(new CANNON.Vec3(inputVec.x * 2000, 0, inputVec.z * 2000), playerBody.position);
+            playerBody.applyForce(new CANNON.Vec3(inputVec.x * 600, 0, inputVec.z * 600), playerBody.position);
         }
         
-        // Minimal air drag to preserve truck jump momentum
-        playerBody.velocity.x *= 0.999;
-        playerBody.velocity.z *= 0.999;
+        // Increased air drag (linear damping) to prevent skipping
+        playerBody.velocity.x *= 0.96;
+        playerBody.velocity.z *= 0.96;
     }
 
     // Camera follow
