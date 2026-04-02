@@ -352,7 +352,7 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     // Physics Body (Single Body for Stability)
     const truckBody = new CANNON.Body({ mass: hasTrailer ? 8000 : 5000, material: physTruckMat });
     truckBody.linearDamping = 0.05;
-    truckBody.angularDamping = 0.5; // Prevent insane spinning
+    truckBody.angularDamping = 0.9; // Prevent spinning loops
 
     // Toon/Flat materials matching the screenshot
     const matCabWhite = new THREE.MeshLambertMaterial({ color: 0xffffff });
@@ -361,9 +361,9 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     const matDark = new THREE.MeshLambertMaterial({ color: 0x444444 });
     const matWheelBlack = new THREE.MeshLambertMaterial({ color: 0x202020 });
     
-    // Cab shape
+    // Cab shape (Front is -Z)
     const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
-    truckBody.addShape(cabShape, new CANNON.Vec3(0, 0, 2.5));
+    truckBody.addShape(cabShape, new CANNON.Vec3(0, 0, -2.5));
     
     // Cab Mesh Group
     const cabMesh = new THREE.Group();
@@ -372,29 +372,29 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     cabBase.position.set(0, -0.5, 0);
     // Upper cabin
     const cabTop = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.0, 2.0), matCabWhite);
-    cabTop.position.set(0, 1.0, -1.0);
+    cabTop.position.set(0, 1.0, 1.0); // Shifted back (+Z)
     // Windshield
     const wsMesh = new THREE.Mesh(new THREE.BoxGeometry(2.45, 0.9, 0.1), matGlass);
-    wsMesh.position.set(0, 1.0, 0.05);
+    wsMesh.position.set(0, 1.0, -0.05); // Face front (-Z)
     
     cabMesh.add(cabBase); 
     cabMesh.add(cabTop); 
     cabMesh.add(wsMesh);
     
-    cabMesh.position.set(0, 0, 2.5);
+    cabMesh.position.set(0, 0, -2.5); // Placed at front
     cabMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
     truckGrp.add(cabMesh);
     
     if(hasTrailer) {
-        // Trailer shape
+        // Trailer shape (Back is +Z)
         const trailerShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.5, 4.5));
-        truckBody.addShape(trailerShape, new CANNON.Vec3(0, 0, -4.0));
+        truckBody.addShape(trailerShape, new CANNON.Vec3(0, 0, 4.0));
         
         // Trailer Mesh Group
         const trailerMesh = new THREE.Group();
         // Main box
         const trailerBox = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.0, 9.0), matTrailerWhite);
-        // Back door
+        // Back door (At the extreme +Z)
         const doorBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 0.1), matDark);
         doorBase.position.set(0, 0, 4.5);
         // Vertical bars
@@ -408,7 +408,7 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
         trailerMesh.add(bar1); 
         trailerMesh.add(bar2);
         
-        trailerMesh.position.set(0, 0, -4.0);
+        trailerMesh.position.set(0, 0, 4.0); // Placed at back
         trailerMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
         truckGrp.add(trailerMesh);
     }
@@ -419,10 +419,10 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     // Wheels
     const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.6, 12);
     wheelGeo.rotateZ(Math.PI / 2);
-    const wheelPos = [ [-1.4, -1.0, 3.5], [1.4, -1.0, 3.5] ];
+    const wheelPos = [ [-1.4, -1.0, -3.5], [1.4, -1.0, -3.5] ]; // Front cab wheels (-Z)
     if(hasTrailer) {
-        wheelPos.push([-1.4, -1.0, -6.5], [1.4, -1.0, -6.5]);
-        wheelPos.push([-1.4, -1.0, -7.8], [1.4, -1.0, -7.8]);
+        wheelPos.push([-1.4, -1.0, 6.5], [1.4, -1.0, 6.5]); // Rear wheels (+Z)
+        wheelPos.push([-1.4, -1.0, 7.8], [1.4, -1.0, 7.8]);
     }
     wheelPos.forEach(p => {
         const w = new THREE.Mesh(wheelGeo, matWheelBlack);
@@ -604,31 +604,35 @@ function updatePhysics(dt) {
         
         if (!t.isSafe) {
             // AI Weaving
-            if(Math.random() < 0.05) {
-                // Periodically adjust drift target
-                t.targetX += (Math.random() - 0.5) * 8; 
+            if(Math.random() < 0.1) {
+                // Periodically adjust drift target more wildly
+                t.targetX += (Math.random() - 0.5) * 15; 
                 // Keep loosely within road bounds
                 t.targetX = Math.max(-25, Math.min(25, t.targetX));
             }
             
-            // Deliberate slams (Bodanie! Jackknife style pushing)
-            if(Math.random() < 0.015) { // increased frequency
-                const slamForce = (Math.random() > 0.5 ? 1 : -1) * 35000;
-                // Apply force offset to the front to twist the cab into cars nearby
-                t.cab.applyLocalForce(new CANNON.Vec3(slamForce, 0, 0), new CANNON.Vec3(0, 0, 2.5));
+            // Bodanie (Aggressive Lateral Shove without spinning out of control)
+            if(Math.random() < 0.02) {
+                const shoveX = (Math.random() > 0.5 ? 1 : -1) * 15;
+                t.cab.velocity.x += shoveX; 
+                t.cab.angularVelocity.y += shoveX * 0.05; // Gentle tilt triggering jackknife organically
             }
         }
 
-        // Steer laterally towards target lane by applying Force rather than Velocity Hack
+        // Steer laterally towards target lane
         const diffX = t.targetX - t.cab.position.x;
-        t.cab.applyForce(new CANNON.Vec3(diffX * 1200, 0, 0), t.cab.position);
-        t.cab.velocity.x *= 0.92; // Damp lateral velocity harder so they don't ice-skate
+        t.cab.applyForce(new CANNON.Vec3(diffX * 1500, 0, 0), t.cab.position);
+        t.cab.velocity.x *= 0.92; // Damp lateral velocity
         
         // Push forward
         t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
         
-        // Correct forward facing (but loosely so they can drift/crash)
-        t.cab.angularVelocity.y -= t.cab.angularVelocity.y * 0.05;
+        // Anti-Spin Auto-Align: Spring mechanism to keep trucks facing forward (-Z axis)
+        const currentEuler = new CANNON.Vec3();
+        t.cab.quaternion.toEuler(currentEuler);
+        // Correct Y axis rotation back to 0
+        const torqueY = -currentEuler.y * 50000;
+        t.cab.applyTorque(new CANNON.Vec3(0, torqueY, 0));
     });
 
     // 2. Player Raycast (Grounded Check & Momentum)
