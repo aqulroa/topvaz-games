@@ -323,6 +323,7 @@ function createPlayer() {
     playerBody.position.set(0, 10, 0);
     playerBody.linearDamping = 0; // Custom damping applied in update loop
     playerBody.fixedRotation = true;
+    playerBody.collisionFilterGroup = 2; // Player group
     playerBody.updateMassProperties();
     world.addBody(playerBody);
 }
@@ -536,11 +537,13 @@ function updatePhysics(dt) {
     contactVelocity.set(0,0,0);
     let hitBody = null;
     
-    const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.6, playerBody.position.z);
+    // Start raycast at player's center to ensure it hits the top of trucks reliably
+    const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y, playerBody.position.z);
     const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 1.2, playerBody.position.z);
     
     const result = new CANNON.RaycastResult();
-    world.raycastClosest(start, end, { skipBackfaces: true }, result);
+    // Mask 1 ensures we hit trucks (group 1) and ignore player (group 2)
+    world.raycastClosest(start, end, { skipBackfaces: true, collisionFilterMask: 1 }, result);
     if (result.hasHit) {
         isGrounded = true;
         hitBody = result.body;
@@ -548,8 +551,7 @@ function updatePhysics(dt) {
     }
 
     // 3. Player Input & Movement
-    let speed = isGrounded ? 15 : 2; // Air control speed is less
-    if(keys.shift && isGrounded) speed *= 1.5;
+    let speed = keys.shift ? 45 : 25; // Clustertrucks are fast! High sprint speed
 
     // Calc input direction based on camera yaw
     const camEuler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
@@ -567,24 +569,24 @@ function updatePhysics(dt) {
     }
 
     if(isGrounded) {
-        // Friction & inheritance logic: lerp velocity towards (contactVelocity + input * speed)
+        // Snappy movement relative to truck
         let targetVX = contactVelocity.x + inputVec.x * speed;
         let targetVZ = contactVelocity.z + inputVec.z * speed;
         
-        playerBody.velocity.x += (targetVX - playerBody.velocity.x) * 0.2;
-        playerBody.velocity.z += (targetVZ - playerBody.velocity.z) * 0.2;
+        playerBody.velocity.x += (targetVX - playerBody.velocity.x) * 0.4;
+        playerBody.velocity.z += (targetVZ - playerBody.velocity.z) * 0.4;
         
-        // Jump
+        // Auto-Jump (if holding space)
         if(keys.space) {
-            playerBody.velocity.y = 15;
-            keys.space = false;
-            isGrounded = false;
+            playerBody.velocity.y = 22; // High jump
         }
     } else {
-        // In air: apply force for strafing
-        playerBody.applyForce(new CANNON.Vec3(inputVec.x * 200, 0, inputVec.z * 200), playerBody.position);
+        // High Air Control: apply a massive air strafing force (Clustertruck mechanic)
+        if(inputVec.lengthSq() > 0) {
+            playerBody.applyForce(new CANNON.Vec3(inputVec.x * 2000, 0, inputVec.z * 2000), playerBody.position);
+        }
         
-        // Very light air drag to preserve momentum from trucks
+        // Minimal air drag to preserve truck jump momentum
         playerBody.velocity.x *= 0.999;
         playerBody.velocity.z *= 0.999;
     }
