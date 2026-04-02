@@ -424,11 +424,11 @@ function loadCampaignLevel(lvl) {
     let trackLen = 300 + (lvl * 50);
     buildBaseTrack(trackLen);
     
-    // Spawn Player safely
+    // Spawn Player safely (directly on the trailer, height 5.15)
     const safeTruck = spawnTruck(0, LAVA_Y + 1, -10, 20); // speed 20
     safeTruck.isSafe = true;
     safeTruck.cab.velocity.set(0, 0, -20);
-    playerBody.position.set(0, safeTruck.cab.position.y + 4.5, safeTruck.cab.position.z);
+    playerBody.position.set(0, safeTruck.cab.position.y + 2.15, safeTruck.cab.position.z);
     playerBody.velocity.set(0, 0, -20);
     
     // Spawn Level Trucks
@@ -501,7 +501,7 @@ function spawnInitialTrucksInfinite() {
     const t1 = spawnTruck(0, LAVA_Y + 1, -10, 20); // speed 20
     t1.isSafe = true;
     t1.cab.velocity.set(0, 0, -20);
-    playerBody.position.set(0, t1.cab.position.y + 4.5, -10);
+    playerBody.position.set(0, t1.cab.position.y + 2.15, -10);
     playerBody.velocity.set(0, 0, -20);
     spawnTruck(-10, LAVA_Y + 1, -10, 20);
     spawnTruck(10, LAVA_Y + 1, -10, 20);
@@ -645,14 +645,14 @@ function updatePhysics(dt) {
             playerBody.velocity.y = 22; // High jump
         }
     } else {
-        // Nerfed Air Control (40% reduction)
+        // Nerfed Air Control
         if(inputVec.lengthSq() > 0) {
             playerBody.applyForce(new CANNON.Vec3(inputVec.x * 600, 0, inputVec.z * 600), playerBody.position);
         }
         
-        // Increased air drag (linear damping) to prevent skipping
-        playerBody.velocity.x *= 0.96;
-        playerBody.velocity.z *= 0.96;
+        // Let player keep momentum in the air like true Clustertruck
+        playerBody.velocity.x *= 0.998;
+        playerBody.velocity.z *= 0.998;
     }
 
     // Camera follow
