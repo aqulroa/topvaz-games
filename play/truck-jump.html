@@ -297,15 +297,23 @@ function startGame() {
 }
 
 function createEnvironment() {
-    // Floor (Lava)
-    const geoFloor = new THREE.PlaneGeometry(1000, 5000, 50, 250);
+    // Graphic Ground
+    const geoFloor = new THREE.PlaneGeometry(2000, 10000, 10, 50);
     const lavaMesh = new THREE.Mesh(geoFloor, matLava);
     lavaMesh.rotation.x = -Math.PI / 2;
     lavaMesh.position.y = LAVA_Y - 0.5;
     scene.add(lavaMesh);
     
-    // Add logic entity for the ground just so it can be cleaned up later
+    // Physics Ground (Catch everything)
+    const groundShape = new CANNON.Plane();
+    const groundBody = new CANNON.Body({ mass: 0 });
+    groundBody.addShape(groundShape);
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    groundBody.position.set(0, LAVA_Y - 0.5, 0);
+    world.addBody(groundBody);
+    
     entities.push({ mesh: lavaMesh, body: null });
+    entities.push({ mesh: null, body: groundBody });
 }
 
 function createPlayer() {
@@ -384,15 +392,6 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
 // --- LEVEL GENERATION ---
 
 function buildBaseTrack(length) {
-    // Generate invisible wide floor to prevent trucks from instantly falling to lava early on
-    const groundMat = new CANNON.Material();
-    const groundShape = new CANNON.Box(new CANNON.Vec3(150, 1, length/2));
-    const groundBody = new CANNON.Body({ mass: 0, material: groundMat });
-    groundBody.addShape(groundShape);
-    groundBody.position.set(0, LAVA_Y - 2, -length/2 + 50);
-    world.addBody(groundBody);
-    entities.push({ mesh: null, body: groundBody });
-    
     // Goal Zone
     goalZ = -length + 10;
     const goalGeo = new THREE.BoxGeometry(60, 50, 10);
@@ -408,7 +407,8 @@ function loadCampaignLevel(lvl) {
     
     // Spawn Player safely
     const safeTruck = spawnTruck(0, LAVA_Y + 1, -10, 15);
-    playerBody.position.set(0, safeTruck.cab.position.y + 4, safeTruck.cab.position.z);
+    playerBody.position.set(0, safeTruck.cab.position.y + 4.5, safeTruck.cab.position.z);
+    playerBody.velocity.set(0, 0, -15);
     
     // Spawn Level Trucks
     const truckCount = Math.min(20 + lvl * 5, 80);
@@ -455,7 +455,8 @@ function spawnWallObstacle(z) {
 function spawnInitialTrucksInfinite() {
     // Initial platform
     const t1 = spawnTruck(0, LAVA_Y + 1, -10, 30);
-    playerBody.position.set(0, t1.cab.position.y + 4, -10);
+    playerBody.position.set(0, t1.cab.position.y + 4.5, -10);
+    playerBody.velocity.set(0, 0, -30);
     spawnTruck(-10, LAVA_Y + 1, -10, 30);
     spawnTruck(10, LAVA_Y + 1, -10, 30);
     lastTruckSpawnZ = -10;
@@ -536,7 +537,7 @@ function updatePhysics(dt) {
     let hitBody = null;
     
     const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.6, playerBody.position.z);
-    const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.8, playerBody.position.z);
+    const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 1.2, playerBody.position.z);
     
     const result = new CANNON.RaycastResult();
     world.raycastClosest(start, end, { skipBackfaces: true }, result);
