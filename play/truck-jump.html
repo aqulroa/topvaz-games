@@ -297,43 +297,41 @@ function startGame() {
 }
 
 function createEnvironment() {
-    // Gradient Sky
-    const canvas = document.createElement('canvas');
-    canvas.width = 2; canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, '#00001a'); // Deep Space Blue
-    grad.addColorStop(1, '#ff3300'); // Sunset/Neon Orange
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 2, 512);
-    const bgTex = new THREE.CanvasTexture(canvas);
-    bgTex.colorSpace = THREE.SRGBColorSpace;
-    scene.background = bgTex;
-    scene.fog = new THREE.FogExp2(0xff3300, 0.0015);
+    // Retro/Synthwave sky & fog
+    scene.background = new THREE.Color(0x050510);
+    scene.fog = new THREE.FogExp2(0x1a0033, 0.0015);
 
     // Sun
-    const sunGeom = new THREE.SphereGeometry(200, 32, 32);
-    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd00 });
+    const sunGeom = new THREE.SphereGeometry(300, 32, 32);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xff0055 }); // Neon Pink
     const sunMesh = new THREE.Mesh(sunGeom, sunMat);
-    sunMesh.position.set(0, 300, -3000);
+    sunMesh.position.set(0, 100, -3000);
     scene.add(sunMesh);
 
     // Landscape (Canyon / Mountain silhouette)
-    const matM = new THREE.MeshStandardMaterial({color: 0x110522, roughness: 1.0, flatShading: true});
+    const matM = new THREE.MeshStandardMaterial({color: 0x0a0011, roughness: 1.0, flatShading: true});
     for(let i=0; i<60; i++) {
         const side = i % 2 === 0 ? 1 : -1;
-        const zPos = 100 - i * 100;
-        const geoM = new THREE.BoxGeometry(100 + Math.random()*150, 150 + Math.random()*300, 100 + Math.random()*150);
+        const zPos = 100 - i * 150;
+        const geoM = new THREE.BoxGeometry(50 + Math.random()*150, 50 + Math.random()*250, 100 + Math.random()*150);
         const meshM = new THREE.Mesh(geoM, matM);
-        meshM.position.set(side * (120 + Math.random()*80), LAVA_Y, zPos);
+        meshM.position.set(side * (130 + Math.random()*80), LAVA_Y, zPos);
         meshM.rotation.y = Math.random();
         scene.add(meshM);
         entities.push({ mesh: meshM, body: null });
     }
 
+    // Solid dark floor under grid
+    const geoSolid = new THREE.PlaneGeometry(300, 10000);
+    const matSolid = new THREE.MeshBasicMaterial({ color: 0x050510 });
+    const meshSolid = new THREE.Mesh(geoSolid, matSolid);
+    meshSolid.rotation.x = -Math.PI / 2;
+    meshSolid.position.y = LAVA_Y - 0.55;
+    scene.add(meshSolid);
+
     // Glowing Grid Highway
     const geoFloor = new THREE.PlaneGeometry(300, 10000, 15, 200);
-    const gridMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true, transparent: true, opacity: 0.2 });
+    const gridMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true, transparent: true, opacity: 0.15 });
     const lavaMesh = new THREE.Mesh(geoFloor, gridMat);
     lavaMesh.rotation.x = -Math.PI / 2;
     lavaMesh.position.y = LAVA_Y - 0.5;
@@ -445,6 +443,7 @@ function loadCampaignLevel(lvl) {
     
     // Spawn Player safely
     const safeTruck = spawnTruck(0, LAVA_Y + 1, -10, 15);
+    safeTruck.isSafe = true;
     playerBody.position.set(0, safeTruck.cab.position.y + 4.5, safeTruck.cab.position.z);
     playerBody.velocity.set(0, 0, -15);
     
@@ -516,6 +515,7 @@ function spawnVariedObstacle(z) {
 function spawnInitialTrucksInfinite() {
     // Initial platform
     const t1 = spawnTruck(0, LAVA_Y + 1, -10, 30);
+    t1.isSafe = true;
     playerBody.position.set(0, t1.cab.position.y + 4.5, -10);
     playerBody.velocity.set(0, 0, -30);
     spawnTruck(-10, LAVA_Y + 1, -10, 30);
@@ -583,23 +583,26 @@ function updatePhysics(dt) {
     trucks.forEach(t => {
         t.cab.wakeUp();
         
-        // 3-Lane Formation Logic (Boid-like lane keeping)
-        if(Math.random() < 0.02) {
-            const lanes = [-15, 0, 15]; // 3 parallel lines
-            t.targetX = lanes[Math.floor(Math.random() * lanes.length)];
-        }
-        
-        // Side-Slamming / Nudging Neighbors (Torque Physics)
-        if(Math.random() < 0.015) {
-            const slamForce = (Math.random() > 0.5 ? 1 : -1) * (10 + Math.random() * 5);
-            t.cab.velocity.x += slamForce * 0.5; // Lateral nudge
-            t.cab.angularVelocity.y += slamForce * 0.05; // Spin torque
-            t.cab.angularVelocity.z += slamForce * 0.02; // Roll torque for pile-ups
+        if (!t.isSafe) {
+            // 3-Lane Formation Logic (Boid-like lane keeping)
+            if(Math.random() < 0.005) {
+                const lanes = [-15, 0, 15]; // 3 parallel lines
+                t.targetX = lanes[Math.floor(Math.random() * lanes.length)];
+            }
+            
+            // Side-Slamming / Nudging Neighbors (Torque Physics)
+            if(Math.random() < 0.002) {
+                const slamForce = (Math.random() > 0.5 ? 1 : -1) * (5 + Math.random() * 5);
+                t.cab.velocity.x += slamForce; // Lateral nudge
+                t.cab.angularVelocity.y += slamForce * 0.05; // Spin torque
+                t.cab.angularVelocity.z += slamForce * 0.02; // Roll torque for pile-ups
+            }
         }
 
-        // Steer laterally towards target lane
+        // Steer laterally towards target lane smoothly
         const diffX = t.targetX - t.cab.position.x;
-        t.cab.velocity.x += diffX * 0.05; // Lateral steering
+        t.cab.velocity.x += (diffX * 1.5 * dt); // Lateral steering
+        t.cab.velocity.x *= 0.95; // Damp lateral velocity
         
         // Push forward
         t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
