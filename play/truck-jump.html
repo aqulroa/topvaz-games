@@ -1,800 +1,648 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Truck Jump</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;background:#87CEEB;font-family:'Segoe UI',Arial,sans-serif}
-canvas{display:block}
-#game-ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;display:none}
-#level-name{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:bold;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);letter-spacing:3px;transition:opacity 1s}
-#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.3)}
-#crosshair::before{width:2px;height:16px;left:7px}
-#crosshair::after{width:16px;height:2px;top:7px}
-#hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
-#menu-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#4a90d9 0%,#2a5a9a 50%,#1a3a6a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#menu-screen h1{font-size:56px;color:#fff;margin-bottom:6px;text-shadow:0 3px 8px rgba(0,0,0,.3);letter-spacing:2px}
-#menu-screen h2{font-size:16px;color:#aaccff;margin-bottom:18px;font-weight:normal}
-.menu-btn{background:#fff;border:none;color:#333;font-size:16px;font-weight:bold;padding:12px 36px;border-radius:8px;cursor:pointer;pointer-events:all;transition:all .2s;letter-spacing:1px;min-width:230px;margin:4px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
-.menu-btn:hover{transform:scale(1.05);background:#f0f0f0}
-.menu-btn.secondary{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3)}
-.controls-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 20px;margin-bottom:14px}
-.controls-box p{color:#ccddff;font-size:13px;margin:3px 0}
-.controls-box span{color:#ffaa44;font-weight:bold}
-#death-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#death-screen h1{font-size:48px;color:#ff4444;margin-bottom:10px;text-shadow:0 0 15px rgba(255,0,0,.5)}
-#death-screen .fs{font-size:22px;color:#fff;margin-bottom:18px}
-#death-buttons{display:flex;gap:10px}
-#complete-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,80,0,.5);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;pointer-events:all}
-#complete-screen h1{font-size:42px;color:#44ff88;margin-bottom:8px;text-shadow:0 0 15px rgba(0,255,100,.5)}
-#complete-screen .info{font-size:17px;color:#fff;margin-bottom:14px}
-#level-select{display:none;flex-direction:column;align-items:center;gap:6px;margin:8px 0;max-height:200px;overflow-y:auto;padding:6px}
-.lv-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:8px 18px;color:#fff;font-size:13px;cursor:pointer;pointer-events:all;transition:all .15s;min-width:200px;text-align:center}
-.lv-item:hover{background:rgba(255,255,255,.15)}
-.lv-item.locked{opacity:.3;cursor:not-allowed}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clustertruck Web Clone</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050510; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #ui { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); mix-blend-mode: difference; }
+        
+        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(5,5,10,0.85); backdrop-filter: blur(8px); pointer-events: auto; }
+        .hidden { display: none !important; }
+        
+        h1 { font-size: 72px; color: #ff3333; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,50,50,0.6); }
+        .subtitle { color: #aaa; font-size: 20px; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .btn-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; max-width: 800px; padding: 20px; }
+        button { background: rgba(255,255,255,0.05); border: 2px solid #555; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; transition: all 0.2s ease; backdrop-filter: blur(4px); }
+        button:hover { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: scale(1.05); }
+        button.primary { border-color: #ff3333; color: #ff3333; background: rgba(255,50,50,0.1); }
+        button.primary:hover { border-color: #ff3333; background: #ff3333; color: white; box-shadow: 0 0 30px rgba(255,50,50,0.8); }
+        
+        #hud { position: absolute; top: 20px; left: 20px; font-size: 24px; color: white; font-weight: bold; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+        #center-msg { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(255,255,255,0.8); opacity: 0; transition: opacity 0.3s; }
+        
+        .controls-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; }
+        .controls-hint b { color: #ff9900; }
+
+        #win-screen h1 { color: #00ffaa; text-shadow: 0 0 20px rgba(0,255,170,0.6); }
+        #win-screen button.primary { border-color: #00ffaa; color: #00ffaa; background: rgba(0,255,170,0.1); }
+        #win-screen button.primary:hover { background: #00ffaa; border-color: #00ffaa; color: black; box-shadow: 0 0 30px rgba(0,255,170,0.8); }
+        
+        #victory-screen h1 { color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.8); font-size: 90px; }
+        
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+      }
+    }
+    </script>
 </head>
 <body>
 
-<div id="menu-screen">
-  <h1>TRUCK JUMP</h1>
-  <h2>Прыгай по грузовикам!</h2>
-  <div class="controls-box">
-    <p><span>WASD</span> — Движение</p>
-    <p><span>SPACE</span> — Прыжок</p>
-    <p><span>SHIFT</span> — Рывок</p>
-    <p><span>МЫШЬ</span> — Обзор</p>
-  </div>
-  <button class="menu-btn" id="btn-endless">БЕСКОНЕЧНЫЙ</button>
-  <button class="menu-btn secondary" id="btn-levels">УРОВНИ</button>
-  <div id="level-select"></div>
+<div id="ui">
+    <div id="crosshair" class="hidden"></div>
+    <div id="hud" class="hidden">Score: 0<br>Level: 1</div>
+    <div id="center-msg"></div>
+    <div class="controls-hint hidden" id="game-hint"><b>WASD</b> Move | <b>SPACE</b> Jump | <b>SHIFT</b> Sprint | <b>MOUSE</b> Look</div>
 </div>
 
-<div id="death-screen">
-  <h1>УПАЛ!</h1>
-  <div class="fs">Счёт: <span id="final-score">0</span></div>
-  <div id="death-buttons">
-    <button class="menu-btn" id="btn-restart">ЗАНОВО</button>
-    <button class="menu-btn secondary" id="btn-menu1">МЕНЮ</button>
-  </div>
+<div id="menu-screen" class="screen">
+    <h1>Clustertruck</h1>
+    <div class="subtitle">Procedural Web Edition</div>
+    <div class="btn-container">
+        <button class="primary" id="btn-campaign">Campaign Mode</button>
+        <button id="btn-infinite">Infinite Mode</button>
+    </div>
 </div>
 
-<div id="complete-screen">
-  <h1>УРОВЕНЬ ПРОЙДЕН!</h1>
-  <div class="info" id="complete-info"></div>
-  <button class="menu-btn" id="btn-next">СЛЕДУЮЩИЙ</button>
-  <button class="menu-btn secondary" id="btn-menu2">МЕНЮ</button>
+<div id="death-screen" class="screen hidden">
+    <h1>Wasted</h1>
+    <div class="subtitle">The floor is lava</div>
+    <div class="btn-container">
+        <button class="primary" id="btn-restart-death">Restart Level</button>
+        <button id="btn-menu-death">Main Menu</button>
+    </div>
 </div>
 
-<div id="game-ui">
-  <div id="level-name"></div>
-  <div id="crosshair"></div>
-  <div id="hint">Нажми чтобы начать</div>
+<div id="win-screen" class="screen hidden">
+    <h1>Level Cleared!</h1>
+    <div class="subtitle">Nice jumping</div>
+    <div class="btn-container">
+        <button class="primary" id="btn-next-level">Next Level</button>
+        <button id="btn-menu-win">Main Menu</button>
+    </div>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
+<div id="victory-screen" class="screen hidden">
+    <h1>VICTORY!</h1>
+    <div class="subtitle">You completed all 20 levels!</div>
+    <div class="btn-container">
+        <button class="primary" id="btn-menu-vic">Return to Menu</button>
+    </div>
+</div>
 
 <script type="module">
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
-import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+import * as CANNON from 'cannon-es';
 
-const TW = 3, TH = 2.5;
-const TRUCK_LENGTHS = [10, 12, 14];
-const G = -28, JF = 12, MS = 6, DF = 12;
-const ROAD_W = 18;
-const LANE_X = [-6, 0, 6];
+// --- CONFIG ---
+const GAME_STATE = { MENU: 0, PLAYING: 1, DEAD: 2, WON: 3, VICTORY: 4 };
+let currentState = GAME_STATE.MENU;
+let mode = 'campaign'; // 'campaign' or 'infinite'
+let currentLevel = 1;
+const MAX_LEVELS = 20;
 
-const LEVELS = [
-  { n: 'Уровень 1', t: 10, s: 7, l: 1 },
-  { n: 'Уровень 2', t: 12, s: 7, l: 2 },
-  { n: 'Уровень 3', t: 14, s: 8, l: 3 },
-  { n: 'Уровень 4', t: 15, s: 9, l: 3 },
-  { n: 'Уровень 5', t: 16, s: 10, l: 3 },
-  { n: 'Уровень 6', t: 18, s: 11, l: 3 },
-  { n: 'Уровень 7', t: 20, s: 12, l: 3 },
-  { n: 'Уровень 8', t: 22, s: 13, l: 3 },
-  { n: 'Уровень 9', t: 25, s: 14, l: 3 },
-  { n: 'Уровень 10', t: 30, s: 15, l: 3 },
-];
+// --- GLOBALS ---
+let scene, camera, renderer, world, controls;
+let clock = new THREE.Clock();
+let playerBody;
+let entities = []; // Syncs Physics -> Three
+let trucks = [];
+let keys = { w:false, a:false, s:false, d:false, space:false, shift:false };
 
-let scene, camera, renderer, controls, clock;
-let composer;
-let player, pv, onGround;
-let trucks = [], particles = [], roadLines = [], finishLine = null;
-let audio, keys = {};
-let mode = 'endless', cLevel = 0, score = 0, best = +localStorage.getItem('tjB') || 0;
-let lj = 0, lt = 0, active = false, ct = null, gameTime = 0;
-let jumpSpeedZ = 0; // Сохраняем скорость грузовика при прыжке
+// Physics Materials
+const physWorldMat = new CANNON.Material("world");
+const physPlayerMat = new CANNON.Material("player");
+const physTruckMat = new CANNON.Material("truck");
 
+// Graphics Materials
+const matCab = new THREE.MeshStandardMaterial({ color: 0xdd2222, roughness: 0.4, metalness: 0.1 });
+const matTrailer = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.6 });
+const matWheel = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+const matLava = new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true });
+const matGoal = new THREE.MeshStandardMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.5, emissive: 0x00ffaa, emissiveIntensity: 0.5 });
+
+// Config values
+const LAVA_Y = 0;
+let goalZ = -1000;
+let distanceTraveled = 0;
+let spawnZ = -50;
+let lastTruckSpawnZ = 0;
+
+// Init Engine
 function init() {
-  clock = new THREE.Clock();
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87CEEB);
-  scene.fog = new THREE.FogExp2(0x87CEEB, 0.003);
-  camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 500);
-  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
-  document.body.appendChild(renderer.domElement);
+    // 1. Three.js Setup
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a14);
+    scene.fog = new THREE.FogExp2(0x0a0a14, 0.005);
+    
+    camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 800);
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
 
-  controls = new PointerLockControls(camera, document.body);
-  controls.addEventListener('lock', () => { document.getElementById('hint').style.display = 'none'; });
-  controls.addEventListener('unlock', () => { if (active) document.getElementById('hint').style.display = 'block'; });
+    // Lights
+    const ambientInfo = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientInfo);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    dirLight.position.set(100, 200, 50);
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.near = 10;
+    dirLight.shadow.camera.far = 500;
+    dirLight.shadow.camera.left = -100;
+    dirLight.shadow.camera.right = 100;
+    dirLight.shadow.camera.top = 100;
+    dirLight.shadow.camera.bottom = -100;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    scene.add(dirLight);
 
-  setupLights();
-  setupPP();
-  createWorld();
-  audio = new Audio();
-  setupInput();
-  buildLS();
-  animate();
-}
+    // Fill Light
+    const fillLight = new THREE.DirectionalLight(0xaaccff, 0.5);
+    fillLight.position.set(-100, 50, -50);
+    scene.add(fillLight);
 
-function setupLights() {
-  scene.add(new THREE.HemisphereLight(0x88bbdd, 0x445522, 0.8));
-  scene.add(new THREE.AmbientLight(0x667788, 0.7));
-  const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
-  sun.position.set(20, 50, 10);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 120;
-  sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
-  sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
-  sun.shadow.bias = -0.0001;
-  scene.add(sun);
-}
-
-function setupPP() {
-  composer = new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.2, 0.3, 0.9));
-  const vp = new ShaderPass(VignetteShader);
-  vp.uniforms['offset'].value = 1.4; vp.uniforms['darkness'].value = 0.5;
-  composer.addPass(vp);
-  const fp = new ShaderPass(FXAAShader);
-  fp.material.uniforms['resolution'].value.set(1/(innerWidth*renderer.getPixelRatio()), 1/(innerHeight*renderer.getPixelRatio()));
-  composer.addPass(fp);
-}
-
-function createWorld() {
-  // Дорога
-  const roadGeo = new THREE.PlaneGeometry(ROAD_W + 4, 1200, 1, 1);
-  const roadMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.85 });
-  const road = new THREE.Mesh(roadGeo, roadMat);
-  road.rotation.x = -Math.PI / 2;
-  road.position.y = -0.01;
-  road.position.z = -300;
-  road.receiveShadow = true;
-  scene.add(road);
-
-  // Обочины
-  [-1, 1].forEach(side => {
-    const sg = new THREE.PlaneGeometry(2, 1200);
-    const sm = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
-    const s = new THREE.Mesh(sg, sm);
-    s.rotation.x = -Math.PI / 2;
-    s.position.set(side * (ROAD_W / 2 + 3), -0.02, -300);
-    s.receiveShadow = true;
-    scene.add(s);
-  });
-
-  // Разметка - пунктирные линии между полосами
-  for (let i = 0; i < 200; i++) {
-    [-3, 3].forEach(x => {
-      const lg = new THREE.PlaneGeometry(0.15, 3);
-      const lm = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      const l = new THREE.Mesh(lg, lm);
-      l.rotation.x = -Math.PI / 2;
-      l.position.set(x, 0.01, -i * 6);
-      scene.add(l);
-      roadLines.push(l);
+    // 2. Cannon.js Setup
+    world = new CANNON.World({
+        gravity: new CANNON.Vec3(0, -30, 0),
     });
-  }
+    world.broadphase = new CANNON.SAPBroadphase(world);
+    world.solver.iterations = 10;
+    world.defaultContactMaterial.friction = 0.0;
+    
+    // Contact materials
+    const contactTruckPlayer = new CANNON.ContactMaterial(physTruckMat, physPlayerMat, { friction: 0.0, restitution: 0.0 });
+    world.addContactMaterial(contactTruckPlayer);
+    
+    // Controls
+    controls = new PointerLockControls(camera, document.body);
+    
+    // UI Event Listeners
+    document.getElementById('btn-campaign').addEventListener('click', () => { mode = 'campaign'; currentLevel = 1; startGame(); });
+    document.getElementById('btn-infinite').addEventListener('click', () => { mode = 'infinite'; startGame(); });
+    document.getElementById('btn-restart-death').addEventListener('click', () => { startGame(); });
+    document.getElementById('btn-menu-death').addEventListener('click', showMenu);
+    document.getElementById('btn-next-level').addEventListener('click', () => { currentLevel++; startGame(); });
+    document.getElementById('btn-menu-win').addEventListener('click', showMenu);
+    document.getElementById('btn-menu-vic').addEventListener('click', showMenu);
+    
+    document.addEventListener('keydown', (e) => {
+        if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
+        if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = true;
+        if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = true;
+        if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = true;
+        if(e.code === 'Space') keys.space = true;
+        if(e.code === 'ShiftLeft' || e.code === 'ShiftRight') keys.shift = true;
+    });
+    document.addEventListener('keyup', (e) => {
+        if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
+        if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
+        if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
+        if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
+        if(e.code === 'Space') keys.space = false;
+        if(e.code === 'ShiftLeft' || e.code === 'ShiftRight') keys.shift = false;
+    });
 
-  // Облака
-  for (let i = 0; i < 30; i++) {
-    const cg = new THREE.SphereGeometry(5 + Math.random() * 10, 8, 6);
-    const cm = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, roughness: 1 });
-    const c = new THREE.Mesh(cg, cm);
-    c.position.set((Math.random()-.5)*200, 30+Math.random()*40, (Math.random()-.5)*500);
-    c.scale.set(1+Math.random()*.5, .3+Math.random()*.2, 1+Math.random()*.5);
-    scene.add(c);
-  }
+    controls.addEventListener('lock', () => { if(currentState === GAME_STATE.PLAYING) showHUD(); });
+    controls.addEventListener('unlock', () => { if(currentState === GAME_STATE.PLAYING) showPauseMenu(); });
+    document.addEventListener('mousedown', () => {
+        if(currentState === GAME_STATE.PLAYING && !controls.isLocked) controls.lock();
+    });
 
-  // Здания
-  for (let i = 0; i < 60; i++) {
-    const h = 5 + Math.random() * 25;
-    const bg = new THREE.BoxGeometry(3+Math.random()*8, h, 3+Math.random()*8);
-    const bm = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(.6,.1,.25+Math.random()*.15), roughness: 0.9 });
-    const b = new THREE.Mesh(bg, bm);
-    const a = Math.random() * Math.PI * 2;
-    const d = 60 + Math.random() * 80;
-    b.position.set(Math.cos(a)*d, h/2-10, Math.sin(a)*d-100);
-    scene.add(b);
-  }
+    window.addEventListener('resize', onWindowResize);
+    
+    animate();
 }
 
-function createTruckMesh(length) {
-  const group = new THREE.Group();
-  const trailerLen = length - 2.5;
-
-  // Trailer
-  const tg = new THREE.BoxGeometry(TW, TH, trailerLen);
-  const tm = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.5, metalness: 0.3 });
-  const trailer = new THREE.Mesh(tg, tm);
-  trailer.position.set(0, TH/2+0.3, -0.5);
-  trailer.castShadow = true; trailer.receiveShadow = true;
-  group.add(trailer);
-
-  // Frame
-  const fg = new THREE.BoxGeometry(TW-0.2, 0.3, trailerLen);
-  const fm = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7, metalness: 0.5 });
-  const frame = new THREE.Mesh(fg, fm);
-  frame.position.set(0, 0.3, -0.5);
-  group.add(frame);
-
-  // Cabin
-  const cg = new THREE.BoxGeometry(TW-0.2, TH*0.8, 2.5);
-  const cm = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.4, metalness: 0.4 });
-  const cab = new THREE.Mesh(cg, cm);
-  cab.position.set(0, TH*0.4+0.3, length/2-1.25);
-  cab.castShadow = true;
-  group.add(cab);
-
-  // Deflector
-  const dg = new THREE.BoxGeometry(TW-0.4, 0.4, 1.5);
-  const deflector = new THREE.Mesh(dg, cm);
-  deflector.position.set(0, TH*0.8+0.5, length/2-1.25);
-  group.add(deflector);
-
-  // Windshield
-  const wg = new THREE.PlaneGeometry(TW-0.6, 0.9);
-  const wm = new THREE.MeshStandardMaterial({ color: 0x88bbdd, emissive: 0x224466, emissiveIntensity: 0.15, roughness: 0.05, metalness: 0.9, transparent: true, opacity: 0.5 });
-  const ws = new THREE.Mesh(wg, wm);
-  ws.position.set(0, TH*0.5+0.5, length/2-0.01);
-  group.add(ws);
-
-  // Grill
-  const gg2 = new THREE.PlaneGeometry(TW-0.8, 0.6);
-  const gm2 = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.7 });
-  const grill = new THREE.Mesh(gg2, gm2);
-  grill.position.set(0, TH*0.2+0.3, length/2+0.01);
-  group.add(grill);
-
-  // Headlights
-  const hg = new THREE.SphereGeometry(0.12, 6, 6);
-  const hm = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 0.8 });
-  [-1,1].forEach(s => {
-    const h = new THREE.Mesh(hg, hm);
-    h.position.set(s*(TW/2-0.5), TH*0.2+0.3, length/2+0.05);
-    group.add(h);
-  });
-
-  // Bumper
-  const bg2 = new THREE.BoxGeometry(TW-0.2, 0.3, 0.3);
-  const bm2 = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.6 });
-  const bumper = new THREE.Mesh(bg2, bm2);
-  bumper.position.set(0, 0.3, length/2+0.15);
-  group.add(bumper);
-
-  // Wheels
-  const whg = new THREE.CylinderGeometry(0.5, 0.5, 0.3, 12);
-  const whm = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
-  [[-TW/2-.15,.5,length/2-2],[TW/2+.15,.5,length/2-2],[-TW/2-.15,.5,-length/2+2],[TW/2+.15,.5,-length/2+2],[-TW/2-.15,.5,-length/2+3.2],[TW/2+.15,.5,-length/2+3.2]].forEach(p => {
-    const w = new THREE.Mesh(whg, whm);
-    w.rotation.z = Math.PI/2;
-    w.position.set(...p);
-    group.add(w);
-  });
-
-  scene.add(group);
-  return group;
+function showMenu() {
+    currentState = GAME_STATE.MENU;
+    document.exitPointerLock();
+    hideAllScreens();
+    document.getElementById('menu-screen').classList.remove('hidden');
+    clearWorld();
 }
 
-function createTruck(x, z, length, baseSpeed, lane) {
-  const mesh = createTruckMesh(length);
-  mesh.position.set(x, 0, z);
-  mesh.rotation.y = 0;
+function showHUD() {
+    document.getElementById('crosshair').classList.remove('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('game-hint').classList.remove('hidden');
+}
 
-  return {
-    mesh,
-    length,
-    width: TW,
-    height: TH + 0.3,
-    lane,
-    speed: baseSpeed,
-    targetX: x,
-    jumped: false,
-  };
+function hideHUD() {
+    document.getElementById('crosshair').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    document.getElementById('game-hint').classList.add('hidden');
+}
+
+function hideAllScreens() {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.add('hidden'));
+    hideHUD();
+}
+
+function showPauseMenu() {
+    // Basic unpaused behavior
+    document.getElementById('crosshair').classList.add('hidden');
+}
+
+function clearWorld() {
+    // Remove physics bodies and threejs meshes
+    entities.forEach(e => {
+        if(e.body) world.removeBody(e.body);
+        if(e.mesh) scene.remove(e.mesh);
+    });
+    // Remove constraints
+    world.constraints.forEach(c => world.removeConstraint(c));
+    entities = [];
+    trucks = [];
+    
+    if(playerBody) {
+        world.removeBody(playerBody);
+        playerBody = null;
+    }
+}
+
+function startGame() {
+    currentState = GAME_STATE.PLAYING;
+    hideAllScreens();
+    showHUD();
+    clearWorld();
+    
+    // Center message
+    const msg = document.getElementById('center-msg');
+    msg.innerHTML = mode === 'campaign' ? `LEVEL ${currentLevel}` : "INFINITE MODE";
+    msg.style.opacity = '1';
+    setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+
+    // Setup Environment
+    createEnvironment();
+    
+    // Spawn Player
+    createPlayer();
+    controls.lock();
+
+    spawnZ = -10;
+    distanceTraveled = 0;
+    lastTruckSpawnZ = 0;
+
+    // Load Level Configuration
+    if(mode === 'campaign') {
+        loadCampaignLevel(currentLevel);
+    } else {
+        goalZ = -Infinity; // Infinite
+        spawnInitialTrucksInfinite();
+    }
+}
+
+function createEnvironment() {
+    // Floor (Lava)
+    const geoFloor = new THREE.PlaneGeometry(1000, 5000, 50, 250);
+    const lavaMesh = new THREE.Mesh(geoFloor, matLava);
+    lavaMesh.rotation.x = -Math.PI / 2;
+    lavaMesh.position.y = LAVA_Y - 0.5;
+    scene.add(lavaMesh);
+    
+    // Add logic entity for the ground just so it can be cleaned up later
+    entities.push({ mesh: lavaMesh, body: null });
 }
 
 function createPlayer() {
-  const g = new THREE.Group();
-  const bg = new THREE.CapsuleGeometry(0.3, 0.6, 4, 8);
-  const bm = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: 0x111111, emissiveIntensity: 0.1, roughness: 0.4, metalness: 0.3 });
-  const b = new THREE.Mesh(bg, bm);
-  b.position.y = 0.6;
-  b.castShadow = true;
-  g.add(b);
-  scene.add(g);
-  return g;
+    const shape = new CANNON.Sphere(0.6);
+    playerBody = new CANNON.Body({ mass: 50, material: physPlayerMat });
+    playerBody.addShape(shape);
+    playerBody.position.set(0, 10, 0);
+    playerBody.linearDamping = 0; // Custom damping applied in update loop
+    playerBody.fixedRotation = true;
+    playerBody.updateMassProperties();
+    world.addBody(playerBody);
 }
 
-function createParticles(pos, color, count) {
-  for (let i = 0; i < count; i++) {
-    const g = new THREE.SphereGeometry(0.05+Math.random()*0.05, 4, 4);
-    const m = new THREE.MeshBasicMaterial({ color });
-    const p = new THREE.Mesh(g, m);
-    p.position.copy(pos);
-    scene.add(p);
-    particles.push({ mesh: p, vel: new THREE.Vector3((Math.random()-.5)*8, Math.random()*5+1, (Math.random()-.5)*8), life: 1, decay: 2+Math.random() });
-  }
+function spawnTruck(x, y, z, speed, hasTrailer = true) {
+    const truckGrp = new THREE.Group();
+    truckGrp.position.set(x, y, z);
+    
+    // Physics Bodies
+    const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
+    const cabBody = new CANNON.Body({ mass: 5000, material: physTruckMat });
+    cabBody.addShape(cabShape);
+    cabBody.position.set(x, y + 2, z);
+    cabBody.linearDamping = 0.5;
+    cabBody.angularDamping = 0.8;
+    world.addBody(cabBody);
+    
+    // Meshes
+    const cabMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.0, 4.0), matCab);
+    cabMesh.castShadow = true; cabMesh.receiveShadow = true;
+    truckGrp.add(cabMesh);
+    
+    let trailerBody = null;
+    let trailerMesh = null;
+    
+    if(hasTrailer) {
+        const trShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.8, 4.5));
+        trailerBody = new CANNON.Body({ mass: 3000, material: physTruckMat });
+        trailerBody.addShape(trShape);
+        trailerBody.position.set(x, y + 2.3, z + 7);
+        trailerBody.linearDamping = 0.5;
+        trailerBody.angularDamping = 0.8;
+        world.addBody(trailerBody);
+        
+        trailerMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.6, 9.0), matTrailer);
+        trailerMesh.castShadow = true; trailerMesh.receiveShadow = true;
+        
+        // Hinge
+        const pivotA = new CANNON.Vec3(0, -0.5, 2.0); // Back of cab
+        const pivotB = new CANNON.Vec3(0, -0.8, -4.5); // Front of trailer
+        const axis = new CANNON.Vec3(0, 1, 0);
+        const constraint = new CANNON.HingeConstraint(cabBody, trailerBody, {
+            pivotA: pivotA, pivotB: pivotB,
+            axisA: axis, axisB: axis
+        });
+        world.addConstraint(constraint);
+        
+        scene.add(trailerMesh);
+        entities.push({ mesh: trailerMesh, body: trailerBody });
+    }
+    
+    scene.add(truckGrp);
+    entities.push({ mesh: truckGrp, body: cabBody });
+    
+    const truckObj = { cab: cabBody, trailer: trailerBody, speed: speed, meshGrp: truckGrp };
+    trucks.push(truckObj);
+    return truckObj;
 }
 
-function updateParticles(dt) {
-  for (let i = particles.length-1; i >= 0; i--) {
-    const p = particles[i];
-    p.vel.y -= 12*dt;
-    p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
-    p.life -= p.decay*dt;
-    p.mesh.material.opacity = Math.max(0, p.life);
-    p.mesh.material.transparent = true;
-    p.mesh.scale.setScalar(p.life);
-    if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
-  }
+// --- LEVEL GENERATION ---
+
+function buildBaseTrack(length) {
+    // Generate invisible wide floor to prevent trucks from instantly falling to lava early on
+    const groundMat = new CANNON.Material();
+    const groundShape = new CANNON.Box(new CANNON.Vec3(150, 1, length/2));
+    const groundBody = new CANNON.Body({ mass: 0, material: groundMat });
+    groundBody.addShape(groundShape);
+    groundBody.position.set(0, LAVA_Y - 2, -length/2 + 50);
+    world.addBody(groundBody);
+    entities.push({ mesh: null, body: groundBody });
+    
+    // Goal Zone
+    goalZ = -length + 10;
+    const goalGeo = new THREE.BoxGeometry(60, 50, 10);
+    const goalMesh = new THREE.Mesh(goalGeo, matGoal);
+    goalMesh.position.set(0, 25, goalZ);
+    scene.add(goalMesh);
+    entities.push({ mesh: goalMesh, body: null });
 }
 
-function clearScene() {
-  trucks.forEach(t => scene.remove(t.mesh));
-  trucks = [];
-  particles.forEach(p => scene.remove(p.mesh));
-  particles = [];
-  if (player) scene.remove(player);
-  if (finishLine) { scene.remove(finishLine); finishLine = null; }
-  ct = null;
+function loadCampaignLevel(lvl) {
+    let trackLen = 300 + (lvl * 50);
+    buildBaseTrack(trackLen);
+    
+    // Spawn Player safely
+    const safeTruck = spawnTruck(0, LAVA_Y + 1, -10, 15);
+    playerBody.position.set(0, safeTruck.cab.position.y + 4, safeTruck.cab.position.z);
+    
+    // Spawn Level Trucks
+    const truckCount = Math.min(20 + lvl * 5, 80);
+    let curZ = -30;
+    const lanes = [-15, -7.5, 0, 7.5, 15];
+    
+    for(let i=0; i<truckCount; i++) {
+        let lane = lanes[Math.floor(Math.random() * lanes.length)];
+        let tkSpeed = 30 + Math.random() * 15 + (lvl * 1.5);
+        if(lvl < 5) {
+            // Organized lines early on
+            lane = lanes[i % 5];
+            curZ -= 25;
+            spawnTruck(lane, LAVA_Y + 1, curZ, tkSpeed);
+        } else {
+            // More chaotic later
+            curZ -= (15 + Math.random() * 20);
+            let offset = (Math.random() - 0.5) * 5;
+            spawnTruck(lane + offset, LAVA_Y + 1, curZ, tkSpeed);
+            
+            // Random obstacles
+            if(Math.random() < 0.1 && curZ > goalZ + 50) {
+                spawnWallObstacle(curZ - 10);
+            }
+        }
+    }
 }
 
-// ===================== GAME START =====================
-
-function startEndless() {
-  mode = 'endless';
-  hideAll(); clearScene();
-  player = createPlayer();
-  pv = new THREE.Vector3(0, 0, 0);
-  onGround = true;
-  score = 0; lj = 0; lt = 999;
-  gameTime = 0; active = true;
-
-  // Много грузовиков - кластер
-  let z = -6;
-  for (let i = 0; i < 25; i++) {
-    const lane = Math.floor(Math.random() * 3) - 1;
-    const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-    const spd = 6 + Math.random() * 5;
-    const truck = createTruck(LANE_X[lane + 1], z, len, spd, lane);
-    trucks.push(truck);
-    z -= len/2 + 3 + Math.random()*2 + len/2;
-  }
-
-  const first = trucks[0];
-  player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
-  ct = first;
-
-  document.getElementById('game-ui').style.display = 'block';
-  const ln = document.getElementById('level-name');
-  ln.textContent = 'БЕСКОНЕЧНЫЙ'; ln.style.opacity = '1';
-  setTimeout(() => { ln.style.opacity = '0'; }, 2000);
-
-  audio.init();
-  setTimeout(() => { if (active) controls.lock(); }, 100);
+function spawnWallObstacle(z) {
+    const width = 10 + Math.random() * 20;
+    const shape = new CANNON.Box(new CANNON.Vec3(width/2, 5, 2));
+    const body = new CANNON.Body({ mass: 0 });
+    body.addShape(shape);
+    body.position.set((Math.random()-0.5)*20, LAVA_Y + 3, z);
+    world.addBody(body);
+    
+    const geo = new THREE.BoxGeometry(width, 10, 4);
+    const mat = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.8});
+    const mesh = new THREE.Mesh(geo, mat);
+    scene.add(mesh);
+    entities.push({ mesh: mesh, body: body });
 }
 
-function startLevel(idx) {
-  mode = 'level'; cLevel = idx;
-  const lv = LEVELS[idx];
-  hideAll(); clearScene();
-  player = createPlayer();
-  pv = new THREE.Vector3(0, 0, 0);
-  onGround = true;
-  score = 0; lj = 0; lt = lv.t;
-  gameTime = 0; active = true;
-
-  let z = -6;
-  for (let i = 0; i < lv.t; i++) {
-    const lane = lv.l === 1 ? 0 : (Math.floor(Math.random() * lv.l) - Math.floor(lv.l / 2));
-    const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-    const spd = lv.s * (0.85 + Math.random() * 0.3);
-    const truck = createTruck(LANE_X[lane + 1], z, len, spd, lane);
-    trucks.push(truck);
-    z -= len/2 + 3 + len/2;
-  }
-
-  // Финишная платформа
-  const fg = new THREE.BoxGeometry(ROAD_W + 4, 0.5, 8);
-  const fm = new THREE.MeshStandardMaterial({ color: 0x44ff44, emissive: 0x22aa22, emissiveIntensity: 0.3, roughness: 0.5 });
-  finishLine = new THREE.Mesh(fg, fm);
-  finishLine.position.set(0, 0.25, z - 4);
-  finishLine.castShadow = true;
-  finishLine.receiveShadow = true;
-  scene.add(finishLine);
-
-  const first = trucks[0];
-  player.position.set(first.mesh.position.x, first.mesh.position.y + first.height + 0.4, first.mesh.position.z);
-  ct = first;
-
-  document.getElementById('game-ui').style.display = 'block';
-  const ln = document.getElementById('level-name');
-  ln.textContent = lv.n; ln.style.opacity = '1';
-  setTimeout(() => { ln.style.opacity = '0'; }, 2500);
-
-  audio.init();
-  setTimeout(() => { if (active) controls.lock(); }, 100);
+function spawnInitialTrucksInfinite() {
+    // Initial platform
+    const t1 = spawnTruck(0, LAVA_Y + 1, -10, 30);
+    playerBody.position.set(0, t1.cab.position.y + 4, -10);
+    spawnTruck(-10, LAVA_Y + 1, -10, 30);
+    spawnTruck(10, LAVA_Y + 1, -10, 30);
+    lastTruckSpawnZ = -10;
+    fillInfiniteTrucks();
 }
 
-function hideAll() {
-  document.getElementById('menu-screen').style.display = 'none';
-  document.getElementById('death-screen').style.display = 'none';
-  document.getElementById('complete-screen').style.display = 'none';
-  document.getElementById('level-select').style.display = 'none';
+function fillInfiniteTrucks() {
+    const spawnAhead = playerBody.position.z - 300;
+    while(lastTruckSpawnZ > spawnAhead) {
+        lastTruckSpawnZ -= (15 + Math.random() * 20);
+        let x = (Math.random() - 0.5) * 40;
+        let tkSpeed = 30 + Math.random() * 20 + (distanceTraveled / 100);
+        spawnTruck(x, LAVA_Y + 1, lastTruckSpawnZ, tkSpeed);
+        
+        // Sometimes spawn a flying truck or pileup
+        if(Math.random() < 0.1) {
+            spawnTruck(x + (Math.random()-0.5)*10, LAVA_Y + 15, lastTruckSpawnZ, tkSpeed * 0.5, false);
+        }
+    }
 }
 
 function die() {
-  active = false;
-  audio.playDeathSound();
-  controls.unlock();
-  const fs = Math.floor(score);
-  if (fs > best) { best = fs; localStorage.setItem('tjB', fs.toString()); }
-  document.getElementById('final-score').textContent = fs;
-  document.getElementById('death-screen').style.display = 'flex';
-  createParticles(player.position, 0xff4444, 20);
+    currentState = GAME_STATE.DEAD;
+    document.exitPointerLock();
+    hideAllScreens();
+    document.getElementById('death-screen').classList.remove('hidden');
 }
 
-function completeLevel() {
-  active = false; controls.unlock();
-  document.getElementById('complete-info').textContent = `Грузовиков: ${lj} / ${lt}`;
-  document.getElementById('complete-screen').style.display = 'flex';
+function win() {
+    currentState = GAME_STATE.WON;
+    document.exitPointerLock();
+    hideAllScreens();
+    
+    if(currentLevel >= MAX_LEVELS) {
+        document.getElementById('victory-screen').classList.remove('hidden');
+    } else {
+        document.getElementById('win-screen').classList.remove('hidden');
+    }
 }
 
-function goToMenu() {
-  hideAll();
-  document.getElementById('menu-screen').style.display = 'flex';
-  document.getElementById('game-ui').style.display = 'none';
-  clearScene(); active = false;
+// --- UPDATE LOOP ---
+
+let isGrounded = false;
+let contactVelocity = new CANNON.Vec3();
+
+function updatePhysics(dt) {
+    if(currentState !== GAME_STATE.PLAYING) return;
+
+    world.step(1/60, dt, 3);
+    
+    // Sync Three -> Cannon
+    entities.forEach(e => {
+        if(e.body && e.mesh) {
+            e.mesh.position.copy(e.body.position);
+            e.mesh.quaternion.copy(e.body.quaternion);
+        }
+    });
+
+    // 1. Truck AI & Propulsion
+    trucks.forEach(t => {
+        // Enforce strong forward velocity on trucks
+        const localFwd = new CANNON.Vec3(0, 0, -1);
+        const worldFwd = t.cab.quaternion.vmult(localFwd);
+        
+        // Wake up
+        t.cab.wakeUp();
+        
+        // Push forward
+        const forceMag = t.cab.mass * 20.0;
+        t.cab.applyForce(worldFwd.scale(forceMag), t.cab.position);
+        
+        // Cap speed
+        const currentVel = t.cab.velocity.length();
+        if(currentVel > t.speed) {
+            t.cab.velocity.scale(t.speed / currentVel, t.cab.velocity);
+        }
+    });
+
+    // 2. Player Raycast (Grounded Check & Momentum)
+    isGrounded = false;
+    contactVelocity.set(0,0,0);
+    let hitBody = null;
+    
+    const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.6, playerBody.position.z);
+    const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.8, playerBody.position.z);
+    
+    world.raycastClosest(start, end, { skipBackfaces: true }, (result) => {
+        isGrounded = true;
+        hitBody = result.body;
+        contactVelocity.copy(result.body.velocity);
+    });
+
+    // 3. Player Input & Movement
+    let speed = isGrounded ? 15 : 2; // Air control speed is less
+    if(keys.shift && isGrounded) speed *= 1.5;
+
+    // Calc input direction based on camera yaw
+    const camEuler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    const yaw = camEuler.y;
+    
+    let inputVec = new THREE.Vector3(0,0,0);
+    if(keys.w) inputVec.z -= 1;
+    if(keys.s) inputVec.z += 1;
+    if(keys.a) inputVec.x -= 1;
+    if(keys.d) inputVec.x += 1;
+    
+    if(inputVec.lengthSq() > 0) {
+        inputVec.normalize();
+        inputVec.applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+    }
+
+    if(isGrounded) {
+        // Friction & inheritance logic: lerp velocity towards (contactVelocity + input * speed)
+        let targetVX = contactVelocity.x + inputVec.x * speed;
+        let targetVZ = contactVelocity.z + inputVec.z * speed;
+        
+        playerBody.velocity.x += (targetVX - playerBody.velocity.x) * 0.2;
+        playerBody.velocity.z += (targetVZ - playerBody.velocity.z) * 0.2;
+        
+        // Jump
+        if(keys.space) {
+            playerBody.velocity.y = 15;
+            keys.space = false;
+            isGrounded = false;
+        }
+    } else {
+        // In air: apply force for strafing
+        playerBody.applyForce(new CANNON.Vec3(inputVec.x * 200, 0, inputVec.z * 200), playerBody.position);
+        
+        // Light air drag on XZ horizontally relative to nothing
+        playerBody.velocity.x *= 0.98;
+        playerBody.velocity.z *= 0.98;
+    }
+
+    // Camera follow
+    camera.position.set(playerBody.position.x, playerBody.position.y + 0.6, playerBody.position.z);
+
+    // 4. Game Rules Check
+    if(playerBody.position.y <= LAVA_Y + 1) {
+        die();
+    }
+    
+    if(mode === 'campaign') {
+        if(playerBody.position.z <= goalZ + 5) {
+            win();
+        }
+    } else if (mode === 'infinite') {
+        fillInfiniteTrucks();
+        let dist = Math.floor(Math.abs(playerBody.position.z));
+        if(dist > distanceTraveled) distanceTraveled = dist;
+        // Cleanup old trucks behind player
+        cleanOldTrucks();
+    }
+    
+    // Update HUD
+    const hud = document.getElementById('hud');
+    if(mode === 'campaign') {
+        let distLeft = Math.max(0, Math.floor(playerBody.position.z - goalZ));
+        hud.innerHTML = `Level: ${currentLevel}<br>Distance to Goal: ${distLeft}m`;
+    } else {
+        hud.innerHTML = `Mode: Infinite<br>Score: ${distanceTraveled}`;
+    }
 }
 
-// ===================== CONTROLS =====================
+function cleanOldTrucks() {
+    for(let i = trucks.length-1; i >= 0; i--) {
+        let t = trucks[i];
+        if(t.cab.position.z > playerBody.position.z + 100) {
+            // Remove
+            world.removeBody(t.cab);
+            if(t.trailer) world.removeBody(t.trailer);
+            scene.remove(t.meshGrp);
+            trucks.splice(i, 1);
+        }
+    }
+}
 
-function setupInput() {
-  document.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
-  document.addEventListener('keyup', e => { keys[e.code] = false; });
-  document.getElementById('btn-endless').onclick = startEndless;
-  document.getElementById('btn-levels').onclick = () => {
-    const ls = document.getElementById('level-select');
-    ls.style.display = ls.style.display === 'flex' ? 'none' : 'flex';
-    buildLS();
-  };
-  document.getElementById('btn-restart').onclick = () => {
-    document.getElementById('death-screen').style.display = 'none';
-    if (mode === 'level') startLevel(cLevel); else startEndless();
-  };
-  document.getElementById('btn-menu1').onclick = goToMenu;
-  document.getElementById('btn-menu2').onclick = goToMenu;
-  renderer.domElement.onclick = () => { if (active) controls.lock(); };
-  window.onresize = () => {
-    camera.aspect = innerWidth / innerHeight;
+function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.1);
+    
+    updatePhysics(dt);
+    renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-    composer.setSize(innerWidth, innerHeight);
-  };
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function buildLS() {
-  const ls = document.getElementById('level-select');
-  ls.innerHTML = '';
-  LEVELS.forEach((lv, i) => {
-    const d = document.createElement('div');
-    d.className = 'lv-item';
-    d.textContent = `${i+1}. ${lv.n}`;
-    d.onclick = () => startLevel(i);
-    ls.appendChild(d);
-  });
-}
-
-// ===================== COLLISION =====================
-
-function checkLanding() {
-  const pp = player.position;
-  const pr = 0.4;
-  for (const t of trucks) {
-    const tp = t.mesh.position;
-    const hl = t.length / 2;
-    const hw = t.width / 2;
-    if (Math.abs(pp.x - tp.x) < hw + pr && Math.abs(pp.z - tp.z) < hl + pr) {
-      const top = tp.y + t.height;
-      const pb = pp.y - 0.3;
-      if (pb >= top - 0.5 && pb <= top + 0.6 && pv.y <= 0.5) {
-        return { truck: t, top };
-      }
-    }
-  }
-  return null;
-}
-
-// Коллизия игрока с боком грузовика
-function checkTruckSideCollision() {
-  const pp = player.position;
-  const pr = 0.4;
-
-  for (const t of trucks) {
-    if (t === ct) continue;
-    const tp = t.mesh.position;
-    const hl = t.length / 2;
-    const hw = t.width / 2;
-    const top = tp.y + t.height;
-    const pb = pp.y - 0.3;
-
-    // Проверяем боковое столкновение (игрок в воздухе, на уровне корпуса грузовика)
-    if (pb >= top - 1.5 && pb <= top + 0.5) {
-      if (Math.abs(pp.x - tp.x) < hw + pr && Math.abs(pp.z - tp.z) < hl + pr) {
-        // Отталкиваем игрока
-        const dx = pp.x - tp.x;
-        const dz = pp.z - tp.z;
-        if (Math.abs(dx) > Math.abs(dz)) {
-          pv.x = Math.sign(dx) * 5;
-        } else {
-          pv.z = Math.sign(dz) * 5;
-        }
-        pv.y = 3;
-        createParticles(player.position, 0xcccccc, 5);
-      }
-    }
-  }
-}
-
-// ===================== TRUCK PHYSICS =====================
-
-function updateTrucks(dt) {
-  for (const t of trucks) {
-    // Плавное смещение к целевой полосе
-    const dx = t.targetX - t.mesh.position.x;
-    t.mesh.position.x += dx * 1.5 * dt;
-
-    // Двигаем вперёд
-    t.mesh.position.z -= t.speed * dt;
-
-    // Случайная смена полосы
-    if (Math.random() < dt * 0.15) {
-      const newLane = Math.floor(Math.random() * 3);
-      t.targetX = LANE_X[newLane];
-    }
-
-    // Ограничиваем дорогу
-    t.mesh.position.x = Math.max(-ROAD_W/2, Math.min(ROAD_W/2, t.mesh.position.x));
-  }
-
-  // Столкновения грузовиков
-  for (let i = 0; i < trucks.length; i++) {
-    for (let j = i + 1; j < trucks.length; j++) {
-      const a = trucks[i], b = trucks[j];
-      const ax = a.mesh.position.x, az = a.mesh.position.z;
-      const bx = b.mesh.position.x, bz = b.mesh.position.z;
-      const ahl = a.length / 2, bhl = b.length / 2;
-      const hw = (a.width + b.width) / 4;
-
-      const overlapX = hw - Math.abs(ax - bx);
-      const overlapZ = (ahl + bhl) - Math.abs(az - bz);
-
-      if (overlapX > 0 && overlapZ > 0) {
-        if (overlapX < overlapZ) {
-          const dir = ax > bx ? 1 : -1;
-          a.targetX += dir * 3;
-          b.targetX -= dir * 3;
-        } else {
-          const dir = az > bz ? 1 : -1;
-          a.speed += dir * 0.5;
-          b.speed -= dir * 0.5;
-        }
-      }
-    }
-  }
-}
-
-// ===================== MAIN LOOP =====================
-
-function update() {
-  const dt = Math.min(clock.getDelta(), 0.05);
-
-  if (!active) {
-    updateParticles(dt);
-    composer.render();
-    return;
-  }
-
-  gameTime += dt;
-  score += dt * 10;
-
-  // Camera direction
-  const fwd = new THREE.Vector3();
-  camera.getWorldDirection(fwd);
-  fwd.y = 0; fwd.normalize();
-  const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0,1,0)).normalize();
-
-  const md = new THREE.Vector3();
-  if (keys['KeyW'] || keys['ArrowUp']) md.add(fwd);
-  if (keys['KeyS'] || keys['ArrowDown']) md.sub(fwd);
-  if (keys['KeyA'] || keys['ArrowLeft']) md.sub(right);
-  if (keys['KeyD'] || keys['ArrowRight']) md.add(right);
-  if (md.length() > 0) md.normalize();
-
-  // Jump
-  if (keys['Space']) {
-    if (onGround) {
-      pv.y = JF;
-      onGround = false;
-      // Запоминаем скорость грузовика при прыжке
-      if (ct) {
-        jumpSpeedZ = -ct.speed;
-      }
-      ct = null;
-      audio.playJumpSound();
-      createParticles(player.position, 0xffffff, 4);
-      keys['Space'] = false;
-    }
-  }
-
-  // Dash
-  if (keys['ShiftLeft'] && onGround) {
-    jumpSpeedZ -= 5;
-    audio.playDashSound();
-    createParticles(player.position, 0xffcc00, 6);
-    keys['ShiftLeft'] = false;
-  }
-
-  // Physics
-  pv.y += G * dt;
-
-  if (onGround && ct) {
-    // На грузовике: двигаемся вместе с ним
-    player.position.x += md.x * MS * dt;
-    player.position.z += (-ct.speed + md.z * MS) * dt;
-  } else {
-    // В воздухе: гравитация + сохранённая скорость грузовика + WASD
-    player.position.y += pv.y * dt;
-    player.position.x += md.x * MS * dt;
-    player.position.z += (jumpSpeedZ + md.z * MS) * dt;
-  }
-
-  if (md.length() > 0) {
-    player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, Math.atan2(md.x, md.z), 0.15);
-  }
-
-  // Landing
-  const col = checkLanding();
-  if (col) {
-    if (!onGround && pv.y < 0) {
-      if (!col.truck.jumped) {
-        col.truck.jumped = true;
-        lj++;
-      }
-      audio.playLandSound();
-      createParticles(player.position, 0xcccccc, 4);
-      if (mode === 'level' && lj >= lt) {
-        setTimeout(() => completeLevel(), 400);
-      }
-    }
-    player.position.y = col.top + 0.3;
-    pv.y = 0;
-    onGround = true;
-    ct = col.truck;
-  } else {
-    onGround = false;
-  }
-
-  // Side collision
-  if (!onGround) checkTruckSideCollision();
-
-  // Truck physics
-  updateTrucks(dt);
-
-  // Remove far trucks
-  for (let i = trucks.length - 1; i >= 0; i--) {
-    const t = trucks[i];
-    if (t.mesh.position.z < player.position.z - 80) {
-      scene.remove(t.mesh);
-      trucks.splice(i, 1);
-      if (ct === t) ct = null;
-    }
-  }
-
-  // Spawn new in endless
-  if (mode === 'endless') {
-    let minZ = 0;
-    for (const t of trucks) { if (t.mesh.position.z < minZ) minZ = t.mesh.position.z; }
-    if (minZ > player.position.z - 150) {
-      const lane = Math.floor(Math.random() * 3);
-      const len = TRUCK_LENGTHS[Math.floor(Math.random() * TRUCK_LENGTHS.length)];
-      const spd = 6 + Math.random() * 5;
-      const truck = createTruck(LANE_X[lane], minZ - len/2 - 3 - Math.random()*3, len, spd, lane - 1);
-      trucks.push(truck);
-    }
-  }
-
-  // Check finish line
-  if (mode === 'level' && finishLine) {
-    if (player.position.z < finishLine.position.z + 4 && player.position.z > finishLine.position.z - 4) {
-      if (player.position.y > -2) {
-        completeLevel();
-        return;
-      }
-    }
-  }
-
-  // Death
-  if (player.position.y < -8) { die(); return; }
-
-  // FPS camera
-  controls.getObject().position.set(player.position.x, player.position.y + 1.6, player.position.z);
-
-  updateParticles(dt);
-  composer.render();
-}
-
-function animate() { requestAnimationFrame(animate); update(); }
-
-// ===================== AUDIO =====================
-
-class Audio {
-  constructor() {
-    this.ctx = null; this.muted = false;
-    this.bpm = 138; this.bi = 60 / this.bpm;
-    this.nbt = 0; this.bc = 0;
-    this.bass = [55, 55, 73.42, 65.41, 55, 82.41, 73.42, 55];
-    this.mel = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 349.23];
-    this.arp = [440, 523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25];
-  }
-  init() {
-    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    this.mg = this.ctx.createGain(); this.mg.gain.value = 0.25;
-    this.cp = new (this.ctx.createDynamicsCompressor)(); this.cp.threshold.value = -20; this.cp.ratio.value = 8;
-    this.mg.connect(this.cp); this.cp.connect(this.ctx.destination);
-    this.nbt = this.ctx.currentTime + 0.1; this.sched();
-  }
-  sched() { while (this.nbt < this.ctx.currentTime + 0.3) { this.pb(this.nbt, this.bc); this.nbt += this.bi; this.bc++; } requestAnimationFrame(() => this.sched()); }
-  pb(t, b) { if (this.muted) return; const bp = b%8, sp = b%16; if (sp===0||sp===4||sp===8||sp===12) this.kick(t, sp%8===0?.7:.4); if (bp===2||bp===6) this.snare(t); this.hh(t, sp%2===0?.08:.04); if (sp%2===0) this.bn(t, this.bass[bp]); if (bp%2===0) this.mn(t, this.mel[bp]); if (sp%4===0) this.an(t, this.arp[sp%8]); }
-  kick(t,v){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(35,t+.12);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(this.mg);o.start(t);o.stop(t+.2);}
-  snare(t){const b=this.ctx.createBuffer(1,this.ctx.sampleRate*.1,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=b;const g=this.ctx.createGain();g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);const f=this.ctx.createBiquadFilter();f.type='highpass';f.frequency.value=1000;n.connect(f);f.connect(g);g.connect(this.mg);n.start(t);n.stop(t+.1);}
-  hh(t,v){const b=this.ctx.createBuffer(1,this.ctx.sampleRate*.03,this.ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=b;const g=this.ctx.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.03);const f=this.ctx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);g.connect(this.mg);n.start(t);n.stop(t+.03);}
-  bn(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+this.bi*.8);const fl=this.ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=300;o.connect(fl);fl.connect(g);g.connect(this.mg);o.start(t);o.stop(t+this.bi);}
-  mn(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.03,t);g.gain.exponentialRampToValueAtTime(.001,t+this.bi*.7);const fl=this.ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1500;o.connect(fl);fl.connect(g);g.connect(this.mg);o.start(t);o.stop(t+this.bi);}
-  an(t,f){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.02,t);g.gain.exponentialRampToValueAtTime(.001,t+this.bi*.4);o.connect(g);g.connect(this.mg);o.start(t);o.stop(t+this.bi*.5);}
-  playJumpSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(250,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(500,this.ctx.currentTime+.1);g.gain.setValueAtTime(.1,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.12);o.connect(g);g.connect(this.mg);o.start();o.stop(this.ctx.currentTime+.12);}
-  playLandSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(180,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(60,this.ctx.currentTime+.1);g.gain.setValueAtTime(.15,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.15);o.connect(g);g.connect(this.mg);o.start();o.stop(this.ctx.currentTime+.15);}
-  playDeathSound(){if(!this.ctx||this.muted)return;for(let i=0;i<5;i++){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(400-i*60,this.ctx.currentTime+i*.08);g.gain.setValueAtTime(.1,this.ctx.currentTime+i*.08);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+i*.08+.15);o.connect(g);g.connect(this.mg);o.start(this.ctx.currentTime+i*.08);o.stop(this.ctx.currentTime+i*.08+.15);}}
-  playDashSound(){if(!this.ctx||this.muted)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+.12);g.gain.setValueAtTime(.08,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.15);o.connect(g);g.connect(this.mg);o.start();o.stop(this.ctx.currentTime+.15);}
-  toggleMute(){this.muted=!this.muted;if(this.mg)this.mg.gain.value=this.muted?0:.25;return this.muted;}
-}
-
+// Start in Menu
 init();
+
 </script>
 </body>
 </html>
