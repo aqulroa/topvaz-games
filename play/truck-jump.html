@@ -173,8 +173,12 @@ function init() {
     world.defaultContactMaterial.friction = 0.0;
     
     // Contact materials
-    const contactTruckPlayer = new CANNON.ContactMaterial(physTruckMat, physPlayerMat, { friction: 0.0, restitution: 0.0 });
+    const contactTruckPlayer = new CANNON.ContactMaterial(physTruckMat, physPlayerMat, { friction: 0.3, restitution: 0.0 });
     world.addContactMaterial(contactTruckPlayer);
+    
+    // Truck-to-Truck: low friction, some bounciness for satisfying side-slams
+    const contactTruckTruck = new CANNON.ContactMaterial(physTruckMat, physTruckMat, { friction: 0.1, restitution: 0.3 });
+    world.addContactMaterial(contactTruckTruck);
     
     // Controls
     controls = new PointerLockControls(camera, document.body);
@@ -351,14 +355,14 @@ function createPlayer() {
 function spawnTruck(x, y, z, speed, hasTrailer = true) {
     const truckGrp = new THREE.Group();
     
-    // Physics Body — locked rotation, no truck-to-truck collision
+    // Physics Body — locked rotation, trucks CAN collide with each other (side-slamming)
     const truckBody = new CANNON.Body({ mass: hasTrailer ? 8000 : 5000, material: physTruckMat });
-    truckBody.linearDamping = 0.05;
+    truckBody.linearDamping = 0.2;
     truckBody.angularDamping = 0.99;
-    truckBody.fixedRotation = true;
-    // Collision group 4 = trucks. Mask = 1|2 = ground + player only (NOT other trucks)
+    truckBody.fixedRotation = true; // No spinning — only lateral push from collisions
+    // Collision group 4 = trucks. Mask = 1|2|4 = ground + player + OTHER TRUCKS
     truckBody.collisionFilterGroup = 4;
-    truckBody.collisionFilterMask = 1 | 2; // collide with ground(1) and player(2), NOT trucks(4)
+    truckBody.collisionFilterMask = 1 | 2 | 4; // collide with everything including other trucks
 
     // === CLUSTERTRUCK-ACCURATE TRUCK MODEL ===
     // Materials — clean white flat-shaded like the original
@@ -641,33 +645,46 @@ function updatePhysics(dt) {
         }
     });
 
-    // 1. Truck AI — drive STRAIGHT, stay in lane, no lane changes
+    // 1. Truck AI — Clustertruck style: drift to center, side-slam each other
     trucks.forEach(t => {
         t.cab.wakeUp();
         
-        // Lock rotation — no spin ever
+        // Lock rotation — no spin, only lateral push from collisions
         t.cab.quaternion.set(0, 0, 0, 1);
         t.cab.angularVelocity.set(0, 0, 0);
         
-        // Drive forward at constant speed
+        // Drive forward at constant speed (hard-set Z)
         t.cab.velocity.z = -t.speed;
         
-        // Stay in assigned lane (gentle correction, NO lane changes)
-        const diffX = t.targetX - t.cab.position.x;
-        if(Math.abs(diffX) > 0.3) {
-            // Only correct if drifted more than 0.3 units
-            t.cab.velocity.x = diffX * 2.0; // Smooth return to lane
-        } else {
-            t.cab.velocity.x = 0; // Stay put
+        // === CLUSTERTRUCK DRIFT: All trucks gently pull toward center (X=0) ===
+        // This makes them converge and side-slam each other!
+        const centerPull = 3.0; // How strongly trucks drift toward center
+        const diffToCenter = 0 - t.cab.position.x; // Distance to center line
+        
+        // Apply gentle lateral FORCE (not velocity!) so physics collisions work
+        // When trucks bump each other, the collision pushes them apart,
+        // but this force pulls them back together = BODANIE!
+        t.cab.applyForce(
+            new CANNON.Vec3(diffToCenter * centerPull * t.cab.mass * 0.3, 0, 0),
+            t.cab.position
+        );
+        
+        // Damp lateral velocity so trucks don't fly sideways infinitely
+        t.cab.velocity.x *= 0.92;
+        
+        // Clamp lateral position — don't let trucks escape too far
+        if(Math.abs(t.cab.position.x) > 20) {
+            t.cab.velocity.x += Math.sign(-t.cab.position.x) * 5;
         }
         
-        // Lock Y — trucks are on the ground, period
-        t.cab.velocity.y = 0;
+        // Keep trucks grounded — gentle Y correction (allow small bumps from collisions)
         if(t.cab.position.y < LAVA_Y + 0.5) {
             t.cab.position.y = LAVA_Y + 0.5;
+            t.cab.velocity.y = 0;
         }
-        if(t.cab.position.y > LAVA_Y + 2) {
-            t.cab.position.y = LAVA_Y + 0.5;
+        if(t.cab.position.y > LAVA_Y + 3) {
+            // If launched too high by collision, gently pull back down
+            t.cab.velocity.y = -5;
         }
     });
 
