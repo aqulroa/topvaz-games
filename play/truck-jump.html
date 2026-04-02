@@ -115,10 +115,6 @@ const physPlayerMat = new CANNON.Material("player");
 const physTruckMat = new CANNON.Material("truck");
 
 // Graphics Materials
-const matCab = new THREE.MeshStandardMaterial({ color: 0xdd2222, roughness: 0.4, metalness: 0.1 });
-const matTrailer = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.6 });
-const matWheel = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-const matLava = new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true });
 const matGoal = new THREE.MeshStandardMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.5, emissive: 0x00ffaa, emissiveIntensity: 0.5 });
 
 // Config values
@@ -127,6 +123,285 @@ let goalZ = -1000;
 let distanceTraveled = 0;
 let spawnZ = -50;
 let lastTruckSpawnZ = 0;
+const BASE_FOV = 80;
+const MAX_FOV = 100;
+
+// ============================
+// === AUDIO MANAGER ===
+// ============================
+class AudioManager {
+    constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.bgmPlaying = false;
+        this.initialized = false;
+    }
+    
+    init() {
+        if(this.initialized) return;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.5;
+        this.masterGain.connect(this.ctx.destination);
+        this.initialized = true;
+    }
+    
+    resume() {
+        if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
+    
+    // Synthwave BGM using oscillators
+    startBGM() {
+        if(!this.initialized || this.bgmPlaying) return;
+        this.bgmPlaying = true;
+        
+        const bgmGain = this.ctx.createGain();
+        bgmGain.gain.value = 0.08;
+        bgmGain.connect(this.masterGain);
+        
+        // Bass line — pulsing low synth
+        const bassOsc = this.ctx.createOscillator();
+        bassOsc.type = 'sawtooth';
+        bassOsc.frequency.value = 55; // A1
+        const bassFilter = this.ctx.createBiquadFilter();
+        bassFilter.type = 'lowpass';
+        bassFilter.frequency.value = 200;
+        bassOsc.connect(bassFilter);
+        bassFilter.connect(bgmGain);
+        bassOsc.start();
+        
+        // Arp — simple repeating pattern
+        const arpGain = this.ctx.createGain();
+        arpGain.gain.value = 0.04;
+        arpGain.connect(this.masterGain);
+        const arpNotes = [220, 330, 440, 330, 220, 175, 220, 330];
+        let arpIdx = 0;
+        const arpOsc = this.ctx.createOscillator();
+        arpOsc.type = 'square';
+        const arpFilter = this.ctx.createBiquadFilter();
+        arpFilter.type = 'lowpass';
+        arpFilter.frequency.value = 800;
+        arpOsc.connect(arpFilter);
+        arpFilter.connect(arpGain);
+        arpOsc.start();
+        
+        this._bgmInterval = setInterval(() => {
+            if(!this.bgmPlaying) return;
+            arpOsc.frequency.setTargetAtTime(arpNotes[arpIdx % arpNotes.length], this.ctx.currentTime, 0.02);
+            arpIdx++;
+        }, 180);
+        
+        // Pad — warm sustained chord
+        const padGain = this.ctx.createGain();
+        padGain.gain.value = 0.03;
+        padGain.connect(this.masterGain);
+        [110, 165, 220].forEach(f => {
+            const o = this.ctx.createOscillator();
+            o.type = 'sine';
+            o.frequency.value = f;
+            o.connect(padGain);
+            o.start();
+        });
+        
+        this._bgmNodes = { bassOsc, arpOsc, bgmGain, arpGain, padGain };
+    }
+    
+    stopBGM() {
+        this.bgmPlaying = false;
+        if(this._bgmInterval) clearInterval(this._bgmInterval);
+    }
+    
+    // Metallic clang on collision
+    playClang(volume = 0.3) {
+        if(!this.initialized) return;
+        const g = this.ctx.createGain();
+        g.gain.value = volume;
+        g.connect(this.masterGain);
+        
+        // Short burst of noise-like sound
+        const osc = this.ctx.createOscillator();
+        osc.type = 'square';
+        osc.frequency.value = 200 + Math.random() * 300;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 500;
+        osc.connect(filter);
+        filter.connect(g);
+        
+        g.gain.setValueAtTime(volume, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+    
+    // Explosion boom
+    playExplosion() {
+        if(!this.initialized) return;
+        const g = this.ctx.createGain();
+        g.gain.value = 0.5;
+        g.connect(this.masterGain);
+        
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 80;
+        osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.5);
+        osc.connect(g);
+        
+        g.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.6);
+        
+        // Noise burst
+        const bufferSize = this.ctx.sampleRate * 0.3;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for(let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i/bufferSize);
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const ng = this.ctx.createGain();
+        ng.gain.value = 0.3;
+        ng.connect(this.masterGain);
+        noise.connect(ng);
+        ng.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+        noise.start();
+    }
+    
+    // Engine hum (continuous, pitch-shifted)
+    playEngineHum() {
+        if(!this.initialized) return;
+        const g = this.ctx.createGain();
+        g.gain.value = 0.02;
+        g.connect(this.masterGain);
+        
+        this.engineOsc = this.ctx.createOscillator();
+        this.engineOsc.type = 'sawtooth';
+        this.engineOsc.frequency.value = 60;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 150;
+        this.engineOsc.connect(filter);
+        filter.connect(g);
+        this.engineOsc.start();
+        this.engineGain = g;
+    }
+    
+    updateEngineHum(playerSpeed) {
+        if(!this.engineOsc) return;
+        const pitch = 50 + Math.abs(playerSpeed) * 1.5;
+        this.engineOsc.frequency.setTargetAtTime(Math.min(pitch, 200), this.ctx.currentTime, 0.1);
+    }
+}
+
+// ============================
+// === VFX MANAGER ===
+// ============================
+class VFXManager {
+    constructor() {
+        this.windParticles = [];
+        this.explosionParticles = [];
+        this.windGroup = null;
+    }
+    
+    init(scene) {
+        // Wind streak particle system
+        this.windGroup = new THREE.Group();
+        scene.add(this.windGroup);
+        
+        const streakGeo = new THREE.BoxGeometry(0.03, 0.03, 2.0);
+        const streakMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+        
+        for(let i = 0; i < 40; i++) {
+            const streak = new THREE.Mesh(streakGeo, streakMat.clone());
+            streak.visible = false;
+            this.windGroup.add(streak);
+            this.windParticles.push({
+                mesh: streak,
+                vel: new THREE.Vector3(),
+                life: 0
+            });
+        }
+    }
+    
+    updateWindStreaks(playerPos, playerSpeed, dt) {
+        const speedMag = Math.abs(playerSpeed);
+        const intensity = Math.max(0, (speedMag - 15) / 30); // Starts showing at speed > 15
+        
+        this.windParticles.forEach(p => {
+            if(p.life > 0) {
+                p.life -= dt;
+                p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+                p.mesh.material.opacity = p.life * 0.4 * intensity;
+                if(p.life <= 0) p.mesh.visible = false;
+            } else if(intensity > 0.1 && Math.random() < intensity * 0.5) {
+                // Spawn new streak
+                p.mesh.visible = true;
+                p.mesh.position.set(
+                    playerPos.x + (Math.random() - 0.5) * 6,
+                    playerPos.y + (Math.random() - 0.5) * 3,
+                    playerPos.z - 3 - Math.random() * 8
+                );
+                p.vel.set((Math.random()-0.5) * 2, (Math.random()-0.5), 15 + Math.random() * 10);
+                p.life = 0.3 + Math.random() * 0.4;
+                p.mesh.material.opacity = 0.3;
+            }
+        });
+    }
+    
+    spawnExplosion(pos) {
+        const colors = [0xff4400, 0xff8800, 0xffcc00, 0x333333];
+        for(let i = 0; i < 15; i++) {
+            const size = 0.3 + Math.random() * 0.8;
+            const geo = new THREE.BoxGeometry(size, size, size);
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: colors[Math.floor(Math.random() * colors.length)],
+                transparent: true, opacity: 1.0
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.copy(pos);
+            scene.add(mesh);
+            
+            this.explosionParticles.push({
+                mesh: mesh,
+                vel: new THREE.Vector3(
+                    (Math.random()-0.5) * 20,
+                    5 + Math.random() * 15,
+                    (Math.random()-0.5) * 20
+                ),
+                life: 0.5 + Math.random() * 1.0
+            });
+        }
+    }
+    
+    updateExplosions(dt) {
+        for(let i = this.explosionParticles.length - 1; i >= 0; i--) {
+            const p = this.explosionParticles[i];
+            p.life -= dt;
+            p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+            p.vel.y -= 20 * dt; // gravity
+            p.mesh.material.opacity = Math.max(0, p.life);
+            p.mesh.rotation.x += dt * 5;
+            p.mesh.rotation.z += dt * 3;
+            
+            if(p.life <= 0) {
+                scene.remove(p.mesh);
+                p.mesh.geometry.dispose();
+                p.mesh.material.dispose();
+                this.explosionParticles.splice(i, 1);
+            }
+        }
+    }
+    
+    updateFOV(camera, playerSpeed, dt) {
+        const speedMag = Math.abs(playerSpeed);
+        const targetFOV = BASE_FOV + Math.min(speedMag * 0.3, MAX_FOV - BASE_FOV);
+        camera.fov += (targetFOV - camera.fov) * 3.0 * dt;
+        camera.updateProjectionMatrix();
+    }
+}
+
+const audioMgr = new AudioManager();
+const vfxMgr = new VFXManager();
 
 // Init Engine
 function init() {
@@ -217,6 +492,9 @@ function init() {
 
     window.addEventListener('resize', onWindowResize);
     
+    // Init VFX
+    vfxMgr.init(scene);
+    
     animate();
 }
 
@@ -273,6 +551,12 @@ function startGame() {
     hideAllScreens();
     showHUD();
     clearWorld();
+    
+    // Init audio on first user gesture
+    audioMgr.init();
+    audioMgr.resume();
+    audioMgr.startBGM();
+    audioMgr.playEngineHum();
     
     // Center message (UI Overlay like image)
     const msg = document.getElementById('center-msg');
@@ -502,11 +786,11 @@ function loadCampaignLevel(lvl) {
     buildBaseTrack(trackLen);
     
     // Spawn Player safely on first truck
-    const safeTruck = spawnTruck(0, LAVA_Y + 0.5, -10, 20);
+    const safeTruck = spawnTruck(0, LAVA_Y + 0.5, -10, 22);
     safeTruck.isSafe = true;
-    safeTruck.cab.velocity.set(0, 0, -20);
+    safeTruck.cab.velocity.set(0, 0, -22);
     playerBody.position.set(0, safeTruck.cab.position.y + 4.5, safeTruck.cab.position.z + 6);
-    playerBody.velocity.set(0, 0, -20);
+    playerBody.velocity.set(0, 0, -22);
     
     // Spawn Level Trucks in proper column formations
     const truckCount = Math.min(20 + lvl * 5, 80);
@@ -516,7 +800,7 @@ function loadCampaignLevel(lvl) {
     
     for(let i=0; i<truckCount; i++) {
         let lane = lanes[i % lanes.length];
-        let tkSpeed = 18 + Math.random() * 3 + (lvl * 0.3); // Tight speed variance
+        let tkSpeed = 20 + Math.random() * 3 + (lvl * 0.4); // 10% speed boost
         
         if(i % lanes.length === 0) {
             // New row — advance Z 
@@ -575,15 +859,15 @@ function spawnInitialTrucksInfinite() {
     const lanes = [-8, 0, 8];
     
     // Center truck — player starts here
-    const t1 = spawnTruck(0, LAVA_Y + 0.5, -10, 20);
+    const t1 = spawnTruck(0, LAVA_Y + 0.5, -10, 22);
     t1.isSafe = true;
-    t1.cab.velocity.set(0, 0, -20);
+    t1.cab.velocity.set(0, 0, -22);
     playerBody.position.set(0, t1.cab.position.y + 4.5, -10 + 6);
-    playerBody.velocity.set(0, 0, -20);
+    playerBody.velocity.set(0, 0, -22);
     
     // Flanking trucks in lanes
-    spawnTruck(-8, LAVA_Y + 0.5, -10, 20);
-    spawnTruck(8, LAVA_Y + 0.5, -10, 20);
+    spawnTruck(-8, LAVA_Y + 0.5, -10, 22);
+    spawnTruck(8, LAVA_Y + 0.5, -10, 22);
     
     lastTruckSpawnZ = -10;
     fillInfiniteTrucks();
@@ -601,7 +885,7 @@ function fillInfiniteTrucks() {
         const shuffledLanes = lanes.slice().sort(() => Math.random() - 0.5);
         
         for(let i = 0; i < numInRow && i < shuffledLanes.length; i++) {
-            let tkSpeed = 18 + Math.random() * 4 + (distanceTraveled / 400);
+            let tkSpeed = 20 + Math.random() * 4 + (distanceTraveled / 400); // 10% speed boost
             let offset = (Math.random() - 0.5) * 1.0;
             spawnTruck(shuffledLanes[i] + offset, LAVA_Y + 0.5, lastTruckSpawnZ + (Math.random()-0.5)*3, tkSpeed);
         }
@@ -645,48 +929,107 @@ function updatePhysics(dt) {
         }
     });
 
-    // 1. Truck AI — Clustertruck style: drift to center, side-slam each other
-    trucks.forEach(t => {
+    // 1. Truck AI — Clustertruck style: drift to center, side-slam, explosions
+    for(let ti = trucks.length - 1; ti >= 0; ti--) {
+        const t = trucks[ti];
+        
+        // Skip exploded trucks
+        if(t.exploded) {
+            t.explodeTimer -= dt;
+            if(t.explodeTimer <= 0) {
+                // Remove exploded truck
+                world.removeBody(t.cab);
+                scene.remove(t.meshGrp);
+                trucks.splice(ti, 1);
+            }
+            continue;
+        }
+        
         t.cab.wakeUp();
         
         // Lock rotation — no spin, only lateral push from collisions
         t.cab.quaternion.set(0, 0, 0, 1);
         t.cab.angularVelocity.set(0, 0, 0);
         
-        // Drive forward at constant speed (hard-set Z)
+        // Drive forward at constant speed (hard-set Z) — 10% speed boost
         t.cab.velocity.z = -t.speed;
         
-        // === CLUSTERTRUCK DRIFT: All trucks gently pull toward center (X=0) ===
-        // This makes them converge and side-slam each other!
-        const centerPull = 3.0; // How strongly trucks drift toward center
-        const diffToCenter = 0 - t.cab.position.x; // Distance to center line
+        // === STUCK DETECTION: If truck barely moves forward for 3s, evade ===
+        if(!t.stuckTimer) t.stuckTimer = 0;
+        if(Math.abs(t.cab.velocity.z) < 1.0) {
+            t.stuckTimer += dt;
+            if(t.stuckTimer > 3.0) {
+                // Evasive maneuver — hard steer left or right
+                const evadeDir = (Math.random() > 0.5 ? 1 : -1) * 15;
+                t.cab.velocity.x = evadeDir;
+                t.stuckTimer = 0;
+            }
+        } else {
+            t.stuckTimer = 0;
+        }
         
-        // Apply gentle lateral FORCE (not velocity!) so physics collisions work
-        // When trucks bump each other, the collision pushes them apart,
-        // but this force pulls them back together = BODANIE!
+        // === CLUSTERTRUCK DRIFT: All trucks pull toward center ===
+        const centerPull = 4.0; // STRONGER pull for more aggressive slamming
+        const diffToCenter = 0 - t.cab.position.x;
+        
+        // Apply lateral FORCE so physics collisions work naturally
         t.cab.applyForce(
-            new CANNON.Vec3(diffToCenter * centerPull * t.cab.mass * 0.3, 0, 0),
+            new CANNON.Vec3(diffToCenter * centerPull * t.cab.mass * 0.4, 0, 0),
             t.cab.position
         );
         
-        // Damp lateral velocity so trucks don't fly sideways infinitely
-        t.cab.velocity.x *= 0.92;
+        // Damp lateral velocity
+        t.cab.velocity.x *= 0.90;
         
-        // Clamp lateral position — don't let trucks escape too far
-        if(Math.abs(t.cab.position.x) > 20) {
-            t.cab.velocity.x += Math.sign(-t.cab.position.x) * 5;
+        // Clamp lateral — don't escape too far
+        if(Math.abs(t.cab.position.x) > 25) {
+            t.cab.velocity.x += Math.sign(-t.cab.position.x) * 8;
         }
         
-        // Keep trucks grounded — gentle Y correction (allow small bumps from collisions)
+        // === COLLISION DETECTION: Anti-clipping + Explosions ===
+        // Check against nearby trucks for high-speed impact
+        for(let j = ti + 1; j < trucks.length; j++) {
+            const other = trucks[j];
+            if(other.exploded) continue;
+            
+            const dx = t.cab.position.x - other.cab.position.x;
+            const dz = t.cab.position.z - other.cab.position.z;
+            const dist = Math.sqrt(dx*dx + dz*dz);
+            
+            if(dist < 6) {
+                // Anti-rear-end-clipping: If one truck is directly behind another, repulse
+                if(Math.abs(dx) < 2.5 && Math.abs(dz) < 14) {
+                    const repulse = dz > 0 ? 5 : -5;
+                    t.cab.velocity.z += repulse;
+                    other.cab.velocity.z -= repulse;
+                    audioMgr.playClang(0.15);
+                }
+                
+                // High-speed lateral collision = explosion
+                const relVelX = Math.abs(t.cab.velocity.x - other.cab.velocity.x);
+                if(relVelX > 12 && dist < 4) {
+                    // EXPLODE the lighter/slower truck
+                    const victim = (t.speed < other.speed) ? t : other;
+                    explodeTruck(victim);
+                    audioMgr.playExplosion();
+                }
+                
+                // Side-slam clang
+                if(Math.abs(dx) < 3.5 && Math.abs(dx) > 1.5 && relVelX > 3) {
+                    audioMgr.playClang(Math.min(relVelX / 20, 0.5));
+                }
+            }
+        }
+        
+        // Keep trucks grounded
         if(t.cab.position.y < LAVA_Y + 0.5) {
             t.cab.position.y = LAVA_Y + 0.5;
             t.cab.velocity.y = 0;
         }
-        if(t.cab.position.y > LAVA_Y + 3) {
-            // If launched too high by collision, gently pull back down
-            t.cab.velocity.y = -5;
+        if(t.cab.position.y > LAVA_Y + 4) {
+            t.cab.velocity.y = -8;
         }
-    });
+    }
 
     // 2. Player Raycast (Grounded Check & Momentum)
     isGrounded = false;
@@ -749,6 +1092,16 @@ function updatePhysics(dt) {
 
     // Camera follow
     camera.position.set(playerBody.position.x, playerBody.position.y + 0.6, playerBody.position.z);
+    
+    // === VFX: Speed effects ===
+    const playerSpeedZ = playerBody.velocity.z;
+    const playerSpeedTotal = Math.sqrt(playerBody.velocity.x**2 + playerBody.velocity.z**2);
+    vfxMgr.updateFOV(camera, playerSpeedTotal, dt);
+    vfxMgr.updateWindStreaks(playerBody.position, playerSpeedTotal, dt);
+    vfxMgr.updateExplosions(dt);
+    
+    // === Audio: Update engine pitch ===
+    audioMgr.updateEngineHum(playerSpeedTotal);
 
     // 4. Game Rules Check
     if(playerBody.position.y <= LAVA_Y + 1) {
@@ -787,6 +1140,43 @@ function cleanOldTrucks() {
             trucks.splice(i, 1);
         }
     }
+}
+
+// === EXPLOSION SYSTEM ===
+function explodeTruck(t) {
+    if(t.exploded) return;
+    t.exploded = true;
+    t.explodeTimer = 2.0; // Remove after 2s
+    
+    // Disable forward drive
+    t.speed = 0;
+    
+    // Launch upward/outward
+    t.cab.fixedRotation = false; // Allow tumbling for explosion
+    t.cab.velocity.set(
+        (Math.random()-0.5) * 15,
+        15 + Math.random() * 10,
+        (Math.random()-0.5) * 10
+    );
+    t.cab.angularVelocity.set(
+        (Math.random()-0.5) * 8,
+        (Math.random()-0.5) * 8,
+        (Math.random()-0.5) * 8
+    );
+    
+    // Spawn fire/explosion particles
+    vfxMgr.spawnExplosion(new THREE.Vector3(
+        t.cab.position.x, t.cab.position.y + 2, t.cab.position.z
+    ));
+    
+    // Tint truck orange/red
+    t.meshGrp.traverse(child => {
+        if(child.isMesh && child.material) {
+            child.material = new THREE.MeshBasicMaterial({ 
+                color: 0xff4400, transparent: true, opacity: 0.8 
+            });
+        }
+    });
 }
 
 function animate() {
