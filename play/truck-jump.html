@@ -535,11 +535,13 @@ function updatePhysics(dt) {
     const start = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.6, playerBody.position.z);
     const end = new CANNON.Vec3(playerBody.position.x, playerBody.position.y - 0.8, playerBody.position.z);
     
-    world.raycastClosest(start, end, { skipBackfaces: true }, (result) => {
+    const result = new CANNON.RaycastResult();
+    world.raycastClosest(start, end, { skipBackfaces: true }, result);
+    if (result.hasHit) {
         isGrounded = true;
         hitBody = result.body;
         contactVelocity.copy(result.body.velocity);
-    });
+    }
 
     // 3. Player Input & Movement
     let speed = isGrounded ? 15 : 2; // Air control speed is less
