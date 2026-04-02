@@ -1,27 +1,35 @@
-# ARCHITECTURAL PATCH: Physics, AI & Environment Polish
+# SYSTEM ARCHITECT: Biome Expansion & Advanced AI Recovery (Phase 4)
 
-## 1. PLAYER PHYSICS REBALANCE (The "Anti-Skipping" Fix)
-- **Nerf Momentum**: Reduce `airAcceleration` by 40% and `maxSpeed` by 20%. 
-- **Air Drag**: Increase the linear damping in the physics engine specifically for the player when `isOnGround` is false.
-- **Result**: The player must now rely on jumping from truck to truck rather than soaring over the entire map.
+The game logic is stable. Now we implement world-building, advanced obstacle avoidance, and a dynamic audio system.
 
-## 2. TRUCK AI: "THE CONVOY CHAOS"
-- **Alignment Logic**: Trucks should not just move forward. Implement a "Boid-like" or "Lane-keeping" behavior where they try to maintain a formation of 3 parallel lines.
-- **Side-Slamming (Sideswiping)**: Add a logic where trucks occasionally steer into each other or "nudge" neighbors to stay in formation, creating physical collisions and unpredictable tilting.
-- **Torque Physics**: Ensure that when trucks collide, they apply torque/rotation so they can flip, roll, or create "pile-ups" like in the original game.
+## 1. DYNAMIC AUDIO & PLAYLIST
+- **Music Manager**: Implement a playlist of 3-4 Synthwave/Phonk tracks. 
+- **State-Based Volume**: 
+  - `In-Menu`: Lower volume to 30% and apply a Low-Pass filter if possible.
+  - `In-Game`: Full volume (100%).
+- **Track Transition**: When a level starts or biomes change, crossfade to a new track.
 
-## 3. LEVEL DESIGN & OBSTACLES (Level 2+)
-- **Dynamic Chokepoints**: Starting Level 2, place "The Needle" (two narrow pillars) or "The Funnel" (angled walls) that force the 3-lane convoy to squeeze into 1 or 2 lanes. 
-- **Increasing Complexity**: Each subsequent level should reduce the width of these gaps or add staggered "Slalom" pillars.
+## 2. "SMART RECOVERY" TRUCK AI
+- **Obstacle Awareness**: If a truck's speed drops below 20% of its target for 1.5 seconds (due to a pile-up or hitting a pillar), it must:
+  - Immediately check left/right lanes for clearance.
+  - Apply a "Steer Out" force to bypass the wreck.
+- **Chain Reaction**: If the front row stops, the rows behind should proactively start merging into open lanes 1-2 seconds *before* impact.
 
-## 4. WORLD & VISUALS (The Atmosphere)
-- **Sky & Sun**: Implement a `THREE.Sky` shader or a high-contrast Gradient Background (Deep Blue to Orange/Sunset).
-- **Landscape**: Add a "Canyon" or "Mountain" silhouette using low-poly `BoxGeometry` or `PlaneGeometry` with noise, flanking the road.
-- **The Road**: Replace the void with a textured or glowing grid "Highway" that scrolls to give a sense of immense speed.
+## 3. BIOME SYSTEM (25 Levels Total)
+Implement a `ThemeManager` that changes the environment based on the level index:
+- **Levels 1-5 (Urban)**: Grey asphalt road, skyscraper silhouettes, neon street lights.
+- **Levels 6-15 (Desert)**: Sandy/Yellow ground, canyon walls, sandstone pillars, orange-tinted sky.
+- **Levels 16-25 (Winter)**: White/Blue ground (snow), pine tree silhouettes, falling snow particles, slippery physics (reduce truck/player friction by 10%).
 
-## OUTPUT REQUIREMENT:
-Update the following modules: 
-1. `PlayerController` (Movement nerf logic).
-2. `TruckManager` (Convoy formation and side-slamming logic).
-3. `Environment` (Sky, Sun, and Road visuals).
-4. `LevelGenerator` (Obstacle logic for Level 2+).
+## 4. PROCEDURAL OBSTACLE REWRITE
+- **Smart Obstacles**: Instead of random blocks, create "Patterned Hazards":
+  - `The Zig-Zag`: Staggered walls that force the whole convoy to snake.
+  - `The Bridge`: A narrow elevated section where falling off the side leads to "Lava".
+  - `The Tunnel`: Low ceiling obstacles that require the player to crouch or jump precisely.
+
+## INSTRUCTIONS FOR AGENT:
+Use `replace_file_content` to update:
+1. `AudioManager` (Playlist & Menu volume).
+2. `TruckAI` (Improved obstacle avoidance & lane switching).
+3. `ThemeManager` (Visual assets & colors for Urban/Desert/Winter).
+4. `LevelGenerator` (Patterned hazards).

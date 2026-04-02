@@ -99,7 +99,7 @@ const GAME_STATE = { MENU: 0, PLAYING: 1, DEAD: 2, WON: 3, VICTORY: 4 };
 let currentState = GAME_STATE.MENU;
 let mode = 'campaign'; // 'campaign' or 'infinite'
 let currentLevel = 1;
-const MAX_LEVELS = 20;
+const MAX_LEVELS = 25;
 
 // --- GLOBALS ---
 let scene, camera, renderer, world, controls;
@@ -127,14 +127,189 @@ const BASE_FOV = 80;
 const MAX_FOV = 100;
 
 // ============================
+// === THEME MANAGER ===
+// ============================
+class ThemeManager {
+    constructor() {
+        this.currentBiome = 'urban';
+        this.snowParticles = [];
+        this.snowGroup = null;
+    }
+    
+    getBiome(level) {
+        if(level <= 5) return 'urban';
+        if(level <= 15) return 'desert';
+        return 'winter';
+    }
+    
+    getTheme(biome) {
+        const themes = {
+            urban: {
+                sky: 0x2a2a3a,
+                fog: 0x2a2a3a,
+                fogDensity: 0.004,
+                ground: 0x333333,
+                wallColor: 0x444455,
+                wallAccent: 0x556677,
+                ambient: 0x6666aa,
+                dirLight: 0xeeeeff,
+                fillLight: 0x4444aa,
+                frictionMod: 1.0
+            },
+            desert: {
+                sky: 0xf5c87a,
+                fog: 0xf5c87a,
+                fogDensity: 0.002,
+                ground: 0xd4a843,
+                wallColor: 0xc4944a,
+                wallAccent: 0x8b6914,
+                ambient: 0xffddaa,
+                dirLight: 0xffeecc,
+                fillLight: 0xddaa66,
+                frictionMod: 1.0
+            },
+            winter: {
+                sky: 0xc8d8ee,
+                fog: 0xc8d8ee,
+                fogDensity: 0.005,
+                ground: 0xe8eef5,
+                wallColor: 0xaabbcc,
+                wallAccent: 0x889aaa,
+                ambient: 0xaaccff,
+                dirLight: 0xeef0ff,
+                fillLight: 0x8899cc,
+                frictionMod: 0.9 // 10% less friction = slippery
+            }
+        };
+        return themes[biome] || themes.urban;
+    }
+    
+    applyTheme(scene, biome) {
+        this.currentBiome = biome;
+        const t = this.getTheme(biome);
+        scene.background = new THREE.Color(t.sky);
+        scene.fog = new THREE.FogExp2(t.fog, t.fogDensity);
+        return t;
+    }
+    
+    createBiomeDecorations(scene, biome) {
+        if(biome === 'urban') {
+            // Neon street lights along the road
+            const neonColors = [0xff0066, 0x00ffcc, 0xff6600, 0x6600ff];
+            for(let i = 0; i < 30; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const zPos = 50 - i * 120;
+                // Light pole
+                const poleGeo = new THREE.BoxGeometry(0.3, 12, 0.3);
+                const poleMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+                const pole = new THREE.Mesh(poleGeo, poleMat);
+                pole.position.set(side * 25, 6, zPos);
+                scene.add(pole);
+                // Neon light
+                const neonColor = neonColors[i % neonColors.length];
+                const lightGeo = new THREE.BoxGeometry(3, 0.3, 0.3);
+                const lightMat = new THREE.MeshBasicMaterial({ color: neonColor });
+                const light = new THREE.Mesh(lightGeo, lightMat);
+                light.position.set(side * 24, 12, zPos);
+                scene.add(light);
+                // Point light glow
+                const pl = new THREE.PointLight(neonColor, 0.5, 15);
+                pl.position.copy(light.position);
+                scene.add(pl);
+            }
+            // Skyscraper silhouettes
+            const bldgMat = new THREE.MeshLambertMaterial({ color: 0x222233 });
+            for(let i = 0; i < 20; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const h = 80 + Math.random() * 120;
+                const geo = new THREE.BoxGeometry(20 + Math.random()*20, h, 20 + Math.random()*20);
+                const m = new THREE.Mesh(geo, bldgMat);
+                m.position.set(side * (60 + Math.random()*40), h/2, 100 - i * 200);
+                scene.add(m);
+            }
+        } else if(biome === 'desert') {
+            // Sandstone pillars
+            const pillarMat = new THREE.MeshLambertMaterial({ color: 0xc4944a, flatShading: true });
+            for(let i = 0; i < 15; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const h = 20 + Math.random() * 40;
+                const geo = new THREE.CylinderGeometry(3 + Math.random()*4, 4 + Math.random()*5, h, 6);
+                const m = new THREE.Mesh(geo, pillarMat);
+                m.position.set(side * (35 + Math.random()*30), h/2, 50 - i * 180);
+                m.castShadow = true;
+                scene.add(m);
+            }
+        } else if(biome === 'winter') {
+            // Pine tree silhouettes
+            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3520 });
+            const pineMat = new THREE.MeshLambertMaterial({ color: 0x2a5530 });
+            for(let i = 0; i < 25; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const x = side * (30 + Math.random()*30);
+                const z = 50 - i * 130;
+                // Trunk
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 8, 6), trunkMat);
+                trunk.position.set(x, 4, z);
+                scene.add(trunk);
+                // Pine cone layers
+                for(let j = 0; j < 3; j++) {
+                    const coneH = 5 - j;
+                    const coneR = 4 - j * 1.2;
+                    const cone = new THREE.Mesh(new THREE.ConeGeometry(coneR, coneH, 6), pineMat);
+                    cone.position.set(x, 8 + j * 3, z);
+                    cone.castShadow = true;
+                    scene.add(cone);
+                }
+            }
+            // Snow particles
+            this.snowGroup = new THREE.Group();
+            scene.add(this.snowGroup);
+            const snowGeo = new THREE.SphereGeometry(0.1, 4, 4);
+            const snowMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
+            for(let i = 0; i < 200; i++) {
+                const flake = new THREE.Mesh(snowGeo, snowMat);
+                flake.position.set(
+                    (Math.random()-0.5) * 60,
+                    Math.random() * 30,
+                    (Math.random()-0.5) * 200
+                );
+                this.snowGroup.add(flake);
+                this.snowParticles.push({
+                    mesh: flake,
+                    speedY: 2 + Math.random() * 3,
+                    driftX: (Math.random()-0.5) * 2
+                });
+            }
+        }
+    }
+    
+    updateSnow(dt, playerZ) {
+        if(this.currentBiome !== 'winter' || !this.snowGroup) return;
+        this.snowParticles.forEach(p => {
+            p.mesh.position.y -= p.speedY * dt;
+            p.mesh.position.x += p.driftX * dt;
+            if(p.mesh.position.y < 0) {
+                p.mesh.position.y = 25 + Math.random() * 10;
+                p.mesh.position.z = playerZ + (Math.random()-0.5) * 100;
+                p.mesh.position.x = (Math.random()-0.5) * 60;
+            }
+        });
+    }
+}
+
+// ============================
 // === AUDIO MANAGER ===
 // ============================
 class AudioManager {
     constructor() {
         this.ctx = null;
         this.masterGain = null;
+        this.bgmGain = null;
+        this.bgmFilter = null; // Low-pass for menu
         this.bgmPlaying = false;
         this.initialized = false;
+        this.currentTrack = 0;
+        this._allOscs = [];
     }
     
     init() {
@@ -143,6 +318,16 @@ class AudioManager {
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = 0.5;
         this.masterGain.connect(this.ctx.destination);
+        
+        // BGM chain: oscillators -> bgmGain -> bgmFilter -> masterGain
+        this.bgmGain = this.ctx.createGain();
+        this.bgmGain.gain.value = 1.0;
+        this.bgmFilter = this.ctx.createBiquadFilter();
+        this.bgmFilter.type = 'lowpass';
+        this.bgmFilter.frequency.value = 20000; // Wide open by default
+        this.bgmGain.connect(this.bgmFilter);
+        this.bgmFilter.connect(this.masterGain);
+        
         this.initialized = true;
     }
     
@@ -150,140 +335,151 @@ class AudioManager {
         if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
     }
     
-    // Synthwave BGM using oscillators
-    startBGM() {
-        if(!this.initialized || this.bgmPlaying) return;
+    // State-based volume
+    setMenuMode() {
+        if(!this.initialized) return;
+        this.bgmGain.gain.setTargetAtTime(0.3, this.ctx.currentTime, 0.5);
+        this.bgmFilter.frequency.setTargetAtTime(400, this.ctx.currentTime, 0.3); // Muffled
+    }
+    
+    setGameMode() {
+        if(!this.initialized) return;
+        this.bgmGain.gain.setTargetAtTime(1.0, this.ctx.currentTime, 0.3);
+        this.bgmFilter.frequency.setTargetAtTime(20000, this.ctx.currentTime, 0.3); // Full
+    }
+    
+    // Playlist of 4 tracks (each with different note patterns and wave types)
+    _getTrackConfig(idx) {
+        const tracks = [
+            { // Track 1: Classic Synthwave
+                bass: 55, bassType: 'sawtooth', bpm: 180,
+                arp: [220, 330, 440, 330, 220, 175, 220, 330],
+                arpType: 'square', pad: [110, 165, 220]
+            },
+            { // Track 2: Dark Phonk
+                bass: 41, bassType: 'square', bpm: 140,
+                arp: [165, 220, 275, 220, 330, 275, 220, 165],
+                arpType: 'sawtooth', pad: [82, 123, 165]
+            },
+            { // Track 3: Fast Synth
+                bass: 65, bassType: 'sawtooth', bpm: 200,
+                arp: [330, 440, 550, 660, 550, 440, 330, 440],
+                arpType: 'square', pad: [130, 195, 260]
+            },
+            { // Track 4: Chill Wave
+                bass: 48, bassType: 'triangle', bpm: 160,
+                arp: [196, 294, 392, 294, 196, 147, 196, 294],
+                arpType: 'sine', pad: [98, 147, 196]
+            }
+        ];
+        return tracks[idx % tracks.length];
+    }
+    
+    startBGM(trackIdx = 0) {
+        if(!this.initialized) return;
+        this.stopBGM();
         this.bgmPlaying = true;
+        this.currentTrack = trackIdx;
         
-        const bgmGain = this.ctx.createGain();
-        bgmGain.gain.value = 0.08;
-        bgmGain.connect(this.masterGain);
+        const cfg = this._getTrackConfig(trackIdx);
         
-        // Bass line — pulsing low synth
+        // Bass
         const bassOsc = this.ctx.createOscillator();
-        bassOsc.type = 'sawtooth';
-        bassOsc.frequency.value = 55; // A1
+        bassOsc.type = cfg.bassType;
+        bassOsc.frequency.value = cfg.bass;
         const bassFilter = this.ctx.createBiquadFilter();
         bassFilter.type = 'lowpass';
         bassFilter.frequency.value = 200;
-        bassOsc.connect(bassFilter);
-        bassFilter.connect(bgmGain);
+        const bassG = this.ctx.createGain(); bassG.gain.value = 0.08;
+        bassOsc.connect(bassFilter); bassFilter.connect(bassG); bassG.connect(this.bgmGain);
         bassOsc.start();
+        this._allOscs.push(bassOsc);
         
-        // Arp — simple repeating pattern
-        const arpGain = this.ctx.createGain();
-        arpGain.gain.value = 0.04;
-        arpGain.connect(this.masterGain);
-        const arpNotes = [220, 330, 440, 330, 220, 175, 220, 330];
-        let arpIdx = 0;
+        // Arp
         const arpOsc = this.ctx.createOscillator();
-        arpOsc.type = 'square';
+        arpOsc.type = cfg.arpType;
         const arpFilter = this.ctx.createBiquadFilter();
-        arpFilter.type = 'lowpass';
-        arpFilter.frequency.value = 800;
-        arpOsc.connect(arpFilter);
-        arpFilter.connect(arpGain);
+        arpFilter.type = 'lowpass'; arpFilter.frequency.value = 800;
+        const arpG = this.ctx.createGain(); arpG.gain.value = 0.04;
+        arpOsc.connect(arpFilter); arpFilter.connect(arpG); arpG.connect(this.bgmGain);
         arpOsc.start();
+        this._allOscs.push(arpOsc);
         
+        let arpIdx = 0;
         this._bgmInterval = setInterval(() => {
             if(!this.bgmPlaying) return;
-            arpOsc.frequency.setTargetAtTime(arpNotes[arpIdx % arpNotes.length], this.ctx.currentTime, 0.02);
+            arpOsc.frequency.setTargetAtTime(cfg.arp[arpIdx % cfg.arp.length], this.ctx.currentTime, 0.02);
             arpIdx++;
-        }, 180);
+        }, 60000 / cfg.bpm);
         
-        // Pad — warm sustained chord
-        const padGain = this.ctx.createGain();
-        padGain.gain.value = 0.03;
-        padGain.connect(this.masterGain);
-        [110, 165, 220].forEach(f => {
+        // Pad
+        const padG = this.ctx.createGain(); padG.gain.value = 0.03;
+        padG.connect(this.bgmGain);
+        cfg.pad.forEach(f => {
             const o = this.ctx.createOscillator();
-            o.type = 'sine';
-            o.frequency.value = f;
-            o.connect(padGain);
-            o.start();
+            o.type = 'sine'; o.frequency.value = f;
+            o.connect(padG); o.start();
+            this._allOscs.push(o);
         });
-        
-        this._bgmNodes = { bassOsc, arpOsc, bgmGain, arpGain, padGain };
+    }
+    
+    // Crossfade to next track
+    crossfadeTrack(newIdx) {
+        if(!this.initialized) return;
+        // Fade out current
+        this.bgmGain.gain.setTargetAtTime(0.0, this.ctx.currentTime, 0.5);
+        setTimeout(() => {
+            this.startBGM(newIdx);
+            this.bgmGain.gain.setTargetAtTime(1.0, this.ctx.currentTime, 0.3);
+        }, 800);
     }
     
     stopBGM() {
         this.bgmPlaying = false;
         if(this._bgmInterval) clearInterval(this._bgmInterval);
+        this._allOscs.forEach(o => { try { o.stop(); } catch(e) {} });
+        this._allOscs = [];
     }
     
-    // Metallic clang on collision
     playClang(volume = 0.3) {
         if(!this.initialized) return;
         const g = this.ctx.createGain();
-        g.gain.value = volume;
-        g.connect(this.masterGain);
-        
-        // Short burst of noise-like sound
+        g.gain.value = volume; g.connect(this.masterGain);
         const osc = this.ctx.createOscillator();
-        osc.type = 'square';
-        osc.frequency.value = 200 + Math.random() * 300;
+        osc.type = 'square'; osc.frequency.value = 200 + Math.random() * 300;
         const filter = this.ctx.createBiquadFilter();
-        filter.type = 'highpass';
-        filter.frequency.value = 500;
-        osc.connect(filter);
-        filter.connect(g);
-        
+        filter.type = 'highpass'; filter.frequency.value = 500;
+        osc.connect(filter); filter.connect(g);
         g.gain.setValueAtTime(volume, this.ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.15);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
     }
     
-    // Explosion boom
     playExplosion() {
         if(!this.initialized) return;
-        const g = this.ctx.createGain();
-        g.gain.value = 0.5;
-        g.connect(this.masterGain);
-        
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.value = 80;
+        const g = this.ctx.createGain(); g.gain.value = 0.5; g.connect(this.masterGain);
+        const osc = this.ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 80;
         osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.5);
         osc.connect(g);
-        
         g.gain.setValueAtTime(0.5, this.ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.6);
-        
-        // Noise burst
-        const bufferSize = this.ctx.sampleRate * 0.3;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for(let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i/bufferSize);
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        const ng = this.ctx.createGain();
-        ng.gain.value = 0.3;
-        ng.connect(this.masterGain);
-        noise.connect(ng);
-        ng.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
-        noise.start();
+        osc.start(); osc.stop(this.ctx.currentTime + 0.6);
+        // Noise
+        const bs = this.ctx.sampleRate * 0.3;
+        const buf = this.ctx.createBuffer(1, bs, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for(let i=0;i<bs;i++) d[i]=(Math.random()*2-1)*(1-i/bs);
+        const n = this.ctx.createBufferSource(); n.buffer = buf;
+        const ng = this.ctx.createGain(); ng.gain.value = 0.3; ng.connect(this.masterGain);
+        n.connect(ng); ng.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+0.4); n.start();
     }
     
-    // Engine hum (continuous, pitch-shifted)
     playEngineHum() {
-        if(!this.initialized) return;
-        const g = this.ctx.createGain();
-        g.gain.value = 0.02;
-        g.connect(this.masterGain);
-        
-        this.engineOsc = this.ctx.createOscillator();
-        this.engineOsc.type = 'sawtooth';
-        this.engineOsc.frequency.value = 60;
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 150;
-        this.engineOsc.connect(filter);
-        filter.connect(g);
-        this.engineOsc.start();
-        this.engineGain = g;
+        if(!this.initialized || this.engineOsc) return;
+        const g = this.ctx.createGain(); g.gain.value = 0.02; g.connect(this.masterGain);
+        this.engineOsc = this.ctx.createOscillator(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 60;
+        const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 150;
+        this.engineOsc.connect(f); f.connect(g); this.engineOsc.start(); this.engineGain = g;
     }
     
     updateEngineHum(playerSpeed) {
@@ -304,29 +500,21 @@ class VFXManager {
     }
     
     init(scene) {
-        // Wind streak particle system
         this.windGroup = new THREE.Group();
         scene.add(this.windGroup);
-        
         const streakGeo = new THREE.BoxGeometry(0.03, 0.03, 2.0);
         const streakMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
-        
         for(let i = 0; i < 40; i++) {
             const streak = new THREE.Mesh(streakGeo, streakMat.clone());
             streak.visible = false;
             this.windGroup.add(streak);
-            this.windParticles.push({
-                mesh: streak,
-                vel: new THREE.Vector3(),
-                life: 0
-            });
+            this.windParticles.push({ mesh: streak, vel: new THREE.Vector3(), life: 0 });
         }
     }
     
     updateWindStreaks(playerPos, playerSpeed, dt) {
         const speedMag = Math.abs(playerSpeed);
-        const intensity = Math.max(0, (speedMag - 15) / 30); // Starts showing at speed > 15
-        
+        const intensity = Math.max(0, (speedMag - 15) / 30);
         this.windParticles.forEach(p => {
             if(p.life > 0) {
                 p.life -= dt;
@@ -334,15 +522,14 @@ class VFXManager {
                 p.mesh.material.opacity = p.life * 0.4 * intensity;
                 if(p.life <= 0) p.mesh.visible = false;
             } else if(intensity > 0.1 && Math.random() < intensity * 0.5) {
-                // Spawn new streak
                 p.mesh.visible = true;
                 p.mesh.position.set(
-                    playerPos.x + (Math.random() - 0.5) * 6,
-                    playerPos.y + (Math.random() - 0.5) * 3,
-                    playerPos.z - 3 - Math.random() * 8
+                    playerPos.x + (Math.random()-0.5)*6,
+                    playerPos.y + (Math.random()-0.5)*3,
+                    playerPos.z - 3 - Math.random()*8
                 );
-                p.vel.set((Math.random()-0.5) * 2, (Math.random()-0.5), 15 + Math.random() * 10);
-                p.life = 0.3 + Math.random() * 0.4;
+                p.vel.set((Math.random()-0.5)*2, (Math.random()-0.5), 15+Math.random()*10);
+                p.life = 0.3 + Math.random()*0.4;
                 p.mesh.material.opacity = 0.3;
             }
         });
@@ -351,55 +538,34 @@ class VFXManager {
     spawnExplosion(pos) {
         const colors = [0xff4400, 0xff8800, 0xffcc00, 0x333333];
         for(let i = 0; i < 15; i++) {
-            const size = 0.3 + Math.random() * 0.8;
-            const geo = new THREE.BoxGeometry(size, size, size);
-            const mat = new THREE.MeshBasicMaterial({ 
-                color: colors[Math.floor(Math.random() * colors.length)],
-                transparent: true, opacity: 1.0
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.copy(pos);
-            scene.add(mesh);
-            
+            const size = 0.3 + Math.random()*0.8;
+            const geo = new THREE.BoxGeometry(size,size,size);
+            const mat = new THREE.MeshBasicMaterial({ color: colors[Math.floor(Math.random()*colors.length)], transparent:true, opacity:1});
+            const mesh = new THREE.Mesh(geo, mat); mesh.position.copy(pos); scene.add(mesh);
             this.explosionParticles.push({
-                mesh: mesh,
-                vel: new THREE.Vector3(
-                    (Math.random()-0.5) * 20,
-                    5 + Math.random() * 15,
-                    (Math.random()-0.5) * 20
-                ),
-                life: 0.5 + Math.random() * 1.0
+                mesh, vel: new THREE.Vector3((Math.random()-0.5)*20, 5+Math.random()*15, (Math.random()-0.5)*20), life: 0.5+Math.random()
             });
         }
     }
     
     updateExplosions(dt) {
-        for(let i = this.explosionParticles.length - 1; i >= 0; i--) {
+        for(let i = this.explosionParticles.length-1; i >= 0; i--) {
             const p = this.explosionParticles[i];
-            p.life -= dt;
-            p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
-            p.vel.y -= 20 * dt; // gravity
-            p.mesh.material.opacity = Math.max(0, p.life);
-            p.mesh.rotation.x += dt * 5;
-            p.mesh.rotation.z += dt * 3;
-            
-            if(p.life <= 0) {
-                scene.remove(p.mesh);
-                p.mesh.geometry.dispose();
-                p.mesh.material.dispose();
-                this.explosionParticles.splice(i, 1);
-            }
+            p.life -= dt; p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+            p.vel.y -= 20*dt; p.mesh.material.opacity = Math.max(0, p.life);
+            p.mesh.rotation.x += dt*5; p.mesh.rotation.z += dt*3;
+            if(p.life <= 0) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); this.explosionParticles.splice(i,1); }
         }
     }
     
     updateFOV(camera, playerSpeed, dt) {
-        const speedMag = Math.abs(playerSpeed);
-        const targetFOV = BASE_FOV + Math.min(speedMag * 0.3, MAX_FOV - BASE_FOV);
-        camera.fov += (targetFOV - camera.fov) * 3.0 * dt;
+        const targetFOV = BASE_FOV + Math.min(Math.abs(playerSpeed)*0.3, MAX_FOV-BASE_FOV);
+        camera.fov += (targetFOV - camera.fov)*3.0*dt;
         camera.updateProjectionMatrix();
     }
 }
 
+const themeMgr = new ThemeManager();
 const audioMgr = new AudioManager();
 const vfxMgr = new VFXManager();
 
@@ -552,21 +718,25 @@ function startGame() {
     showHUD();
     clearWorld();
     
-    // Init audio on first user gesture
+    // Audio
     audioMgr.init();
     audioMgr.resume();
-    audioMgr.startBGM();
+    audioMgr.setGameMode();
     audioMgr.playEngineHum();
     
-    // Center message (UI Overlay like image)
+    // Pick music track based on biome
+    const biome = mode === 'campaign' ? themeMgr.getBiome(currentLevel) : 'desert';
+    const trackMap = { urban: 0, desert: 1, winter: 2 };
+    audioMgr.crossfadeTrack(trackMap[biome] || 0);
+    
+    // Center message
     const msg = document.getElementById('center-msg');
     msg.innerHTML = mode === 'campaign' ? `УРОВЕНЬ ${Math.floor((currentLevel-1)/5)+1}:${((currentLevel-1)%5)+1}` : "УРОВЕНЬ БЕСКОНЕЧНЫЙ";
-    msg.style.opacity = '1'; // keep it visible
+    msg.style.opacity = '1';
 
-    // Setup Environment
-    createEnvironment();
+    // Setup Environment with biome theme
+    createEnvironment(biome);
     
-    // Spawn Player
     createPlayer();
     controls.lock();
 
@@ -574,31 +744,29 @@ function startGame() {
     distanceTraveled = 0;
     lastTruckSpawnZ = 0;
 
-    // Load Level Configuration
     if(mode === 'campaign') {
         loadCampaignLevel(currentLevel);
     } else {
-        goalZ = -Infinity; // Infinite
+        goalZ = -Infinity;
         spawnInitialTrucksInfinite();
     }
 }
 
-function createEnvironment() {
-    // Simple bright sky (Clustertruck daytime style)
-    scene.background = new THREE.Color(0xddeeff);
-    scene.fog = new THREE.FogExp2(0xddeeff, 0.003);
+function createEnvironment(biome = 'urban') {
+    // Apply biome theme
+    const theme = themeMgr.applyTheme(scene, biome);
 
-    // Solid gray generic floor
+    // Ground with biome color
     const geoSolid = new THREE.PlaneGeometry(2000, 20000);
-    const matSolid = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 1.0 });
+    const matSolid = new THREE.MeshStandardMaterial({ color: theme.ground, roughness: 1.0 });
     const meshSolid = new THREE.Mesh(geoSolid, matSolid);
     meshSolid.rotation.x = -Math.PI / 2;
     meshSolid.position.y = LAVA_Y - 0.5;
     meshSolid.receiveShadow = true;
     scene.add(meshSolid);
 
-    // Simple flat geometric canyon walls (Clustertruck obstacles/bounds style)
-    const matM = new THREE.MeshStandardMaterial({color: 0x778899, roughness: 1.0, flatShading: true});
+    // Canyon walls with biome color
+    const matM = new THREE.MeshStandardMaterial({color: theme.wallColor, roughness: 1.0, flatShading: true});
     for(let i=0; i<40; i++) {
         const side = i % 2 === 0 ? 1 : -1;
         const zPos = 100 - i * 150;
@@ -609,15 +777,18 @@ function createEnvironment() {
         scene.add(meshM);
         entities.push({ mesh: meshM, body: null });
     }
+    
+    // Biome-specific decorations
+    themeMgr.createBiomeDecorations(scene, biome);
 
-    // Physics Ground (Catch everything)
+    // Physics Ground
     const groundShape = new CANNON.Plane();
     const groundBody = new CANNON.Body({ mass: 0 });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     groundBody.position.set(0, LAVA_Y - 0.5, 0);
-    groundBody.collisionFilterGroup = 1; // Ground group
-    groundBody.collisionFilterMask = 2 | 4; // Collide with player and trucks
+    groundBody.collisionFilterGroup = 1;
+    groundBody.collisionFilterMask = 2 | 4;
     world.addBody(groundBody);
     
     entities.push({ mesh: null, body: groundBody });
@@ -820,14 +991,18 @@ function loadCampaignLevel(lvl) {
 }
 
 function spawnVariedObstacle(z) {
-    const type = Math.floor(Math.random() * 3);
-    const mat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8, metalness: 0.5});
+    const type = Math.floor(Math.random() * 5); // 5 types now
+    const biome = mode === 'campaign' ? themeMgr.getBiome(currentLevel) : 'desert';
+    const theme = themeMgr.getTheme(biome);
+    const mat = new THREE.MeshStandardMaterial({color: theme.wallAccent, roughness: 0.8, metalness: 0.3});
     
     const spawnBlock = (x, y, w, h, d, zOffset = 0) => {
         const shape = new CANNON.Box(new CANNON.Vec3(w/2, h/2, d/2));
         const body = new CANNON.Body({ mass: 0 });
         body.addShape(shape);
         body.position.set(x, y, z + zOffset);
+        body.collisionFilterGroup = 1;
+        body.collisionFilterMask = 2 | 4;
         world.addBody(body);
         
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -839,18 +1014,38 @@ function spawnVariedObstacle(z) {
     let lvlDiff = mode === 'campaign' ? currentLevel : 5;
 
     if (type === 0) {
+        // Narrow passage
         let squeeze = Math.min(10, lvlDiff * 1.2); 
         spawnBlock(-20 + squeeze, LAVA_Y + 10, 15, 20, 10);
         spawnBlock(20 - squeeze, LAVA_Y + 10, 15, 20, 10);
     } else if (type === 1) {
+        // Staggered Slalom
         const side = Math.random() > 0.5 ? 1 : -1;
         spawnBlock(side * 12, LAVA_Y + 10, 22, 20, 10);
         if (lvlDiff >= 3) {
             spawnBlock(-side * 12, LAVA_Y + 10, 22, 20, 10, -30);
         }
     } else if (type === 2) {
-        let width = Math.min(18, 5 + lvlDiff * 2);
-        spawnBlock((Math.random() - 0.5) * 5, LAVA_Y + 10, width, 20, 8);
+        // The Zig-Zag: staggered walls forcing convoy to snake
+        for(let s = 0; s < 4; s++) {
+            const side = s % 2 === 0 ? -1 : 1;
+            spawnBlock(side * 10, LAVA_Y + 8, 18, 16, 6, -s * 25);
+        }
+    } else if (type === 3) {
+        // The Bridge: narrow elevated section, fall = death
+        const bridgeW = 8;
+        // Left wall
+        spawnBlock(-bridgeW - 8, LAVA_Y + 5, 12, 10, 40);
+        // Right wall  
+        spawnBlock(bridgeW + 8, LAVA_Y + 5, 12, 10, 40);
+        // Bridge floor (elevated ramp-ish)
+        spawnBlock(0, LAVA_Y + 2, bridgeW * 2, 1, 40);
+    } else if (type === 4) {
+        // The Tunnel: low ceiling forces precise jumping
+        spawnBlock(-15, LAVA_Y + 10, 10, 20, 8);
+        spawnBlock(15, LAVA_Y + 10, 10, 20, 8);
+        // Ceiling
+        spawnBlock(0, LAVA_Y + 8, 30, 2, 8);
     }
 }
 
