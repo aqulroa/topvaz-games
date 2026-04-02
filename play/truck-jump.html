@@ -323,53 +323,60 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     const truckGrp = new THREE.Group();
     truckGrp.position.set(x, y, z);
     
-    // Physics Bodies
-    const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
-    const cabBody = new CANNON.Body({ mass: 5000, material: physTruckMat });
-    cabBody.addShape(cabShape);
-    cabBody.position.set(x, y + 2, z);
-    cabBody.linearDamping = 0.5;
-    cabBody.angularDamping = 0.8;
-    world.addBody(cabBody);
+    // Physics Body (Single Body for Stability)
+    const truckBody = new CANNON.Body({ mass: hasTrailer ? 8000 : 5000, material: physTruckMat });
     
-    // Meshes
+    // Cab shape
+    const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
+    truckBody.addShape(cabShape, new CANNON.Vec3(0, 0, 2.5));
+    
+    // Cab Mesh
     const cabMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.0, 4.0), matCab);
+    cabMesh.position.set(0, 0, 2.5);
     cabMesh.castShadow = true; cabMesh.receiveShadow = true;
     truckGrp.add(cabMesh);
     
-    let trailerBody = null;
-    let trailerMesh = null;
+    // Windshield
+    const wsMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.0), new THREE.MeshStandardMaterial({ color: 0x88bbdd, roughness: 0.1, metalness: 0.8 }));
+    wsMesh.position.set(0, 0.5, 4.51);
+    truckGrp.add(wsMesh);
     
     if(hasTrailer) {
-        const trShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.8, 4.5));
-        trailerBody = new CANNON.Body({ mass: 3000, material: physTruckMat });
-        trailerBody.addShape(trShape);
-        trailerBody.position.set(x, y + 2.3, z + 7);
-        trailerBody.linearDamping = 0.5;
-        trailerBody.angularDamping = 0.8;
-        world.addBody(trailerBody);
+        // Trailer shape
+        const trailerShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.8, 4.5));
+        truckBody.addShape(trailerShape, new CANNON.Vec3(0, 0.3, -4.0));
         
-        trailerMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.6, 9.0), matTrailer);
+        // Trailer Mesh
+        const trailerMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.6, 9.0), matTrailer);
+        trailerMesh.position.set(0, 0.3, -4.0);
         trailerMesh.castShadow = true; trailerMesh.receiveShadow = true;
-        
-        // Hinge
-        const pivotA = new CANNON.Vec3(0, -0.5, 2.0); // Back of cab
-        const pivotB = new CANNON.Vec3(0, -0.8, -4.5); // Front of trailer
-        const axis = new CANNON.Vec3(0, 1, 0);
-        const constraint = new CANNON.HingeConstraint(cabBody, trailerBody, {
-            pivotA: pivotA, pivotB: pivotB,
-            axisA: axis, axisB: axis
-        });
-        world.addConstraint(constraint);
-        
-        scene.add(trailerMesh);
-        entities.push({ mesh: trailerMesh, body: trailerBody });
+        truckGrp.add(trailerMesh);
     }
     
-    scene.add(truckGrp);
-    entities.push({ mesh: truckGrp, body: cabBody });
+    truckBody.position.set(x, y + 2, z);
+    world.addBody(truckBody);
     
-    const truckObj = { cab: cabBody, trailer: trailerBody, speed: speed, meshGrp: truckGrp };
+    // Wheels (fake visual representation)
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 16);
+    wheelGeo.rotateZ(Math.PI / 2);
+    const wheelPos = [
+        [-1.3, -1.0, 3.5], [1.3, -1.0, 3.5], // front cab
+        [-1.3, -1.0, 1.5], [1.3, -1.0, 1.5]  // back cab
+    ];
+    if(hasTrailer) {
+        wheelPos.push([-1.4, -1.0, -2.0], [1.4, -1.0, -2.0]);
+        wheelPos.push([-1.4, -1.0, -7.0], [1.4, -1.0, -7.0]);
+    }
+    wheelPos.forEach(p => {
+        const w = new THREE.Mesh(wheelGeo, matWheel);
+        w.position.set(p[0], p[1], p[2]);
+        truckGrp.add(w);
+    });
+    
+    scene.add(truckGrp);
+    entities.push({ mesh: truckGrp, body: truckBody });
+    
+    const truckObj = { cab: truckBody, speed: speed, meshGrp: truckGrp };
     trucks.push(truckObj);
     return truckObj;
 }
@@ -516,15 +523,11 @@ function updatePhysics(dt) {
         // Wake up
         t.cab.wakeUp();
         
-        // Push forward
-        const forceMag = t.cab.mass * 20.0;
-        t.cab.applyForce(worldFwd.scale(forceMag), t.cab.position);
+        // Smoothly enforce target velocity (drastically reduces jerking)
+        t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
         
-        // Cap speed
-        const currentVel = t.cab.velocity.length();
-        if(currentVel > t.speed) {
-            t.cab.velocity.scale(t.speed / currentVel, t.cab.velocity);
-        }
+        // Optional: auto-correct yaw rotation slowly to keep them driving forward
+        t.cab.angularVelocity.y -= t.cab.angularVelocity.y * 0.05;
     });
 
     // 2. Player Raycast (Grounded Check & Momentum)
@@ -580,9 +583,9 @@ function updatePhysics(dt) {
         // In air: apply force for strafing
         playerBody.applyForce(new CANNON.Vec3(inputVec.x * 200, 0, inputVec.z * 200), playerBody.position);
         
-        // Light air drag on XZ horizontally relative to nothing
-        playerBody.velocity.x *= 0.98;
-        playerBody.velocity.z *= 0.98;
+        // Very light air drag to preserve momentum from trucks
+        playerBody.velocity.x *= 0.999;
+        playerBody.velocity.z *= 0.999;
     }
 
     // Camera follow
@@ -621,7 +624,6 @@ function cleanOldTrucks() {
         if(t.cab.position.z > playerBody.position.z + 100) {
             // Remove
             world.removeBody(t.cab);
-            if(t.trailer) world.removeBody(t.trailer);
             scene.remove(t.meshGrp);
             trucks.splice(i, 1);
         }
