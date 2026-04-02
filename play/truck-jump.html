@@ -23,7 +23,7 @@
         button.primary:hover { border-color: #ff3333; background: #ff3333; color: white; box-shadow: 0 0 30px rgba(255,50,50,0.8); }
         
         #hud { position: absolute; top: 20px; left: 20px; font-size: 24px; color: white; font-weight: bold; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
-        #center-msg { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(255,255,255,0.8); opacity: 0; transition: opacity 0.3s; }
+        #center-msg { position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 54px; font-weight: 900; color: white; background: rgba(0,30,50,0.6); padding: 5px 30px; border-left: 10px solid white; border-right: 10px solid white; text-transform: uppercase; font-family: 'Arial Black', sans-serif; opacity: 1; transition: opacity 0.3s; z-index: 10; }
         
         .controls-hint { position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; }
         .controls-hint b { color: #ff9900; }
@@ -270,11 +270,10 @@ function startGame() {
     showHUD();
     clearWorld();
     
-    // Center message
+    // Center message (UI Overlay like image)
     const msg = document.getElementById('center-msg');
-    msg.innerHTML = mode === 'campaign' ? `LEVEL ${currentLevel}` : "INFINITE MODE";
-    msg.style.opacity = '1';
-    setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+    msg.innerHTML = mode === 'campaign' ? `УРОВЕНЬ ${Math.floor((currentLevel-1)/5)+1}:${((currentLevel-1)%5)+1}` : "УРОВЕНЬ БЕСКОНЕЧНЫЙ";
+    msg.style.opacity = '1'; // keep it visible
 
     // Setup Environment
     createEnvironment();
@@ -352,51 +351,83 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     
     // Physics Body (Single Body for Stability)
     const truckBody = new CANNON.Body({ mass: hasTrailer ? 8000 : 5000, material: physTruckMat });
+    truckBody.linearDamping = 0.05;
+    truckBody.angularDamping = 0.5; // Prevent insane spinning
+
+    // Toon/Flat materials matching the screenshot
+    const matCabWhite = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    const matGlass = new THREE.MeshLambertMaterial({ color: 0x222222 });
+    const matTrailerWhite = new THREE.MeshLambertMaterial({ color: 0xddeeff });
+    const matDark = new THREE.MeshLambertMaterial({ color: 0x444444 });
+    const matWheelBlack = new THREE.MeshLambertMaterial({ color: 0x202020 });
     
     // Cab shape
     const cabShape = new CANNON.Box(new CANNON.Vec3(1.2, 1.5, 2.0));
     truckBody.addShape(cabShape, new CANNON.Vec3(0, 0, 2.5));
     
-    // Cab Mesh
-    const cabMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.0, 4.0), matCab);
+    // Cab Mesh Group
+    const cabMesh = new THREE.Group();
+    // Lower body
+    const cabBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.0, 4.0), matCabWhite);
+    cabBase.position.set(0, -0.5, 0);
+    // Upper cabin
+    const cabTop = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.0, 2.0), matCabWhite);
+    cabTop.position.set(0, 1.0, -1.0);
+    // Windshield
+    const wsMesh = new THREE.Mesh(new THREE.BoxGeometry(2.45, 0.9, 0.1), matGlass);
+    wsMesh.position.set(0, 1.0, 0.05);
+    
+    cabMesh.add(cabBase); 
+    cabMesh.add(cabTop); 
+    cabMesh.add(wsMesh);
+    
     cabMesh.position.set(0, 0, 2.5);
-    cabMesh.castShadow = true; cabMesh.receiveShadow = true;
+    cabMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
     truckGrp.add(cabMesh);
     
-    // Windshield
-    const wsMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.0), new THREE.MeshStandardMaterial({ color: 0x88bbdd, roughness: 0.1, metalness: 0.8 }));
-    wsMesh.position.set(0, 0.5, 4.51);
-    truckGrp.add(wsMesh);
-    
     if(hasTrailer) {
-        // Trailer shape (Height changed to match cab exactly)
+        // Trailer shape
         const trailerShape = new CANNON.Box(new CANNON.Vec3(1.3, 1.5, 4.5));
         truckBody.addShape(trailerShape, new CANNON.Vec3(0, 0, -4.0));
         
-        // Trailer Mesh
-        const trailerMesh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.0, 9.0), matTrailer);
+        // Trailer Mesh Group
+        const trailerMesh = new THREE.Group();
+        // Main box
+        const trailerBox = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.0, 9.0), matTrailerWhite);
+        // Back door
+        const doorBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 0.1), matDark);
+        doorBase.position.set(0, 0, 4.5);
+        // Vertical bars
+        const barGeo = new THREE.BoxGeometry(0.1, 2.8, 0.2);
+        const barMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+        const bar1 = new THREE.Mesh(barGeo, barMat); bar1.position.set(-0.6, 0, 4.55);
+        const bar2 = new THREE.Mesh(barGeo, barMat); bar2.position.set(0.6, 0, 4.55);
+        
+        trailerMesh.add(trailerBox); 
+        trailerMesh.add(doorBase); 
+        trailerMesh.add(bar1); 
+        trailerMesh.add(bar2);
+        
         trailerMesh.position.set(0, 0, -4.0);
-        trailerMesh.castShadow = true; trailerMesh.receiveShadow = true;
+        trailerMesh.children.forEach(c => { c.castShadow = true; c.receiveShadow = true; });
         truckGrp.add(trailerMesh);
     }
     
     truckBody.position.set(x, y + 2, z);
     world.addBody(truckBody);
     
-    // Wheels (fake visual representation)
-    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 16);
+    // Wheels
+    const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.6, 12);
     wheelGeo.rotateZ(Math.PI / 2);
-    const wheelPos = [
-        [-1.3, -1.0, 3.5], [1.3, -1.0, 3.5], // front cab
-        [-1.3, -1.0, 1.5], [1.3, -1.0, 1.5]  // back cab
-    ];
+    const wheelPos = [ [-1.4, -1.0, 3.5], [1.4, -1.0, 3.5] ];
     if(hasTrailer) {
-        wheelPos.push([-1.4, -1.0, -2.0], [1.4, -1.0, -2.0]);
-        wheelPos.push([-1.4, -1.0, -7.0], [1.4, -1.0, -7.0]);
+        wheelPos.push([-1.4, -1.0, -6.5], [1.4, -1.0, -6.5]);
+        wheelPos.push([-1.4, -1.0, -7.8], [1.4, -1.0, -7.8]);
     }
     wheelPos.forEach(p => {
-        const w = new THREE.Mesh(wheelGeo, matWheel);
+        const w = new THREE.Mesh(wheelGeo, matWheelBlack);
         w.position.set(p[0], p[1], p[2]);
+        w.castShadow = true;
         truckGrp.add(w);
     });
     
@@ -455,6 +486,9 @@ function loadCampaignLevel(lvl) {
                 spawnVariedObstacle(curZ - 10);
             }
         }
+        
+        // Performance Fix: Stop generating massive truck jams far past the finish line goal.
+        if (curZ < goalZ - 20) break;
     }
 }
 
@@ -577,17 +611,18 @@ function updatePhysics(dt) {
                 t.targetX = Math.max(-25, Math.min(25, t.targetX));
             }
             
-            // Deliberate slams
-            if(Math.random() < 0.005) {
-                t.cab.velocity.x += (Math.random() > 0.5 ? 5 : -5); // Good bump
-                t.cab.angularVelocity.y += (Math.random() - 0.5) * 0.5;
+            // Deliberate slams (Bodanie! Jackknife style pushing)
+            if(Math.random() < 0.015) { // increased frequency
+                const slamForce = (Math.random() > 0.5 ? 1 : -1) * 35000;
+                // Apply force offset to the front to twist the cab into cars nearby
+                t.cab.applyLocalForce(new CANNON.Vec3(slamForce, 0, 0), new CANNON.Vec3(0, 0, 2.5));
             }
         }
 
-        // Steer laterally towards target lane smoothly
+        // Steer laterally towards target lane by applying Force rather than Velocity Hack
         const diffX = t.targetX - t.cab.position.x;
-        t.cab.velocity.x += (diffX * 2.0 * dt); // Lateral steering
-        t.cab.velocity.x *= 0.90; // Damp lateral velocity harder so they don't ice-skate
+        t.cab.applyForce(new CANNON.Vec3(diffX * 1200, 0, 0), t.cab.position);
+        t.cab.velocity.x *= 0.92; // Damp lateral velocity harder so they don't ice-skate
         
         // Push forward
         t.cab.velocity.z += (-t.speed - t.cab.velocity.z) * 0.1;
