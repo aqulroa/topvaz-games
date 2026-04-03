@@ -3,327 +3,105 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cannon Clash - Играть онлайн</title>
+<title>Cannon Clash</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Poppins',sans-serif;background:linear-gradient(180deg,#87CEEB,#4682B4);overflow:hidden;height:100vh;display:flex;align-items:center;justify-content:center}
-#gameCanvas{border:3px solid #FFD700;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.3);background:#87CEEB}
-#menu{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:100}
-#menu.hidden{display:none}
-.menu-box{background:linear-gradient(135deg,#2C3E50,#34495E);padding:40px;border-radius:20px;text-align:center;max-width:600px;border:3px solid #FFD700}
-.menu-title{font-size:48px;font-weight:900;color:#FFD700;margin-bottom:10px;text-shadow:3px 3px 6px #000}
-.menu-subtitle{font-size:18px;color:#ECF0F1;margin-bottom:30px}
-.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px}
-.level-btn{background:linear-gradient(135deg,#3498DB,#2980B9);border:none;padding:20px;border-radius:15px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;transition:all 0.3s}
+body{font-family:'Poppins',sans-serif;background:linear-gradient(180deg,#87CEEB,#4682B4);overflow:hidden;height:100vh}
+canvas{display:block}
+#blocker{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center}
+#blocker.hidden{display:none}
+.box{text-align:center;max-width:700px;width:92%;padding:40px;background:linear-gradient(135deg,#2C3E50,#34495E);border:3px solid #FFD700;border-radius:20px;max-height:90vh;overflow-y:auto}
+.mt{font-size:3rem;font-weight:900;margin-bottom:10px;color:#FFD700;text-shadow:3px 3px 6px #000}
+.ms{color:#ECF0F1;margin-bottom:30px;font-size:1.1rem}
+.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-top:20px}
+.level-btn{background:linear-gradient(135deg,#3498DB,#2980B9);border:none;padding:20px;border-radius:15px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;transition:all 0.3s;font-family:inherit}
 .level-btn:hover{transform:translateY(-5px);box-shadow:0 10px 20px rgba(0,0,0,0.3)}
 .level-btn.locked{background:linear-gradient(135deg,#7F8C8D,#95A5A6);cursor:not-allowed;opacity:0.5}
-#hud{position:fixed;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;z-index:50;pointer-events:none}
-.hud-item{background:rgba(0,0,0,0.7);padding:10px 20px;border-radius:15px;color:#fff;font-weight:600;font-size:18px}
-.hud-item span{color:#FFD700}
-#endScreen{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:200}
-#endScreen.show{display:flex}
-.end-box{background:linear-gradient(135deg,#27AE60,#229954);padding:50px;border-radius:20px;text-align:center;max-width:500px;border:3px solid #FFD700}
-.end-box.lose{background:linear-gradient(135deg,#E74C3C,#C0392B)}
-.end-title{font-size:60px;font-weight:900;color:#fff;margin-bottom:20px}
-.end-stars{font-size:80px;margin:20px 0}
-.end-score{font-size:24px;color:#fff;margin:10px 0}
-.end-score span{color:#FFD700;font-weight:700}
-.btn-group{display:flex;gap:15px;margin-top:30px;justify-content:center}
-.btn{background:linear-gradient(135deg,#3498DB,#2980B9);border:none;padding:15px 30px;border-radius:15px;color:#fff;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.3s;font-family:'Poppins',sans-serif}
-.btn:hover{transform:translateY(-3px);box-shadow:0 8px 15px rgba(0,0,0,0.3)}
+.level-stars{font-size:14px;margin-top:5px;color:#FFD700}
+#hud{position:fixed;top:20px;left:20px;right:20px;z-index:100;pointer-events:none;display:none}
+#hud.on{display:flex;justify-content:space-between}
+.hi{background:rgba(0,0,0,0.7);padding:10px 20px;border-radius:15px;color:#fff;font-weight:600;font-size:18px;border:2px solid rgba(255,255,255,0.3)}
+.hi span{color:#FFD700}
+.res{display:none}
+.res.on{display:block;margin-top:20px}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0}
+.ri{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:15px}
+.rl{font-size:0.8rem;color:rgba(255,255,255,0.6)}
+.rv{font-size:1.5rem;font-weight:700;color:#FFD700}
+.btn{padding:12px 30px;border:none;border-radius:20px;background:linear-gradient(135deg,#3498DB,#2980B9);color:#fff;font-family:Poppins,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:10px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(52,152,219,0.4)}
 .btn.secondary{background:linear-gradient(135deg,#95A5A6,#7F8C8D)}
+#powerBar{position:fixed;left:50px;top:50%;transform:translateY(-50%);width:30px;height:200px;background:rgba(0,0,0,0.5);border-radius:15px;border:2px solid #fff;overflow:hidden;display:none;z-index:50}
+#powerBar.show{display:block}
+#powerFill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,#27AE60,#F39C12,#E74C3C);height:0%;transition:height 0.05s}
+#ballSelector{position:fixed;right:50px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px;z-index:50}
+#ballSelector.show{display:flex}
+.ball-type{width:60px;height:60px;border-radius:50%;border:3px solid #fff;cursor:pointer;transition:all 0.3s;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px;position:relative}
+.ball-type:hover{transform:scale(1.1)}
+.ball-type.selected{border-color:#FFD700;box-shadow:0 0 20px #FFD700}
+.ball-type.disabled{opacity:0.3;cursor:not-allowed;pointer-events:none}
+.ball-count{position:absolute;top:-5px;right:-5px;background:#E74C3C;width:24px;height:24px;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
 </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="1200" height="600"></canvas>
-<div id="hud">
-<div class="hud-item">Уровень: <span id="levelNum">1</span></div>
-<div class="hud-item">Ядра: <span id="ballsLeft">5</span></div>
-<div class="hud-item">Счёт: <span id="score">0</span></div>
-</div>
-<div id="menu">
-<div class="menu-box">
-<div class="menu-title">CANNON CLASH</div>
-<div class="menu-subtitle">Сбей всех пиратов из пушки!</div>
+<canvas id="gameCanvas"></canvas>
+<div id="blocker">
+<div class="box">
+<div class="mt" id="mt">CANNON CLASH</div>
+<div class="ms" id="msub">Сбей всех пиратов из пушки!</div>
+<div id="mc">
 <div class="level-grid" id="levelGrid"></div>
 </div>
+<div class="res" id="rr">
+<div class="mt" style="font-size:2rem">Результаты</div>
+<div class="rg">
+<div class="ri"><div class="rl">Счёт</div><div class="rv" id="rs">0</div></div>
+<div class="ri"><div class="rl">Звёзды</div><div class="rv" id="rst">0</div></div>
 </div>
-<div id="endScreen">
-<div class="end-box" id="endBox">
-<div class="end-title" id="endTitle">ПОБЕДА!</div>
-<div class="end-stars" id="endStars">⭐⭐⭐</div>
-<div class="end-score">Счёт: <span id="endScore">0</span></div>
-<div class="btn-group">
-<button class="btn" id="retryBtn">Повтор</button>
-<button class="btn secondary" id="menuBtn">Меню</button>
-<button class="btn" id="nextBtn">Далее</button>
+<button class="btn" onclick="showMenu()">Играть снова</button>
 </div>
 </div>
 </div>
-<script>
-const canvas=document.getElementById('gameCanvas');
-const ctx=canvas.getContext('2d');
-let currentLevel=1,ballsLeft=5,score=0,gameState='menu';
-let cannon={x:100,y:500,angle:-45,power:0};
-let ball=null;
-let pirates=[];
-let structures=[];
-let isAiming=false;
-
-const LEVELS=[
-{id:1,balls:5,pirates:[{x:900,y:400}],structures:[{x:900,y:450,w:100,h:20}]},
-{id:2,balls:6,pirates:[{x:850,y:350},{x:950,y:350}],structures:[{x:900,y:450,w:150,h:20},{x:850,y:400,w:20,h:80},{x:950,y:400,w:20,h:80}]},
-{id:3,balls:7,pirates:[{x:800,y:300},{x:900,y:300},{x:1000,y:300}],structures:[{x:800,y:450,w:100,h:20},{x:1000,y:450,w:100,h:20}]},
-{id:4,balls:8,pirates:[{x:850,y:250},{x:950,y:250},{x:900,y:350}],structures:[{x:900,y:450,w:200,h:20}]},
-{id:5,balls:7,pirates:[{x:850,y:300},{x:1000,y:300}],structures:[{x:850,y:450,w:100,h:20},{x:1000,y:450,w:100,h:20}]}
-];
-
-let progress={unlockedLevels:1,levelStars:Array(15).fill(0)};
-
-function loadProgress(){
-const saved=localStorage.getItem('cannonClashProgress');
-if(saved)progress=JSON.parse(saved);
-}
-
-function saveProgress(){
-localStorage.setItem('cannonClashProgress',JSON.stringify(progress));
-}
-
-function startLevel(level){
-currentLevel=level;
-const lvl=LEVELS[level-1];
-ballsLeft=lvl.balls;
-score=0;
-pirates=lvl.pirates.map(p=>({...p,alive:true}));
-structures=lvl.structures.map(s=>({...s}));
-ball=null;
-document.getElementById('menu').classList.add('hidden');
-gameState='playing';
-updateHUD();
-}
-
-function updateHUD(){
-document.getElementById('levelNum').textContent=currentLevel;
-document.getElementById('ballsLeft').textContent=ballsLeft;
-document.getElementById('score').textContent=score;
-}
-
-function showMenu(){
-gameState='menu';
-document.getElementById('menu').classList.remove('hidden');
-document.getElementById('endScreen').classList.remove('show');
-const grid=document.getElementById('levelGrid');
-grid.innerHTML='';
-for(let i=1;i<=5;i++){
-const btn=document.createElement('button');
-btn.className='level-btn';
-btn.textContent=i;
-if(i<=progress.unlockedLevels){
-btn.onclick=()=>startLevel(i);
-}else{
-btn.classList.add('locked');
-btn.textContent='🔒';
-}
-grid.appendChild(btn);
-}
-}
-
-function showEndScreen(won){
-gameState='end';
-const endScreen=document.getElementById('endScreen');
-const endBox=document.getElementById('endBox');
-const endTitle=document.getElementById('endTitle');
-const endStars=document.getElementById('endStars');
-const endScore=document.getElementById('endScore');
-if(won){
-const stars=ballsLeft>3?3:ballsLeft>1?2:1;
-if(currentLevel===progress.unlockedLevels&&currentLevel<5){
-progress.unlockedLevels++;
-}
-if(stars>progress.levelStars[currentLevel-1]){
-progress.levelStars[currentLevel-1]=stars;
-}
-saveProgress();
-endBox.classList.remove('lose');
-endTitle.textContent='ПОБЕДА!';
-endStars.textContent='⭐'.repeat(stars);
-endScore.textContent=score;
-document.getElementById('nextBtn').style.display=currentLevel<5?'block':'none';
-}else{
-endBox.classList.add('lose');
-endTitle.textContent='ПОРАЖЕНИЕ';
-endStars.textContent='';
-endScore.textContent=score;
-document.getElementById('nextBtn').style.display='none';
-}
-endScreen.classList.add('show');
-}
-
-function checkWin(){
-const alive=pirates.filter(p=>p.alive).length;
-if(alive===0){
-showEndScreen(true);
-}else if(ballsLeft===0&&!ball){
-showEndScreen(false);
-}
-}
-
-canvas.addEventListener('mousemove',e=>{
-if(gameState!=='playing')return;
-const rect=canvas.getBoundingClientRect();
-const mx=e.clientX-rect.left;
-const my=e.clientY-rect.top;
-const dx=mx-cannon.x;
-const dy=my-cannon.y;
-cannon.angle=Math.atan2(dy,dx)*180/Math.PI;
-if(cannon.angle>0)cannon.angle=0;
-if(cannon.angle<-90)cannon.angle=-90;
-});
-
-canvas.addEventListener('mousedown',e=>{
-if(gameState!=='playing'||ballsLeft<=0||ball)return;
-isAiming=true;
-cannon.power=0;
-});
-
-canvas.addEventListener('mouseup',e=>{
-if(!isAiming)return;
-isAiming=false;
-const angle=cannon.angle*Math.PI/180;
-ball={
-x:cannon.x+Math.cos(angle)*60,
-y:cannon.y+Math.sin(angle)*60,
-vx:Math.cos(angle)*cannon.power*0.3,
-vy:Math.sin(angle)*cannon.power*0.3,
-r:10
-};
-ballsLeft--;
-updateHUD();
-});
-
-document.getElementById('retryBtn').onclick=()=>{
-document.getElementById('endScreen').classList.remove('show');
-startLevel(currentLevel);
-};
-
-document.getElementById('menuBtn').onclick=()=>showMenu();
-
-document.getElementById('nextBtn').onclick=()=>{
-document.getElementById('endScreen').classList.remove('show');
-startLevel(currentLevel+1);
-};
-
-function update(){
-if(gameState!=='playing')return;
-
-if(isAiming){
-cannon.power=Math.min(cannon.power+2,100);
-}
-
-if(ball){
-ball.vy+=0.5;
-ball.x+=ball.vx;
-ball.y+=ball.vy;
-
-if(ball.y>600||ball.x<0||ball.x>1200){
-ball=null;
-checkWin();
-return;
-}
-
-pirates.forEach(p=>{
-if(!p.alive)return;
-const dist=Math.hypot(ball.x-p.x,ball.y-p.y);
-if(dist<30){
-p.alive=false;
-score+=100;
-updateHUD();
-ball=null;
-checkWin();
-}
-});
-}
-}
-
-function draw(){
-ctx.fillStyle='#87CEEB';
-ctx.fillRect(0,0,1200,600);
-
-ctx.fillStyle='#8B4513';
-ctx.fillRect(0,580,1200,20);
-
-structures.forEach(s=>{
-ctx.fillStyle='#A0522D';
-ctx.fillRect(s.x-s.w/2,s.y-s.h/2,s.w,s.h);
-});
-
-pirates.forEach(p=>{
-if(!p.alive)return;
-ctx.fillStyle='#FFE4B5';
-ctx.beginPath();
-ctx.arc(p.x,p.y,20,0,Math.PI*2);
-ctx.fill();
-ctx.fillStyle='#000';
-ctx.beginPath();
-ctx.moveTo(p.x-25,p.y-20);
-ctx.lineTo(p.x,p.y-35);
-ctx.lineTo(p.x+25,p.y-20);
-ctx.closePath();
-ctx.fill();
-});
-
-ctx.save();
-ctx.translate(cannon.x,cannon.y);
-ctx.rotate(cannon.angle*Math.PI/180);
-ctx.fillStyle='#2C2C2C';
-ctx.fillRect(0,-10,60,20);
-ctx.restore();
-ctx.fillStyle='#8B4513';
-ctx.beginPath();
-ctx.arc(cannon.x,cannon.y,25,0,Math.PI*2);
-ctx.fill();
-
-if(ball){
-ctx.fillStyle='#1A1A1A';
-ctx.beginPath();
-ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
-ctx.fill();
-}
-
-if(isAiming){
-const angle=cannon.angle*Math.PI/180;
-ctx.strokeStyle='rgba(255,255,255,0.5)';
-ctx.lineWidth=2;
-ctx.setLineDash([5,5]);
-ctx.beginPath();
-ctx.moveTo(cannon.x+Math.cos(angle)*60,cannon.y+Math.sin(angle)*60);
-let x=cannon.x+Math.cos(angle)*60;
-let y=cannon.y+Math.sin(angle)*60;
-let vx=Math.cos(angle)*cannon.power*0.3;
-let vy=Math.sin(angle)*cannon.power*0.3;
-for(let i=0;i<30;i++){
-x+=vx;
-y+=vy;
-vy+=0.5;
-ctx.lineTo(x,y);
-if(y>600)break;
-}
-ctx.stroke();
-ctx.setLineDash([]);
-}
-}
-
-function gameLoop(){
-update();
-draw();
-requestAnimationFrame(gameLoop);
-}
-
-loadProgress();
-showMenu();
-gameLoop();
-</script>
-</body>
-</html>
+<div id="hud">
+<div class="hi">Уровень: <span id="lv">1</span></div>
+<div class="hi">Ядра: <span id="bl">5</span></div>
+<div class="hi">Счёт: <span id="sc">0</span></div>
+</div>
+<div id="powerBar"><div id="powerFill"></div></div>
+<div id="ballSelector">
+<div class="ball-type selected" data-type="normal" style="background:#1A1A1A"><div class="ball-count">∞</div></div>
+<div class="ball-type disabled" data-type="explosive" style="background:#FF4444"><div class="ball-count" id="explosiveCount">0</div></div>
+<div class="ball-type disabled" data-type="heavy" style="background:#808080"><div class="ball-count" id="heavyCount">0</div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>const LEVELS=[{id:1,balls:5,pirates:[{x:900,y:400}],structures:[{type:'wood',x:900,y:450,w:100,h:20}],special:{explosive:0,heavy:0}},{id:2,balls:6,pirates:[{x:850,y:350},{x:950,y:350}],structures:[{type:'wood',x:900,y:450,w:150,h:20},{type:'wood',x:850,y:400,w:20,h:80},{type:'wood',x:950,y:400,w:20,h:80}],special:{explosive:0,heavy:0}},{id:3,balls:7,pirates:[{x:800,y:300},{x:900,y:300},{x:1000,y:300}],structures:[{type:'wood',x:800,y:450,w:100,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:800,y:330,w:80,h:20},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:1000,y:330,w:80,h:20}],special:{explosive:0,heavy:0}},{id:4,balls:8,pirates:[{x:850,y:250},{x:950,y:250},{x:900,y:350}],structures:[{type:'wood',x:900,y:450,w:200,h:20},{type:'wood',x:820,y:400,w:20,h:80},{type:'wood',x:980,y:400,w:20,h:80},{type:'wood',x:900,y:380,w:120,h:20},{type:'wood',x:850,y:320,w:20,h:100},{type:'wood',x:950,y:320,w:20,h:100},{type:'wood',x:900,y:280,w:80,h:20}],special:{explosive:0,heavy:0}},{id:5,balls:7,pirates:[{x:850,y:300},{x:1000,y:300}],structures:[{type:'wood',x:850,y:450,w:100,h:20},{type:'wood',x:850,y:380,w:20,h:100},{type:'wood',x:850,y:330,w:80,h:20},{type:'tnt',x:925,y:430,r:25},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:1000,y:330,w:80,h:20}],special:{explosive:0,heavy:0}},{id:6,balls:9,pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250},{x:900,y:350}],structures:[{type:'wood',x:900,y:450,w:250,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:900,y:380,w:20,h:100},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:850,y:330,w:80,h:20},{type:'wood',x:950,y:330,w:80,h:20},{type:'wood',x:800,y:280,w:80,h:20},{type:'wood',x:900,y:280,w:80,h:20},{type:'wood',x:1000,y:280,w:80,h:20}],special:{explosive:0,heavy:0}},{id:7,balls:7,pirates:[{x:850,y:280},{x:950,y:280},{x:900,y:380}],structures:[{type:'wood',x:900,y:450,w:180,h:20},{type:'wood',x:830,y:400,w:20,h:80},{type:'wood',x:970,y:400,w:20,h:80},{type:'tnt',x:900,y:410,r:25},{type:'wood',x:850,y:350,w:20,h:100},{type:'wood',x:950,y:350,w:20,h:100},{type:'wood',x:900,y:310,w:80,h:20}],special:{explosive:1,heavy:0}},{id:8,balls:8,pirates:[{x:850,y:250},{x:950,y:250},{x:900,y:350}],structures:[{type:'stone',x:900,y:450,w:200,h:30},{type:'stone',x:820,y:400,w:30,h:80},{type:'stone',x:980,y:400,w:30,h:80},{type:'wood',x:900,y:380,w:120,h:20},{type:'wood',x:850,y:320,w:20,h:100},{type:'wood',x:950,y:320,w:20,h:100},{type:'wood',x:900,y:280,w:80,h:20}],special:{explosive:0,heavy:2}},{id:9,balls:9,pirates:[{x:800,y:230},{x:900,y:230},{x:1000,y:230},{x:900,y:330}],structures:[{type:'stone',x:900,y:450,w:250,h:30},{type:'stone',x:800,y:380,w:30,h:100},{type:'stone',x:1000,y:380,w:30,h:100},{type:'wood',x:900,y:360,w:150,h:20},{type:'wood',x:850,y:300,w:20,h:100},{type:'wood',x:950,y:300,w:20,h:100},{type:'wood',x:800,y:260,w:80,h:20},{type:'wood',x:900,y:260,w:80,h:20},{type:'wood',x:1000,y:260,w:80,h:20}],special:{explosive:1,heavy:0}},{id:10,balls:8,pirates:[{x:850,y:280},{x:950,y:280},{x:900,y:380}],structures:[{type:'stone',x:900,y:450,w:200,h:30},{type:'wood',x:830,y:400,w:20,h:80},{type:'wood',x:970,y:400,w:20,h:80},{type:'tnt',x:900,y:410,r:25},{type:'stone',x:850,y:350,w:30,h:100},{type:'stone',x:950,y:350,w:30,h:100},{type:'wood',x:900,y:310,w:80,h:20}],special:{explosive:1,heavy:1}},{id:11,balls:10,pirates:[{x:800,y:220},{x:900,y:220},{x:1000,y:220},{x:850,y:320},{x:950,y:320}],structures:[{type:'stone',x:900,y:450,w:280,h:30},{type:'stone',x:780,y:380,w:30,h:100},{type:'stone',x:1020,y:380,w:30,h:100},{type:'wood',x:850,y:350,w:20,h:80},{type:'wood',x:950,y:350,w:20,h:80},{type:'wood',x:800,y:290,w:20,h:100},{type:'wood',x:900,y:290,w:20,h:100},{type:'wood',x:1000,y:290,w:20,h:100},{type:'wood',x:800,y:250,w:80,h:20},{type:'wood',x:900,y:250,w:80,h:20},{type:'wood',x:1000,y:250,w:80,h:20}],special:{explosive:2,heavy:0}},{id:12,balls:11,pirates:[{x:800,y:200},{x:900,y:200},{x:1000,y:200},{x:850,y:300},{x:950,y:300}],structures:[{type:'stone',x:900,y:450,w:300,h:30},{type:'stone',x:770,y:370,w:30,h:130},{type:'stone',x:1030,y:370,w:30,h:130},{type:'stone',x:850,y:330,w:30,h:80},{type:'stone',x:950,y:330,w:30,h:80},{type:'wood',x:800,y:270,w:20,h:120},{type:'wood',x:900,y:270,w:20,h:120},{type:'wood',x:1000,y:270,w:20,h:120},{type:'wood',x:800,y:230,w:80,h:20},{type:'wood',x:900,y:230,w:80,h:20},{type:'wood',x:1000,y:230,w:80,h:20}],special:{explosive:0,heavy:3}},{id:13,balls:10,pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250},{x:900,y:350}],structures:[{type:'wood',x:800,y:450,w:100,h:20},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:1000,y:380,w:20,h:100},{type:'stone',x:900,y:380,w:30,h:100},{type:'wood',x:800,y:280,w:80,h:20},{type:'wood',x:900,y:280,w:80,h:20},{type:'wood',x:1000,y:280,w:80,h:20},{type:'tnt',x:850,y:410,r:25},{type:'tnt',x:950,y:410,r:25}],special:{explosive:1,heavy:1}},{id:14,balls:12,pirates:[{x:780,y:220},{x:860,y:220},{x:940,y:220},{x:1020,y:220},{x:900,y:320}],structures:[{type:'stone',x:900,y:450,w:300,h:30},{type:'wood',x:780,y:380,w:20,h:100},{type:'wood',x:860,y:380,w:20,h:100},{type:'wood',x:940,y:380,w:20,h:100},{type:'wood',x:1020,y:380,w:20,h:100},{type:'tnt',x:820,y:410,r:25},{type:'tnt',x:900,y:350,r:25},{type:'tnt',x:980,y:410,r:25},{type:'wood',x:780,y:250,w:60,h:20},{type:'wood',x:860,y:250,w:60,h:20},{type:'wood',x:940,y:250,w:60,h:20},{type:'wood',x:1020,y:250,w:60,h:20}],special:{explosive:3,heavy:0}},{id:15,balls:13,pirates:[{x:780,y:200},{x:860,y:200},{x:940,y:200},{x:1020,y:200},{x:820,y:300},{x:980,y:300}],structures:[{type:'stone',x:900,y:450,w:320,h:30},{type:'stone',x:760,y:360,w:30,h:150},{type:'stone',x:1040,y:360,w:30,h:150},{type:'stone',x:820,y:330,w:30,h:90},{type:'stone',x:980,y:330,w:30,h:90},{type:'wood',x:780,y:270,w:20,h:120},{type:'wood',x:860,y:270,w:20,h:120},{type:'wood',x:940,y:270,w:20,h:120},{type:'wood',x:1020,y:270,w:20,h:120},{type:'tnt',x:900,y:380,r:30},{type:'wood',x:780,y:230,w:60,h:20},{type:'wood',x:860,y:230,w:60,h:20},{type:'wood',x:940,y:230,w:60,h:20},{type:'wood',x:1020,y:230,w:60,h:20}],special:{explosive:2,heavy:2}}];
+let engine,world,canvas,ctx,currentLevel=1,ballsLeft=0,score=0,gameState='menu',cannon=null,cannonballs=[],pirates=[],structures=[],isAiming=false,aimStartTime=0,power=0,mousePos={x:0,y:0},selectedBallType='normal',specialBalls={explosive:0,heavy:0},progress={unlockedLevels:1,levelStars:Array(15).fill(0),levelScores:Array(15).fill(0),soundEnabled:true};
+function loadProgress(){const saved=localStorage.getItem('cannonClashProgress');if(saved)progress=JSON.parse(saved);}
+function saveProgress(){localStorage.setItem('cannonClashProgress',JSON.stringify(progress));}
+</script></body></html>
+function initPhysics(){engine=Matter.Engine.create();world=engine.world;world.gravity.y=1;canvas=document.getElementById('gameCanvas');canvas.width=1200;canvas.height=600;ctx=canvas.getContext('2d');const ground=Matter.Bodies.rectangle(600,590,1200,20,{isStatic:true});Matter.World.add(world,ground);const leftWall=Matter.Bodies.rectangle(-10,300,20,600,{isStatic:true});const rightWall=Matter.Bodies.rectangle(1210,300,20,600,{isStatic:true});const ceiling=Matter.Bodies.rectangle(600,-10,1200,20,{isStatic:true});Matter.World.add(world,[leftWall,rightWall,ceiling]);cannon={x:100,y:500,angle:-Math.PI/4,length:60,width:20};}
+function createPirate(x,y){const body=Matter.Bodies.circle(x,y,20,{density:0.001,restitution:0.3,friction:0.5,label:'pirate'});Matter.World.add(world,body);pirates.push({body,alive:true});return body;}
+function createStructure(config){let body;if(config.type==='tnt'){body=Matter.Bodies.circle(config.x,config.y,config.r,{density:0.001,restitution:0.3,friction:0.5,label:'tnt'});}else{const density=config.type==='stone'?0.01:0.001;body=Matter.Bodies.rectangle(config.x,config.y,config.w,config.h,{density:density,restitution:0.2,friction:0.8,label:config.type});}Matter.World.add(world,body);structures.push({body,type:config.type,health:config.type==='stone'?3:1});return body;}
+function createCannonball(type){const angle=cannon.angle;const startX=cannon.x+Math.cos(angle)*cannon.length;const startY=cannon.y+Math.sin(angle)*cannon.length;let radius=15;let density=0.01;if(type==='heavy'){radius=18;density=0.05;}const body=Matter.Bodies.circle(startX,startY,radius,{density:density,restitution:0.4,friction:0.3,label:'cannonball'});const velocity={x:Math.cos(angle)*power*0.15,y:Math.sin(angle)*power*0.15};Matter.Body.setVelocity(body,velocity);Matter.World.add(world,body);cannonballs.push({body,type,exploded:false});return body;}
+function explode(x,y,radius){const explosionRadius=radius||100;const allBodies=Matter.Composite.allBodies(world);allBodies.forEach(body=>{if(body.isStatic)return;const dist=Math.hypot(body.position.x-x,body.position.y-y);if(dist<explosionRadius){const force=(explosionRadius-dist)/explosionRadius*0.1;const angle=Math.atan2(body.position.y-y,body.position.x-x);Matter.Body.applyForce(body,body.position,{x:Math.cos(angle)*force,y:Math.sin(angle)*force});const structure=structures.find(s=>s.body===body);if(structure){structure.health-=2;if(structure.health<=0){Matter.World.remove(world,body);structures=structures.filter(s=>s.body!==body);}}const pirate=pirates.find(p=>p.body===body);if(pirate&&pirate.alive){pirate.alive=false;score+=100;updateHUD();}}});}
+function drawBackground(){const gradient=ctx.createLinearGradient(0,0,0,600);gradient.addColorStop(0,'#87CEEB');gradient.addColorStop(1,'#1E90FF');ctx.fillStyle=gradient;ctx.fillRect(0,0,1200,600);}
+function drawCannon(){ctx.save();ctx.translate(cannon.x,cannon.y);ctx.rotate(cannon.angle);ctx.fillStyle='#2C2C2C';ctx.fillRect(0,-cannon.width/2,cannon.length,cannon.width);ctx.restore();ctx.fillStyle='#8B4513';ctx.beginPath();ctx.arc(cannon.x,cannon.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2C2C2C';ctx.beginPath();ctx.arc(cannon.x,cannon.y,15,0,Math.PI*2);ctx.fill();}
+function drawTrajectory(){if(!isAiming)return;const angle=cannon.angle;const startX=cannon.x+Math.cos(angle)*cannon.length;const startY=cannon.y+Math.sin(angle)*cannon.length;ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(startX,startY);let x=startX;let y=startY;let vx=Math.cos(angle)*power*0.15;let vy=Math.sin(angle)*power*0.15;for(let i=0;i<50;i++){x+=vx;y+=vy;vy+=1;ctx.lineTo(x,y);if(y>600)break;}ctx.stroke();ctx.setLineDash([]);}
+function drawPirate(pirate){if(!pirate.alive)return;const pos=pirate.body.position;ctx.fillStyle='#FFE4B5';ctx.beginPath();ctx.arc(pos.x,pos.y,20,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000000';ctx.beginPath();ctx.moveTo(pos.x-25,pos.y-20);ctx.lineTo(pos.x,pos.y-35);ctx.lineTo(pos.x+25,pos.y-20);ctx.closePath();ctx.fill();ctx.fillStyle='#000000';ctx.beginPath();ctx.arc(pos.x-8,pos.y-5,3,0,Math.PI*2);ctx.arc(pos.x+8,pos.y-5,3,0,Math.PI*2);ctx.fill();}
+function drawStructure(structure){const body=structure.body;const pos=body.position;ctx.save();ctx.translate(pos.x,pos.y);ctx.rotate(body.angle);if(structure.type==='tnt'){const radius=body.circleRadius;ctx.fillStyle='#8B4513';ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();ctx.fillStyle='#FF0000';ctx.font='bold 12px Poppins';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TNT',0,0);}else{const vertices=body.vertices;const width=Math.abs(vertices[1].x-vertices[0].x);const height=Math.abs(vertices[2].y-vertices[1].y);if(structure.type==='stone'){ctx.fillStyle='#696969';}else{ctx.fillStyle='#A0522D';}ctx.fillRect(-width/2,-height/2,width,height);}ctx.restore();}
+function drawCannonball(ball){const pos=ball.body.position;const radius=ball.body.circleRadius;if(ball.type==='explosive'){ctx.fillStyle='#FF4444';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();}else if(ball.type==='heavy'){ctx.fillStyle='#808080';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();}else{ctx.fillStyle='#1A1A1A';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();}}
+function render(){drawBackground();ctx.fillStyle='#8B4513';ctx.fillRect(0,580,1200,20);structures.forEach(drawStructure);pirates.forEach(drawPirate);cannonballs.forEach(drawCannonball);drawCannon();drawTrajectory();}
+function startLevel(levelNum){currentLevel=levelNum;const level=LEVELS[levelNum-1];cannonballs.forEach(ball=>Matter.World.remove(world,ball.body));pirates.forEach(pirate=>Matter.World.remove(world,pirate.body));structures.forEach(structure=>Matter.World.remove(world,structure.body));cannonballs=[];pirates=[];structures=[];ballsLeft=level.balls;score=0;specialBalls={...level.special};selectedBallType='normal';level.pirates.forEach(p=>createPirate(p.x,p.y));level.structures.forEach(s=>createStructure(s));updateHUD();updateBallSelector();document.getElementById('blocker').classList.add('hidden');document.getElementById('hud').classList.add('on');document.getElementById('powerBar').classList.add('show');document.getElementById('ballSelector').classList.add('show');gameState='playing';}
+function updateHUD(){document.getElementById('lv').textContent=currentLevel;document.getElementById('bl').textContent=ballsLeft;document.getElementById('sc').textContent=score;}
+function updateBallSelector(){document.getElementById('explosiveCount').textContent=specialBalls.explosive;document.getElementById('heavyCount').textContent=specialBalls.heavy;const explosiveBtn=document.querySelector('[data-type="explosive"]');const heavyBtn=document.querySelector('[data-type="heavy"]');if(specialBalls.explosive>0){explosiveBtn.classList.remove('disabled');}else{explosiveBtn.classList.add('disabled');if(selectedBallType==='explosive')selectedBallType='normal';}if(specialBalls.heavy>0){heavyBtn.classList.remove('disabled');}else{heavyBtn.classList.add('disabled');if(selectedBallType==='heavy')selectedBallType='normal';}document.querySelectorAll('.ball-type').forEach(btn=>{btn.classList.remove('selected');if(btn.dataset.type===selectedBallType){btn.classList.add('selected');}});}
+function checkWinCondition(){const alivePirates=pirates.filter(p=>p.alive).length;if(alivePirates===0){gameState='win';showEndScreen(true);}else if(ballsLeft===0&&cannonballs.length===0){gameState='lose';showEndScreen(false);}}
+function showEndScreen(won){document.getElementById('hud').classList.remove('on');document.getElementById('powerBar').classList.remove('show');document.getElementById('ballSelector').classList.remove('show');if(won){const level=LEVELS[currentLevel-1];const usedBalls=level.balls-ballsLeft;const ballsPercent=usedBalls/level.balls;let stars=1;if(ballsPercent<=0.5)stars=3;else if(ballsPercent<=0.75)stars=2;if(currentLevel===progress.unlockedLevels&&currentLevel<15){progress.unlockedLevels++;}if(stars>progress.levelStars[currentLevel-1]){progress.levelStars[currentLevel-1]=stars;}if(score>progress.levelScores[currentLevel-1]){progress.levelScores[currentLevel-1]=score;}saveProgress();}document.getElementById('mc').style.display='none';document.getElementById('rr').classList.add('on');document.getElementById('mt').textContent=won?'ПОБЕДА!':'ПОРАЖЕНИЕ';document.getElementById('rs').textContent=score;document.getElementById('rst').textContent=won?'⭐'.repeat(progress.levelStars[currentLevel-1]):'0';document.getElementById('blocker').classList.remove('hidden');}
+function showMenu(){gameState='menu';document.getElementById('mc').style.display='block';document.getElementById('rr').classList.remove('on');document.getElementById('mt').textContent='CANNON CLASH';document.getElementById('msub').textContent='Сбей всех пиратов из пушки!';document.getElementById('blocker').classList.remove('hidden');document.getElementById('hud').classList.remove('on');document.getElementById('powerBar').classList.remove('show');document.getElementById('ballSelector').classList.remove('show');const levelGrid=document.getElementById('levelGrid');levelGrid.innerHTML='';for(let i=1;i<=15;i++){const btn=document.createElement('button');btn.className='level-btn';btn.textContent=i;if(i<=progress.unlockedLevels){btn.addEventListener('click',()=>startLevel(i));const stars=progress.levelStars[i-1];if(stars>0){const starsDiv=document.createElement('div');starsDiv.className='level-stars';starsDiv.textContent='⭐'.repeat(stars);btn.appendChild(starsDiv);}}else{btn.classList.add('locked');btn.textContent='🔒';}levelGrid.appendChild(btn);}}
+canvas.addEventListener('mousemove',(e)=>{const rect=canvas.getBoundingClientRect();mousePos.x=e.clientX-rect.left;mousePos.y=e.clientY-rect.top;if(gameState==='playing'){const dx=mousePos.x-cannon.x;const dy=mousePos.y-cannon.y;cannon.angle=Math.atan2(dy,dx);if(cannon.angle>0)cannon.angle=0;if(cannon.angle<-Math.PI/2)cannon.angle=-Math.PI/2;}});
+canvas.addEventListener('mousedown',(e)=>{if(gameState==='playing'&&ballsLeft>0){isAiming=true;aimStartTime=Date.now();power=0;}});
+canvas.addEventListener('mouseup',(e)=>{if(gameState==='playing'&&isAiming&&ballsLeft>0){isAiming=false;createCannonball(selectedBallType);ballsLeft--;if(selectedBallType==='explosive'){specialBalls.explosive--;}else if(selectedBallType==='heavy'){specialBalls.heavy--;}updateHUD();updateBallSelector();power=0;document.getElementById('powerFill').style.height='0%';}});
+document.querySelectorAll('.ball-type').forEach(btn=>{btn.addEventListener('click',()=>{if(!btn.classList.contains('disabled')){selectedBallType=btn.dataset.type;updateBallSelector();}});});
+function gameLoop(){if(gameState==='playing'){Matter.Engine.update(engine,1000/60);if(isAiming){const elapsed=Date.now()-aimStartTime;power=Math.min(elapsed/10,100);document.getElementById('powerFill').style.height=power+'%';}cannonballs.forEach((ball,index)=>{const pos=ball.body.position;const vel=ball.body.velocity;if(pos.y>650||pos.x<-50||pos.x>1250){Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();return;}if(Math.abs(vel.x)<0.1&&Math.abs(vel.y)<0.1&&pos.y>500){Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();return;}if(ball.type==='explosive'&&!ball.exploded){const collisions=Matter.Query.collides(ball.body,Matter.Composite.allBodies(world));if(collisions.length>1){ball.exploded=true;explode(pos.x,pos.y,100);Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();}}});pirates.forEach(pirate=>{if(!pirate.alive)return;const vel=pirate.body.velocity;const speed=Math.sqrt(vel.x*vel.x+vel.y*vel.y);if(speed>5){pirate.alive=false;score+=100;updateHUD();setTimeout(()=>{Matter.World.remove(world,pirate.body);},1000);}});structures.forEach((structure,index)=>{const vel=structure.body.velocity;const speed=Math.sqrt(vel.x*vel.x+vel.y*vel.y);if(speed>8){structure.health--;if(structure.health<=0){if(structure.type==='tnt'){explode(structure.body.position.x,structure.body.position.y,120);}Matter.World.remove(world,structure.body);structures.splice(index,1);score+=10;updateHUD();}}});}render();requestAnimationFrame(gameLoop);}
+loadProgress();initPhysics();showMenu();gameLoop();
