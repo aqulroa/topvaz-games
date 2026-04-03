@@ -188,7 +188,6 @@ pirates.push(body);
 Matter.World.add(world,body);
 });
 Matter.Events.on(engine,'collisionStart',handleCollision);
-Matter.Runner.run(engine);
 }
 
 function handleCollision(event){
@@ -349,6 +348,8 @@ updateBallSelector();
 
 function render(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
+if(gameState==='playing'&&engine){
+Matter.Engine.update(engine,1000/60);
 ctx.fillStyle='#8B4513';
 ctx.fillRect(0,canvas.height-20,canvas.width,20);
 structures.forEach(body=>{
@@ -413,6 +414,7 @@ ctx.lineWidth=2;
 ctx.stroke();
 ctx.restore();
 });
+if(cannon){
 ctx.save();
 ctx.translate(cannon.x,cannon.y);
 const dx=mousePos.x-cannon.x;
@@ -429,6 +431,8 @@ ctx.strokeStyle='#000';
 ctx.lineWidth=3;
 ctx.stroke();
 ctx.restore();
+}
+}
 requestAnimationFrame(render);
 }
 
