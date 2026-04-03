@@ -2,130 +2,83 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=0.9, shrink-to-fit=no" />
 <title>Cannon Clash - Играть онлайн</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Poppins',sans-serif;background:linear-gradient(180deg,#87CEEB 0%,#4682B4 100%);overflow:hidden;height:100vh}
-canvas{display:block;background:linear-gradient(180deg,#87CEEB 0%,#1E90FF 100%)}
-#gameCanvas{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-#ui{position:fixed;inset:0;pointer-events:none;z-index:100}
-#hud{position:absolute;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
-.hud-item{background:rgba(0,0,0,0.7);padding:10px 20px;border-radius:15px;color:#fff;font-weight:600;font-size:18px;border:2px solid rgba(255,255,255,0.3)}
-.hud-item span{color:#FFD700}
-#menu{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:200}
-#menu.hidden{display:none}
-.menu-box{background:linear-gradient(135deg,#2C3E50,#34495E);padding:40px;border-radius:20px;text-align:center;max-width:800px;width:90%;border:3px solid #FFD700;max-height:90vh;overflow-y:auto}
-.menu-title{font-size:48px;font-weight:900;color:#FFD700;margin-bottom:10px;text-shadow:3px 3px 6px rgba(0,0,0,0.5)}
-.menu-subtitle{font-size:18px;color:#ECF0F1;margin-bottom:30px}
-.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-top:20px}
-.level-btn{background:linear-gradient(135deg,#3498DB,#2980B9);border:none;padding:20px;border-radius:15px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;transition:all 0.3s;border:2px solid transparent;pointer-events:auto}
-.level-btn:hover{transform:translateY(-5px);box-shadow:0 10px 20px rgba(0,0,0,0.3);border-color:#FFD700}
-.level-btn.locked{background:linear-gradient(135deg,#7F8C8D,#95A5A6);cursor:not-allowed;opacity:0.5}
-.level-btn.locked:hover{transform:none;box-shadow:none;border-color:transparent}
-.level-stars{font-size:14px;margin-top:5px;color:#FFD700}
-#endScreen{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:300}
-#endScreen.show{display:flex}
-.end-box{background:linear-gradient(135deg,#27AE60,#229954);padding:50px;border-radius:20px;text-align:center;max-width:500px;width:90%;border:3px solid #FFD700}
-.end-box.lose{background:linear-gradient(135deg,#E74C3C,#C0392B)}
-.end-title{font-size:60px;font-weight:900;color:#fff;margin-bottom:20px;text-shadow:3px 3px 6px rgba(0,0,0,0.5)}
-.end-stars{font-size:80px;margin:20px 0}
-.end-score{font-size:24px;color:#fff;margin:10px 0}
-.end-score span{color:#FFD700;font-weight:700}
-.btn-group{display:flex;gap:15px;margin-top:30px;justify-content:center}
-.btn{background:linear-gradient(135deg,#3498DB,#2980B9);border:none;padding:15px 30px;border-radius:15px;color:#fff;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.3s;pointer-events:auto;font-family:'Poppins',sans-serif}
-.btn:hover{transform:translateY(-3px);box-shadow:0 8px 15px rgba(0,0,0,0.3)}
-.btn.secondary{background:linear-gradient(135deg,#95A5A6,#7F8C8D)}
-#powerBar{position:absolute;left:50px;top:50%;transform:translateY(-50%);width:30px;height:200px;background:rgba(0,0,0,0.5);border-radius:15px;border:2px solid #fff;overflow:hidden;display:none}
-#powerBar.show{display:block}
-#powerFill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,#27AE60,#F39C12,#E74C3C);height:0%;transition:height 0.05s}
-#ballSelector{position:absolute;right:50px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px}
-#ballSelector.show{display:flex}
-.ball-type{width:60px;height:60px;border-radius:50%;border:3px solid #fff;cursor:pointer;transition:all 0.3s;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px;position:relative}
-.ball-type:hover{transform:scale(1.1);box-shadow:0 0 20px rgba(255,255,255,0.5)}
-.ball-type.selected{border-color:#FFD700;box-shadow:0 0 20px #FFD700}
-.ball-type.disabled{opacity:0.3;cursor:not-allowed;pointer-events:none}
-.ball-count{position:absolute;top:-5px;right:-5px;background:#E74C3C;width:24px;height:24px;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-</style>
+<link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="../assets/css/user.css" />
+<link rel="stylesheet" type="text/css" href="../assets/css/style.css" />
+<link rel="stylesheet" type="text/css" href="../assets/css/custom.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<div id="ui">
-<div id="hud">
-<div class="hud-item">Уровень: <span id="levelNum">1</span></div>
-<div class="hud-item">Ядра: <span id="ballsLeft">5</span></div>
-<div class="hud-item">Счёт: <span id="score">0</span></div>
-</div>
-<div id="powerBar"><div id="powerFill"></div></div>
-<div id="ballSelector">
-<div class="ball-type selected" data-type="normal" style="background:#1A1A1A"><div class="ball-count">∞</div></div>
-<div class="ball-type disabled" data-type="explosive" style="background:#FF4444"><div class="ball-count" id="explosiveCount">0</div></div>
-<div class="ball-type disabled" data-type="heavy" style="background:#808080"><div class="ball-count" id="heavyCount">0</div></div>
-</div>
-</div>
-<div id="menu">
-<div class="menu-box">
-<div class="menu-title">CANNON CLASH</div>
-<div class="menu-subtitle">Сбей всех пиратов из пушки!</div>
-<div class="level-grid" id="levelGrid"></div>
+<nav class="navbar navbar-expand-lg navbar-dark top-nav" id="mainNav">
+<div class="container">
+<a class="navbar-brand" href="../index.html"><strong>aqulroa Games</strong></a>
+<div class="d-none d-lg-block">
+<ul class="navbar-nav">
+<li class="nav-item"><a class="nav-link" href="../car.html">Гонки</a></li>
+<li class="nav-item"><a class="nav-link" href="../shooting.html">Стрелялки</a></li>
+<li class="nav-item"><a class="nav-link" href="../action.html">Экшн</a></li>
+<li class="nav-item"><a class="nav-link" href="../multiplayer.html">Мультиплеер</a></li>
+<li class="nav-item"><a class="nav-link" href="../sports.html">Спорт</a></li>
+</ul>
 </div>
 </div>
-<div id="endScreen">
-<div class="end-box" id="endBox">
-<div class="end-title" id="endTitle">ПОБЕДА!</div>
-<div class="end-stars" id="endStars">⭐⭐⭐</div>
-<div class="end-score">Счёт: <span id="endScore">0</span></div>
-<div class="end-score">Использовано ядер: <span id="endBalls">0</span></div>
-<div class="btn-group">
-<button class="btn" id="retryBtn">Повтор</button>
-<button class="btn secondary" id="menuBtn">Меню</button>
-<button class="btn" id="nextBtn">Далее</button>
+</nav>
+
+<div class="container game-wrapper">
+<div class="game-container">
+<div class="game-content">
+<div class="game-iframe-container" id="game-player">
+<iframe class="game-iframe" id="game-area" src="https://www.crazygames.com/embed/raft-wars" scrolling="no" frameborder="0" allowfullscreen></iframe>
+</div>
+</div>
+<div class="game-info">
+<div class="header-left">
+<h1 class="single-title">Cannon Clash</h1>
+</div>
+<div class="header-right">
+<div class="b-action">
+<a href="#" onclick="open_fullscreen(); return false;" class="btn btn-capsule"><i class="bi bi-arrows-fullscreen b-icon"></i>Полный экран</a>
 </div>
 </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-<script>
-const LEVELS=[{id:1,balls:5,pirates:[{x:900,y:400}],structures:[{type:'wood',x:900,y:450,w:100,h:20}],special:{explosive:0,heavy:0}},{id:2,balls:6,pirates:[{x:850,y:350},{x:950,y:350}],structures:[{type:'wood',x:900,y:450,w:150,h:20},{type:'wood',x:850,y:400,w:20,h:80},{type:'wood',x:950,y:400,w:20,h:80}],special:{explosive:0,heavy:0}},{id:3,balls:7,pirates:[{x:800,y:300},{x:900,y:300},{x:1000,y:300}],structures:[{type:'wood',x:800,y:450,w:100,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:800,y:330,w:80,h:20},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:1000,y:330,w:80,h:20}],special:{explosive:0,heavy:0}},{id:4,balls:8,pirates:[{x:850,y:250},{x:950,y:250},{x:900,y:350}],structures:[{type:'wood',x:900,y:450,w:200,h:20},{type:'wood',x:820,y:400,w:20,h:80},{type:'wood',x:980,y:400,w:20,h:80},{type:'wood',x:900,y:380,w:120,h:20},{type:'wood',x:850,y:320,w:20,h:100},{type:'wood',x:950,y:320,w:20,h:100},{type:'wood',x:900,y:280,w:80,h:20}],special:{explosive:0,heavy:0}},{id:5,balls:7,pirates:[{x:850,y:300},{x:1000,y:300}],structures:[{type:'wood',x:850,y:450,w:100,h:20},{type:'wood',x:850,y:380,w:20,h:100},{type:'wood',x:850,y:330,w:80,h:20},{type:'tnt',x:925,y:430,r:25},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:1000,y:330,w:80,h:20}],special:{explosive:0,heavy:0}},{id:6,balls:9,pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250},{x:900,y:350}],structures:[{type:'wood',x:900,y:450,w:250,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:900,y:380,w:20,h:100},{type:'wood',x:1000,y:380,w:20,h:100},{type:'wood',x:850,y:330,w:80,h:20},{type:'wood',x:950,y:330,w:80,h:20},{type:'wood',x:800,y:280,w:80,h:20},{type:'wood',x:900,y:280,w:80,h:20},{type:'wood',x:1000,y:280,w:80,h:20}],special:{explosive:0,heavy:0}},{id:7,balls:7,pirates:[{x:850,y:280},{x:950,y:280},{x:900,y:380}],structures:[{type:'wood',x:900,y:450,w:180,h:20},{type:'wood',x:830,y:400,w:20,h:80},{type:'wood',x:970,y:400,w:20,h:80},{type:'tnt',x:900,y:410,r:25},{type:'wood',x:850,y:350,w:20,h:100},{type:'wood',x:950,y:350,w:20,h:100},{type:'wood',x:900,y:310,w:80,h:20}],special:{explosive:1,heavy:0}},{id:8,balls:8,pirates:[{x:850,y:250},{x:950,y:250},{x:900,y:350}],structures:[{type:'stone',x:900,y:450,w:200,h:30},{type:'stone',x:820,y:400,w:30,h:80},{type:'stone',x:980,y:400,w:30,h:80},{type:'wood',x:900,y:380,w:120,h:20},{type:'wood',x:850,y:320,w:20,h:100},{type:'wood',x:950,y:320,w:20,h:100},{type:'wood',x:900,y:280,w:80,h:20}],special:{explosive:0,heavy:2}},{id:9,balls:9,pirates:[{x:800,y:230},{x:900,y:230},{x:1000,y:230},{x:900,y:330}],structures:[{type:'stone',x:900,y:450,w:250,h:30},{type:'stone',x:800,y:380,w:30,h:100},{type:'stone',x:1000,y:380,w:30,h:100},{type:'wood',x:900,y:360,w:150,h:20},{type:'wood',x:850,y:300,w:20,h:100},{type:'wood',x:950,y:300,w:20,h:100},{type:'wood',x:800,y:260,w:80,h:20},{type:'wood',x:900,y:260,w:80,h:20},{type:'wood',x:1000,y:260,w:80,h:20}],special:{explosive:1,heavy:0}},{id:10,balls:8,pirates:[{x:850,y:280},{x:950,y:280},{x:900,y:380}],structures:[{type:'stone',x:900,y:450,w:200,h:30},{type:'wood',x:830,y:400,w:20,h:80},{type:'wood',x:970,y:400,w:20,h:80},{type:'tnt',x:900,y:410,r:25},{type:'stone',x:850,y:350,w:30,h:100},{type:'stone',x:950,y:350,w:30,h:100},{type:'wood',x:900,y:310,w:80,h:20}],special:{explosive:1,heavy:1}},{id:11,balls:10,pirates:[{x:800,y:220},{x:900,y:220},{x:1000,y:220},{x:850,y:320},{x:950,y:320}],structures:[{type:'stone',x:900,y:450,w:280,h:30},{type:'stone',x:780,y:380,w:30,h:100},{type:'stone',x:1020,y:380,w:30,h:100},{type:'wood',x:850,y:350,w:20,h:80},{type:'wood',x:950,y:350,w:20,h:80},{type:'wood',x:800,y:290,w:20,h:100},{type:'wood',x:900,y:290,w:20,h:100},{type:'wood',x:1000,y:290,w:20,h:100},{type:'wood',x:800,y:250,w:80,h:20},{type:'wood',x:900,y:250,w:80,h:20},{type:'wood',x:1000,y:250,w:80,h:20}],special:{explosive:2,heavy:0}},{id:12,balls:11,pirates:[{x:800,y:200},{x:900,y:200},{x:1000,y:200},{x:850,y:300},{x:950,y:300}],structures:[{type:'stone',x:900,y:450,w:300,h:30},{type:'stone',x:770,y:370,w:30,h:130},{type:'stone',x:1030,y:370,w:30,h:130},{type:'stone',x:850,y:330,w:30,h:80},{type:'stone',x:950,y:330,w:30,h:80},{type:'wood',x:800,y:270,w:20,h:120},{type:'wood',x:900,y:270,w:20,h:120},{type:'wood',x:1000,y:270,w:20,h:120},{type:'wood',x:800,y:230,w:80,h:20},{type:'wood',x:900,y:230,w:80,h:20},{type:'wood',x:1000,y:230,w:80,h:20}],special:{explosive:0,heavy:3}},{id:13,balls:10,pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250},{x:900,y:350}],structures:[{type:'wood',x:800,y:450,w:100,h:20},{type:'wood',x:1000,y:450,w:100,h:20},{type:'wood',x:800,y:380,w:20,h:100},{type:'wood',x:1000,y:380,w:20,h:100},{type:'stone',x:900,y:380,w:30,h:100},{type:'wood',x:800,y:280,w:80,h:20},{type:'wood',x:900,y:280,w:80,h:20},{type:'wood',x:1000,y:280,w:80,h:20},{type:'tnt',x:850,y:410,r:25},{type:'tnt',x:950,y:410,r:25}],special:{explosive:1,heavy:1}},{id:14,balls:12,pirates:[{x:780,y:220},{x:860,y:220},{x:940,y:220},{x:1020,y:220},{x:900,y:320}],structures:[{type:'stone',x:900,y:450,w:300,h:30},{type:'wood',x:780,y:380,w:20,h:100},{type:'wood',x:860,y:380,w:20,h:100},{type:'wood',x:940,y:380,w:20,h:100},{type:'wood',x:1020,y:380,w:20,h:100},{type:'tnt',x:820,y:410,r:25},{type:'tnt',x:900,y:350,r:25},{type:'tnt',x:980,y:410,r:25},{type:'wood',x:780,y:250,w:60,h:20},{type:'wood',x:860,y:250,w:60,h:20},{type:'wood',x:940,y:250,w:60,h:20},{type:'wood',x:1020,y:250,w:60,h:20}],special:{explosive:3,heavy:0}},{id:15,balls:13,pirates:[{x:780,y:200},{x:860,y:200},{x:940,y:200},{x:1020,y:200},{x:820,y:300},{x:980,y:300}],structures:[{type:'stone',x:900,y:450,w:320,h:30},{type:'stone',x:760,y:360,w:30,h:150},{type:'stone',x:1040,y:360,w:30,h:150},{type:'stone',x:820,y:330,w:30,h:90},{type:'stone',x:980,y:330,w:30,h:90},{type:'wood',x:780,y:270,w:20,h:120},{type:'wood',x:860,y:270,w:20,h:120},{type:'wood',x:940,y:270,w:20,h:120},{type:'wood',x:1020,y:270,w:20,h:120},{type:'tnt',x:900,y:380,r:30},{type:'wood',x:780,y:230,w:60,h:20},{type:'wood',x:860,y:230,w:60,h:20},{type:'wood',x:940,y:230,w:60,h:20},{type:'wood',x:1020,y:230,w:60,h:20}],special:{explosive:2,heavy:2}}];
-let engine,world,canvas,ctx,currentLevel=1,ballsLeft=0,score=0,gameState='menu',cannon=null,cannonballs=[],pirates=[],structures=[],isAiming=false,aimStartTime=0,power=0,mousePos={x:0,y:0},selectedBallType='normal',specialBalls={explosive:0,heavy:0},progress={unlockedLevels:1,levelStars:Array(15).fill(0),levelScores:Array(15).fill(0),soundEnabled:true};
-function loadProgress(){const saved=localStorage.getItem('cannonClashProgress');if(saved)progress=JSON.parse(saved);}
-function saveProgress(){localStorage.setItem('cannonClashProgress',JSON.stringify(progress));}
-function initPhysics(){engine=Matter.Engine.create();world=engine.world;world.gravity.y=1;canvas=document.getElementById('gameCanvas');canvas.width=1200;canvas.height=600;ctx=canvas.getContext('2d');const ground=Matter.Bodies.rectangle(600,590,1200,20,{isStatic:true});Matter.World.add(world,ground);const leftWall=Matter.Bodies.rectangle(-10,300,20,600,{isStatic:true});const rightWall=Matter.Bodies.rectangle(1210,300,20,600,{isStatic:true});const ceiling=Matter.Bodies.rectangle(600,-10,1200,20,{isStatic:true});Matter.World.add(world,[leftWall,rightWall,ceiling]);cannon={x:100,y:500,angle:-Math.PI/4,length:60,width:20};}
-function createPirate(x,y){const body=Matter.Bodies.circle(x,y,20,{density:0.001,restitution:0.3,friction:0.5,label:'pirate'});Matter.World.add(world,body);pirates.push({body,alive:true});return body;}
-function createStructure(config){let body;if(config.type==='tnt'){body=Matter.Bodies.circle(config.x,config.y,config.r,{density:0.001,restitution:0.3,friction:0.5,label:'tnt'});}else{const density=config.type==='stone'?0.01:0.001;body=Matter.Bodies.rectangle(config.x,config.y,config.w,config.h,{density:density,restitution:0.2,friction:0.8,label:config.type});}Matter.World.add(world,body);structures.push({body,type:config.type,health:config.type==='stone'?3:1});return body;}
-function createCannonball(type){const angle=cannon.angle;const startX=cannon.x+Math.cos(angle)*cannon.length;const startY=cannon.y+Math.sin(angle)*cannon.length;let radius=15;let density=0.01;if(type==='heavy'){radius=18;density=0.05;}const body=Matter.Bodies.circle(startX,startY,radius,{density:density,restitution:0.4,friction:0.3,label:'cannonball'});const velocity={x:Math.cos(angle)*power*0.15,y:Math.sin(angle)*power*0.15};Matter.Body.setVelocity(body,velocity);Matter.World.add(world,body);cannonballs.push({body,type,exploded:false});if(progress.soundEnabled)playCannonSound();return body;}
-function explode(x,y,radius){const explosionRadius=radius||100;createExplosionEffect(x,y,explosionRadius);const allBodies=Matter.Composite.allBodies(world);allBodies.forEach(body=>{if(body.isStatic)return;const dist=Math.hypot(body.position.x-x,body.position.y-y);if(dist<explosionRadius){const force=(explosionRadius-dist)/explosionRadius*0.1;const angle=Math.atan2(body.position.y-y,body.position.x-x);Matter.Body.applyForce(body,body.position,{x:Math.cos(angle)*force,y:Math.sin(angle)*force});const structure=structures.find(s=>s.body===body);if(structure){structure.health-=2;if(structure.health<=0){Matter.World.remove(world,body);structures=structures.filter(s=>s.body!==body);}}const pirate=pirates.find(p=>p.body===body);if(pirate&&pirate.alive){pirate.alive=false;score+=100;updateHUD();}}});if(progress.soundEnabled)playExplosionSound();}
-function drawBackground(){const gradient=ctx.createLinearGradient(0,0,0,600);gradient.addColorStop(0,'#87CEEB');gradient.addColorStop(1,'#1E90FF');ctx.fillStyle=gradient;ctx.fillRect(0,0,1200,600);ctx.fillStyle='#1E90FF';ctx.beginPath();for(let x=0;x<1200;x+=20){const y=550+Math.sin(x*0.05+Date.now()*0.001)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.lineTo(1200,600);ctx.lineTo(0,600);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(255,255,255,0.6)';drawCloud(200,100,60);drawCloud(500,80,80);drawCloud(900,120,70);}
-function drawCloud(x,y,size){ctx.beginPath();ctx.arc(x,y,size*0.5,0,Math.PI*2);ctx.arc(x+size*0.4,y,size*0.4,0,Math.PI*2);ctx.arc(x-size*0.4,y,size*0.4,0,Math.PI*2);ctx.fill();}
-function drawCannon(){ctx.save();ctx.translate(cannon.x,cannon.y);ctx.rotate(cannon.angle);ctx.fillStyle='#2C2C2C';ctx.fillRect(0,-cannon.width/2,cannon.length,cannon.width);ctx.restore();ctx.fillStyle='#8B4513';ctx.beginPath();ctx.arc(cannon.x,cannon.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2C2C2C';ctx.beginPath();ctx.arc(cannon.x,cannon.y,15,0,Math.PI*2);ctx.fill();}
-function drawTrajectory(){if(!isAiming)return;const angle=cannon.angle;const startX=cannon.x+Math.cos(angle)*cannon.length;const startY=cannon.y+Math.sin(angle)*cannon.length;ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(startX,startY);let x=startX;let y=startY;let vx=Math.cos(angle)*power*0.15;let vy=Math.sin(angle)*power*0.15;for(let i=0;i<50;i++){x+=vx;y+=vy;vy+=1;ctx.lineTo(x,y);if(y>600)break;}ctx.stroke();ctx.setLineDash([]);}
-function drawPirate(pirate){if(!pirate.alive)return;const pos=pirate.body.position;ctx.fillStyle='#FFE4B5';ctx.beginPath();ctx.arc(pos.x,pos.y,20,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000000';ctx.beginPath();ctx.moveTo(pos.x-25,pos.y-20);ctx.lineTo(pos.x,pos.y-35);ctx.lineTo(pos.x+25,pos.y-20);ctx.closePath();ctx.fill();ctx.fillStyle='#000000';ctx.beginPath();ctx.arc(pos.x-8,pos.y-5,3,0,Math.PI*2);ctx.arc(pos.x+8,pos.y-5,3,0,Math.PI*2);ctx.fill();}
-function drawStructure(structure){const body=structure.body;const pos=body.position;ctx.save();ctx.translate(pos.x,pos.y);ctx.rotate(body.angle);if(structure.type==='tnt'){const radius=body.circleRadius;ctx.fillStyle='#8B4513';ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();ctx.fillStyle='#FF0000';ctx.font='bold 12px Poppins';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TNT',0,0);}else{const vertices=body.vertices;const width=Math.abs(vertices[1].x-vertices[0].x);const height=Math.abs(vertices[2].y-vertices[1].y);if(structure.type==='stone'){ctx.fillStyle='#696969';}else{ctx.fillStyle='#A0522D';}ctx.fillRect(-width/2,-height/2,width,height);if(structure.type==='wood'){ctx.strokeStyle='#8B4513';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-width/2,-height/4);ctx.lineTo(width/2,-height/4);ctx.moveTo(-width/2,height/4);ctx.lineTo(width/2,height/4);ctx.stroke();}}ctx.restore();}
-function drawCannonball(ball){const pos=ball.body.position;const radius=ball.body.circleRadius;if(ball.type==='explosive'){ctx.fillStyle='#FF4444';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#000000';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pos.x,pos.y-radius);ctx.lineTo(pos.x,pos.y-radius-10);ctx.stroke();}else if(ball.type==='heavy'){ctx.fillStyle='#808080';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.arc(pos.x-5,pos.y-5,5,0,Math.PI*2);ctx.fill();}else{ctx.fillStyle='#1A1A1A';ctx.beginPath();ctx.arc(pos.x,pos.y,radius,0,Math.PI*2);ctx.fill();}}
-function createExplosionEffect(x,y,radius){ctx.fillStyle='rgba(255,100,0,0.6)';ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,200,0,0.4)';ctx.beginPath();ctx.arc(x,y,radius*0.6,0,Math.PI*2);ctx.fill();}
-function render(){drawBackground();ctx.fillStyle='#8B4513';ctx.fillRect(0,580,1200,20);structures.forEach(drawStructure);pirates.forEach(drawPirate);cannonballs.forEach(drawCannonball);drawCannon();drawTrajectory();}
-function startLevel(levelNum){currentLevel=levelNum;const level=LEVELS[levelNum-1];cannonballs.forEach(ball=>Matter.World.remove(world,ball.body));pirates.forEach(pirate=>Matter.World.remove(world,pirate.body));structures.forEach(structure=>Matter.World.remove(world,structure.body));cannonballs=[];pirates=[];structures=[];ballsLeft=level.balls;score=0;specialBalls={...level.special};selectedBallType='normal';level.pirates.forEach(p=>createPirate(p.x,p.y));level.structures.forEach(s=>createStructure(s));updateHUD();updateBallSelector();document.getElementById('menu').classList.add('hidden');document.getElementById('powerBar').classList.add('show');document.getElementById('ballSelector').classList.add('show');gameState='playing';}
-function updateHUD(){document.getElementById('levelNum').textContent=currentLevel;document.getElementById('ballsLeft').textContent=ballsLeft;document.getElementById('score').textContent=score;}
-function updateBallSelector(){document.getElementById('explosiveCount').textContent=specialBalls.explosive;document.getElementById('heavyCount').textContent=specialBalls.heavy;const explosiveBtn=document.querySelector('[data-type="explosive"]');const heavyBtn=document.querySelector('[data-type="heavy"]');if(specialBalls.explosive>0){explosiveBtn.classList.remove('disabled');}else{explosiveBtn.classList.add('disabled');if(selectedBallType==='explosive')selectedBallType='normal';}if(specialBalls.heavy>0){heavyBtn.classList.remove('disabled');}else{heavyBtn.classList.add('disabled');if(selectedBallType==='heavy')selectedBallType='normal';}document.querySelectorAll('.ball-type').forEach(btn=>{btn.classList.remove('selected');if(btn.dataset.type===selectedBallType){btn.classList.add('selected');}});}
-function checkWinCondition(){const alivePirates=pirates.filter(p=>p.alive).length;if(alivePirates===0){gameState='win';showEndScreen(true);}else if(ballsLeft===0&&cannonballs.length===0){gameState='lose';showEndScreen(false);}}
-function showEndScreen(won){const endScreen=document.getElementById('endScreen');const endBox=document.getElementById('endBox');const endTitle=document.getElementById('endTitle');const endStars=document.getElementById('endStars');const endScore=document.getElementById('endScore');const endBalls=document.getElementById('endBalls');const nextBtn=document.getElementById('nextBtn');document.getElementById('powerBar').classList.remove('show');document.getElementById('ballSelector').classList.remove('show');if(won){const level=LEVELS[currentLevel-1];const usedBalls=level.balls-ballsLeft;const ballsPercent=usedBalls/level.balls;let stars=1;if(ballsPercent<=0.5)stars=3;else if(ballsPercent<=0.75)stars=2;if(currentLevel===progress.unlockedLevels&&currentLevel<15){progress.unlockedLevels++;}if(stars>progress.levelStars[currentLevel-1]){progress.levelStars[currentLevel-1]=stars;}if(score>progress.levelScores[currentLevel-1]){progress.levelScores[currentLevel-1]=score;}saveProgress();endBox.classList.remove('lose');endTitle.textContent='ПОБЕДА!';endStars.textContent='⭐'.repeat(stars);endScore.textContent=score;endBalls.textContent=usedBalls+' / '+level.balls;if(currentLevel<15){nextBtn.style.display='block';}else{nextBtn.style.display='none';}if(progress.soundEnabled)playVictorySound();}else{const level=LEVELS[currentLevel-1];endBox.classList.add('lose');endTitle.textContent='ПОРАЖЕНИЕ';endStars.textContent='';endScore.textContent=score;endBalls.textContent=level.balls+' / '+level.balls;nextBtn.style.display='none';if(progress.soundEnabled)playDefeatSound();}endScreen.classList.add('show');}
-function showMenu(){gameState='menu';document.getElementById('menu').classList.remove('hidden');document.getElementById('endScreen').classList.remove('show');document.getElementById('powerBar').classList.remove('show');document.getElementById('ballSelector').classList.remove('show');const levelGrid=document.getElementById('levelGrid');levelGrid.innerHTML='';for(let i=1;i<=15;i++){const btn=document.createElement('button');btn.className='level-btn';btn.textContent=i;if(i<=progress.unlockedLevels){btn.addEventListener('click',()=>startLevel(i));const stars=progress.levelStars[i-1];if(stars>0){const starsDiv=document.createElement('div');starsDiv.className='level-stars';starsDiv.textContent='⭐'.repeat(stars);btn.appendChild(starsDiv);}}
-canvas.addEventListener('mousemove',(e)=>{const rect=canvas.getBoundingClientRect();mousePos.x=e.clientX-rect.left;mousePos.y=e.clientY-rect.top;if(gameState==='playing'){const dx=mousePos.x-cannon.x;const dy=mousePos.y-cannon.y;cannon.angle=Math.atan2(dy,dx);if(cannon.angle>0)cannon.angle=0;if(cannon.angle<-Math.PI/2)cannon.angle=-Math.PI/2;}});
-canvas.addEventListener('mousedown',(e)=>{if(gameState==='playing'&&ballsLeft>0){isAiming=true;aimStartTime=Date.now();power=0;}});
-canvas.addEventListener('mouseup',(e)=>{if(gameState==='playing'&&isAiming&&ballsLeft>0){isAiming=false;createCannonball(selectedBallType);ballsLeft--;if(selectedBallType==='explosive'){specialBalls.explosive--;}else if(selectedBallType==='heavy'){specialBalls.heavy--;}updateHUD();updateBallSelector();power=0;document.getElementById('powerFill').style.height='0%';}});
-document.querySelectorAll('.ball-type').forEach(btn=>{btn.addEventListener('click',()=>{if(!btn.classList.contains('disabled')){selectedBallType=btn.dataset.type;updateBallSelector();}});});
-document.getElementById('retryBtn').addEventListener('click',()=>{document.getElementById('endScreen').classList.remove('show');startLevel(currentLevel);});
-document.getElementById('menuBtn').addEventListener('click',()=>{showMenu();});
-document.getElementById('nextBtn').addEventListener('click',()=>{document.getElementById('endScreen').classList.remove('show');startLevel(currentLevel+1);});
-function gameLoop(){if(gameState==='playing'){Matter.Engine.update(engine,1000/60);if(isAiming){const elapsed=Date.now()-aimStartTime;power=Math.min(elapsed/10,100);document.getElementById('powerFill').style.height=power+'%';}cannonballs.forEach((ball,index)=>{const pos=ball.body.position;const vel=ball.body.velocity;if(pos.y>650||pos.x<-50||pos.x>1250){Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();return;}if(Math.abs(vel.x)<0.1&&Math.abs(vel.y)<0.1&&pos.y>500){Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();return;}if(ball.type==='explosive'&&!ball.exploded){const collisions=Matter.Query.collides(ball.body,Matter.Composite.allBodies(world));if(collisions.length>1){ball.exploded=true;explode(pos.x,pos.y,100);Matter.World.remove(world,ball.body);cannonballs.splice(index,1);checkWinCondition();}}});pirates.forEach(pirate=>{if(!pirate.alive)return;const vel=pirate.body.velocity;const speed=Math.sqrt(vel.x*vel.x+vel.y*vel.y);if(speed>5){pirate.alive=false;score+=100;updateHUD();setTimeout(()=>{Matter.World.remove(world,pirate.body);},1000);}});structures.forEach((structure,index)=>{const vel=structure.body.velocity;const speed=Math.sqrt(vel.x*vel.x+vel.y*vel.y);if(speed>8){structure.health--;if(structure.health<=0){if(structure.type==='tnt'){explode(structure.body.position.x,structure.body.position.y,120);}Matter.World.remove(world,structure.body);structures.splice(index,1);score+=10;updateHUD();}}});}render();requestAnimationFrame(gameLoop);}
-let audioCtx=null;
-function getAudioContext(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}return audioCtx;}
-function playCannonSound(){try{const ctx=getAudioContext();const t=ctx.currentTime;const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.setValueAtTime(100,t);osc.frequency.exponentialRampToValueAtTime(50,t+0.2);gain.gain.setValueAtTime(0.3,t);gain.gain.exponentialRampToValueAtTime(0.01,t+0.2);osc.start(t);osc.stop(t+0.2);}catch(e){}}
-function playExplosionSound(){try{const ctx=getAudioContext();const t=ctx.currentTime;const bufferSize=ctx.sampleRate*0.1;const buffer=ctx.createBuffer(1,bufferSize,ctx.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<bufferSize;i++){data[i]=(Math.random()*2-1)*Math.pow(1-i/bufferSize,3);}const source=ctx.createBufferSource();const gain=ctx.createGain();source.buffer=buffer;source.connect(gain);gain.connect(ctx.destination);gain.gain.setValueAtTime(0.4,t);gain.gain.exponentialRampToValueAtTime(0.01,t+0.1);source.start(t);}catch(e){}}
-function playVictorySound(){try{const ctx=getAudioContext();const t=ctx.currentTime;[400,500,600,800].forEach((freq,i)=>{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=freq;gain.gain.setValueAtTime(0.1,t+i*0.1);gain.gain.exponentialRampToValueAtTime(0.01,t+i*0.1+0.2);osc.start(t+i*0.1);osc.stop(t+i*0.1+0.2);});}catch(e){}}
-function playDefeatSound(){try{const ctx=getAudioContext();const t=ctx.currentTime;[400,350,300,250].forEach((freq,i)=>{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=freq;gain.gain.setValueAtTime(0.1,t+i*0.15);gain.gain.exponentialRampToValueAtTime(0.01,t+i*0.15+0.3);osc.start(t+i*0.15);osc.stop(t+i*0.15+0.3);});}catch(e){}}
-loadProgress();initPhysics();showMenu();gameLoop();else{btn.classList.add('locked');btn.textContent='🔒';}levelGrid.appendChild(btn);}}
-</script>
+</div>
+</div>
+
+<div class="container">
+<div class="content-wrapper">
+<div class="row">
+<div class="col-md-6">
+<h5 class="highlight-text">Как играть:</h5>
+<p>Стреляй из пушки по пиратам! Используй мышь для прицеливания, зажми и отпусти для выстрела. Сбей всех пиратов, чтобы пройти уровень!</p>
+</div>
+<div class="col-md-6">
+<div class="widget">
+<h4 class="widget-title">Популярные игры</h4>
+<div class="row gamelist-widget">
+<div class="col-2 list-grid"><a title="Slope" href="slope.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/slope.webp" class="small-thumb img-rounded" alt="Slope"></div></div></a></div>
+<div class="col-2 list-grid"><a title="Retro Bowl" href="retro-bowl.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/retro-bowl.webp" class="small-thumb img-rounded" alt="Retro Bowl"></div></div></a></div>
+<div class="col-2 list-grid"><a title="Awesome Tanks" href="awesome-tanks-2.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/awesome-tanks-2.webp" class="small-thumb img-rounded" alt="Awesome Tanks"></div></div></a></div>
+<div class="col-2 list-grid"><a title="Drift Hunters" href="drift-hunters.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/drift-hunters.webp" class="small-thumb img-rounded" alt="Drift Hunters"></div></div></a></div>
+<div class="col-2 list-grid"><a title="Rooftop Snipers" href="rooftop-snipers.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/rooftop-snipers.webp" class="small-thumb img-rounded" alt="Rooftop Snipers"></div></div></a></div>
+<div class="col-2 list-grid"><a title="Raft Wars" href="raft-wars.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/raft-wars.webp" class="small-thumb img-rounded" alt="Raft Wars"></div></div></a></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="container"><div class="border-line mt-4"></div></div>
+<div class="footer-copyright py-4">
+<div class="container">aqulroa Games &copy; 2026</div>
+</div>
+
+<script src="../assets/js/jquery-3.6.2.min.js"></script>
+<script src="../assets/js/bootstrap.min.js"></script>
+<script src="../assets/js/script.js"></script>
 </body>
 </html>
