@@ -1,0 +1,471 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEAD SHOT - A Pirate's Revenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Cinzel', serif; overflow: hidden; background: #0a0e1a; color: #fff; }
+#bg-canvas, #game-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+#bg-canvas { z-index: 0; }
+#game-canvas { z-index: 1; }
+.ui-overlay { position: fixed; z-index: 100; pointer-events: none; }
+.ui-overlay * { pointer-events: auto; }
+#hud { top: 20px; left: 20px; right: 20px; display: none; justify-content: space-between; }
+#hud.active { display: flex; }
+.hud-item { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 10px; border: 2px solid rgba(255,200,100,0.5); font-size: 18px; }
+.hud-score { font-size: 32px; font-weight: 700; color: #ffd700; }
+#main-menu { top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; }
+#main-menu.hidden { display: none; }
+.game-title { font-family: 'Pirata One', cursive; font-size: 96px; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.8); animation: shimmer 3s ease-in-out infinite; }
+@keyframes shimmer { 0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.8); } 50% { text-shadow: 0 0 40px rgba(255,215,0,1); } }
+.subtitle { font-size: 24px; font-style: italic; color: #ccc; margin-top: -20px; }
+.btn { font-size: 24px; padding: 20px 60px; background: linear-gradient(135deg, #d4a574, #8b6f47); border: 3px solid #ffd700; border-radius: 15px; color: #fff; cursor: pointer; transition: all 0.3s; }
+.btn:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(255,215,0,0.4); }
+#level-select { top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+#level-select.active { display: flex; }
+.level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.level-btn { width: 100px; height: 100px; background: linear-gradient(135deg, #2c3e50, #34495e); border: 3px solid #ffd700; border-radius: 15px; font-size: 32px; color: #fff; cursor: pointer; transition: all 0.3s; }
+.level-btn:hover:not(.locked) { transform: translateY(-5px); }
+.level-btn.locked { opacity: 0.4; cursor: not-allowed; }
+#level-complete, #level-failed { top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+#level-complete.active, #level-failed.active { display: flex; }
+.result-title { font-family: 'Pirata One', cursive; font-size: 72px; color: #ffd700; }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<canvas id="game-canvas"></canvas>
+
+<div id="hud" class="ui-overlay">
+<div class="hud-item"><span id="level-name">Level 1</span></div>
+<div class="hud-item"><span class="hud-score" id="score">0</span></div>
+<div class="hud-item"><span id="balls-left">5</span> cannonballs</div>
+</div>
+
+<div id="main-menu" class="ui-overlay">
+<h1 class="game-title">DEAD SHOT</h1>
+<p class="subtitle">A Pirate's Revenge</p>
+<button class="btn" onclick="showLevelSelect()">FIRE THE CANNONS!</button>
+</div>
+
+<div id="level-select" class="ui-overlay">
+<h2 class="game-title" style="font-size: 48px;">Choose Yer Battle</h2>
+<div class="level-grid" id="level-grid"></div>
+<button class="btn" onclick="showMainMenu()">Back to Port</button>
+</div>
+
+<div id="level-complete" class="ui-overlay">
+<h2 class="result-title">Victory!</h2>
+<p class="subtitle">The seas claim another fortress!</p>
+<div style="font-size: 24px;">Score: <span id="final-score">0</span></div>
+<div>
+<button class="btn" onclick="nextLevel()">Next Battle</button>
+<button class="btn" onclick="replayLevel()">Fight Again</button>
+</div>
+</div>
+
+<div id="level-failed" class="ui-overlay">
+<h2 class="result-title">Defeat!</h2>
+<p class="subtitle">Yer ammo be spent, matey.</p>
+<div>
+<button class="btn" onclick="replayLevel()">Try Again</button>
+<button class="btn" onclick="showLevelSelect()">Choose Another</button>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// DEAD SHOT - Full Game Implementation
+const WORLD_WIDTH = 3200;
+const WORLD_HEIGHT = 720;
+
+// Level Definitions
+const LEVELS = [
+  {id:1, name:"Beach Assault", balls:3, pirates:[{x:900,y:400}], structures:[{type:'wood',x:900,y:450,w:100,h:20}]},
+  {id:2, name:"Wooden Tower", balls:3, pirates:[{x:850,y:350},{x:950,y:350}], structures:[{type:'wood',x:900,y:450,w:150,h:20},{type:'wood',x:850,y:400,w:20,h:80},{type:'wood',x:950,y:400,w:20,h:80}]},
+  {id:3, name:"Triple Threat", balls:4, pirates:[{x:800,y:300},{x:900,y:300},{x:1000,y:300}], structures:[{type:'wood',x:800,y:450,w:100,h:20},{type:'wood',x:900,y:450,w:100,h:20},{type:'wood',x:1000,y:450,w:100,h:20}]},
+  {id:4, name:"Bomb Introduction", balls:4, pirates:[{x:850,y:250},{x:950,y:250}], structures:[{type:'wood',x:900,y:450,w:200,h:20},{type:'wood',x:850,y:380,w:20,h:100},{type:'wood',x:950,y:380,w:20,h:100}]},
+  {id:5, name:"Stone Wall", balls:4, pirates:[{x:850,y:300},{x:950,y:300}], structures:[{type:'stone',x:900,y:450,w:200,h:30},{type:'wood',x:850,y:350,w:80,h:20},{type:'wood',x:950,y:350,w:80,h:20}]},
+  {id:6, name:"Port Defense", balls:5, pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250}], structures:[{type:'stone',x:900,y:450,w:250,h:30},{type:'wood',x:800,y:350,w:20,h:100},{type:'wood',x:1000,y:350,w:20,h:100}]},
+  {id:7, name:"Chain Shot", balls:5, pirates:[{x:850,y:280},{x:950,y:280},{x:900,y:380}], structures:[{type:'wood',x:900,y:450,w:180,h:20},{type:'stone',x:850,y:380,w:30,h:100},{type:'stone',x:950,y:380,w:30,h:100}]},
+  {id:8, name:"Cannoneer", balls:5, pirates:[{x:800,y:250},{x:900,y:250},{x:1000,y:250}], structures:[{type:'stone',x:900,y:450,w:250,h:30},{type:'stone',x:800,y:360,w:30,h:120},{type:'stone',x:1000,y:360,w:30,h:120}]},
+  {id:9, name:"Skull Fortress", balls:5, pirates:[{x:850,y:200},{x:950,y:200},{x:900,y:300}], structures:[{type:'stone',x:900,y:450,w:220,h:30},{type:'stone',x:850,y:350,w:30,h:120},{type:'stone',x:950,y:350,w:30,h:120}]},
+  {id:10, name:"Complex Fort", balls:6, pirates:[{x:800,y:200},{x:900,y:200},{x:1000,y:200},{x:900,y:350}], structures:[{type:'stone',x:900,y:450,w:280,h:30},{type:'stone',x:800,y:350,w:30,h:130},{type:'stone',x:1000,y:350,w:30,h:130}]},
+  {id:11, name:"Ghost Skull", balls:6, pirates:[{x:850,y:220},{x:950,y:220},{x:900,y:320}], structures:[{type:'stone',x:900,y:450,w:250,h:30},{type:'stone',x:850,y:360,w:30,h:120},{type:'stone',x:950,y:360,w:30,h:120}]},
+  {id:12, name:"Final Battle", balls:7, pirates:[{x:800,y:200},{x:900,y:200},{x:1000,y:200},{x:850,y:300},{x:950,y:300}], structures:[{type:'stone',x:900,y:450,w:300,h:30},{type:'stone',x:780,y:350,w:30,h:130},{type:'stone',x:1020,y:350,w:30,h:130}]}
+];
+
+let gameState = {
+  currentLevel: 0,
+  score: 0,
+  ballsLeft: 0,
+  phase: 'menu',
+  unlockedLevels: 1
+};
+
+let engine, world, canvas, ctx, bgCanvas, bgCtx;
+let cannon, cannonballs = [], pirates = [], structures = [];
+let isDragging = false, dragStart = {x:0,y:0}, dragCurrent = {x:0,y:0};
+let camera = {x:0, y:0, targetX:0, shake:0};
+
+function init() {
+  canvas = document.getElementById('game-canvas');
+  ctx = canvas.getContext('2d');
+  bgCanvas = document.getElementById('bg-canvas');
+  bgCtx = bgCanvas.getContext('2d');
+  
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mouseup', onMouseUp);
+  canvas.addEventListener('touchstart', e => onMouseDown(e.touches[0]));
+  canvas.addEventListener('touchmove', e => onMouseMove(e.touches[0]));
+  canvas.addEventListener('touchend', onMouseUp);
+  
+  renderLevelGrid();
+  drawBackground();
+  gameLoop();
+}
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+  drawBackground();
+}
+
+function drawBackground() {
+  const gradient = bgCtx.createLinearGradient(0, 0, 0, bgCanvas.height);
+  gradient.addColorStop(0, '#1a2332');
+  gradient.addColorStop(0.5, '#2c4563');
+  gradient.addColorStop(1, '#1e3a5f');
+  bgCtx.fillStyle = gradient;
+  bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+  
+  // Simple ocean waves
+  bgCtx.fillStyle = 'rgba(30, 58, 95, 0.5)';
+  for(let i = 0; i < 5; i++) {
+    bgCtx.beginPath();
+    bgCtx.ellipse(bgCanvas.width * (i/5), bgCanvas.height * 0.8, 200, 30, 0, 0, Math.PI * 2);
+    bgCtx.fill();
+  }
+}
+
+function showMainMenu() {
+  gameState.phase = 'menu';
+  document.getElementById('main-menu').classList.remove('hidden');
+  document.getElementById('level-select').classList.remove('active');
+  document.getElementById('hud').classList.remove('active');
+}
+
+function showLevelSelect() {
+  gameState.phase = 'select';
+  document.getElementById('main-menu').classList.add('hidden');
+  document.getElementById('level-select').classList.add('active');
+}
+
+function renderLevelGrid() {
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lvl, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    btn.textContent = lvl.id;
+    if(lvl.id <= gameState.unlockedLevels) {
+      btn.onclick = () => startLevel(idx);
+    } else {
+      btn.classList.add('locked');
+    }
+    grid.appendChild(btn);
+  });
+}
+
+function startLevel(levelIndex) {
+  gameState.currentLevel = levelIndex;
+  const level = LEVELS[levelIndex];
+  gameState.ballsLeft = level.balls;
+  gameState.score = 0;
+  
+  document.getElementById('level-select').classList.remove('active');
+  document.getElementById('hud').classList.add('active');
+  document.getElementById('level-name').textContent = level.name;
+  document.getElementById('score').textContent = '0';
+  document.getElementById('balls-left').textContent = level.balls;
+  
+  initPhysics(level);
+  gameState.phase = 'playing';
+}
+
+function initPhysics(level) {
+  if(engine) Matter.Engine.clear(engine);
+  engine = Matter.Engine.create();
+  world = engine.world;
+  world.gravity.y = 1.2;
+  
+  cannonballs = [];
+  pirates = [];
+  structures = [];
+  camera = {x:0, y:0, targetX:0, shake:0};
+  
+  const ground = Matter.Bodies.rectangle(WORLD_WIDTH/2, WORLD_HEIGHT-10, WORLD_WIDTH, 20, {isStatic:true, label:'ground'});
+  Matter.World.add(world, ground);
+  
+  cannon = {x:150, y:WORLD_HEIGHT-100, angle:0, length:60};
+  
+  level.structures.forEach(s => {
+    const density = s.type === 'stone' ? 0.003 : 0.001;
+    const body = Matter.Bodies.rectangle(s.x, s.y, s.w, s.h, {
+      density, restitution:0.3, friction:0.5, label:s.type
+    });
+    structures.push(body);
+    Matter.World.add(world, body);
+  });
+  
+  level.pirates.forEach(p => {
+    const body = Matter.Bodies.circle(p.x, p.y, 20, {
+      density:0.0008, restitution:0.4, friction:0.3, label:'pirate'
+    });
+    pirates.push(body);
+    Matter.World.add(world, body);
+  });
+  
+  Matter.Events.on(engine, 'collisionStart', handleCollision);
+}
+
+function handleCollision(event) {
+  event.pairs.forEach(pair => {
+    const {bodyA, bodyB} = pair;
+    if((bodyA.label === 'cannonball' || bodyB.label === 'cannonball') && 
+       (bodyA.label === 'pirate' || bodyB.label === 'pirate')) {
+      const pirate = bodyA.label === 'pirate' ? bodyA : bodyB;
+      removePirate(pirate);
+    }
+  });
+}
+
+function removePirate(pirate) {
+  Matter.World.remove(world, pirate);
+  pirates = pirates.filter(p => p !== pirate);
+  gameState.score += 1000;
+  document.getElementById('score').textContent = gameState.score;
+  
+  if(pirates.length === 0) {
+    setTimeout(() => levelComplete(), 1000);
+  }
+}
+
+function onMouseDown(e) {
+  if(gameState.phase !== 'playing' || gameState.ballsLeft <= 0) return;
+  const rect = canvas.getBoundingClientRect();
+  dragStart = {x: e.clientX - rect.left, y: e.clientY - rect.top};
+  isDragging = true;
+}
+
+function onMouseMove(e) {
+  if(!isDragging) return;
+  const rect = canvas.getBoundingClientRect();
+  dragCurrent = {x: e.clientX - rect.left, y: e.clientY - rect.top};
+}
+
+function onMouseUp() {
+  if(!isDragging || gameState.phase !== 'playing') return;
+  isDragging = false;
+  
+  const dx = dragStart.x - dragCurrent.x;
+  const dy = dragStart.y - dragCurrent.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  
+  if(dist > 20) {
+    fireCannon(dx * 0.28, dy * 0.28);
+  }
+}
+
+function fireCannon(vx, vy) {
+  const angle = Math.atan2(vy, vx);
+  const startX = cannon.x + Math.cos(angle) * cannon.length;
+  const startY = cannon.y + Math.sin(angle) * cannon.length;
+  
+  const ball = Matter.Bodies.circle(startX, startY, 15, {
+    density:0.01, restitution:0.4, friction:0.3, label:'cannonball'
+  });
+  Matter.Body.setVelocity(ball, {x:vx, y:vy});
+  cannonballs.push(ball);
+  Matter.World.add(world, ball);
+  
+  gameState.ballsLeft--;
+  document.getElementById('balls-left').textContent = gameState.ballsLeft;
+  
+  camera.targetX = ball.position.x - canvas.width/2;
+  
+  if(gameState.ballsLeft === 0 && pirates.length > 0) {
+    setTimeout(() => levelFailed(), 3000);
+  }
+}
+
+function levelComplete() {
+  gameState.phase = 'complete';
+  document.getElementById('hud').classList.remove('active');
+  document.getElementById('final-score').textContent = gameState.score;
+  document.getElementById('level-complete').classList.add('active');
+  
+  if(gameState.currentLevel + 1 < LEVELS.length) {
+    gameState.unlockedLevels = Math.max(gameState.unlockedLevels, gameState.currentLevel + 2);
+  }
+}
+
+function levelFailed() {
+  if(gameState.phase !== 'playing') return;
+  gameState.phase = 'failed';
+  document.getElementById('hud').classList.remove('active');
+  document.getElementById('level-failed').classList.add('active');
+}
+
+function nextLevel() {
+  document.getElementById('level-complete').classList.remove('active');
+  if(gameState.currentLevel + 1 < LEVELS.length) {
+    startLevel(gameState.currentLevel + 1);
+  } else {
+    showLevelSelect();
+  }
+}
+
+function replayLevel() {
+  document.getElementById('level-complete').classList.remove('active');
+  document.getElementById('level-failed').classList.remove('active');
+  startLevel(gameState.currentLevel);
+}
+
+function gameLoop() {
+  if(gameState.phase === 'playing' && engine) {
+    Matter.Engine.update(engine, 1000/60);
+    
+    // Camera follow
+    camera.x += (camera.targetX - camera.x) * 0.08;
+    camera.x = Math.max(0, Math.min(camera.x, WORLD_WIDTH - canvas.width));
+    
+    // Remove off-screen cannonballs
+    cannonballs = cannonballs.filter(ball => {
+      if(ball.position.y > WORLD_HEIGHT + 100) {
+        Matter.World.remove(world, ball);
+        return false;
+      }
+      return true;
+    });
+  }
+  
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  if(gameState.phase === 'playing') {
+    ctx.save();
+    ctx.translate(-camera.x, 0);
+    
+    // Ground
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(0, WORLD_HEIGHT-20, WORLD_WIDTH, 20);
+    
+    // Structures
+    structures.forEach(body => {
+      ctx.save();
+      ctx.translate(body.position.x, body.position.y);
+      ctx.rotate(body.angle);
+      ctx.fillStyle = body.label === 'stone' ? '#7F8C8D' : '#D2691E';
+      const verts = body.vertices;
+      const w = Math.abs(verts[1].x - verts[0].x);
+      const h = Math.abs(verts[2].y - verts[1].y);
+      ctx.fillRect(-w/2, -h/2, w, h);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-w/2, -h/2, w, h);
+      ctx.restore();
+    });
+    
+    // Pirates
+    pirates.forEach(body => {
+      ctx.save();
+      ctx.translate(body.position.x, body.position.y);
+      ctx.fillStyle = '#FF6B6B';
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(-7, -5, 3, 0, Math.PI*2);
+      ctx.arc(7, -5, 3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    });
+    
+    // Cannonballs
+    cannonballs.forEach(body => {
+      ctx.save();
+      ctx.translate(body.position.x, body.position.y);
+      ctx.fillStyle = '#1A1A1A';
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    });
+    
+    // Cannon
+    ctx.save();
+    ctx.translate(cannon.x, cannon.y);
+    if(isDragging) {
+      const dx = dragCurrent.x + camera.x - cannon.x;
+      const dy = dragCurrent.y - cannon.y;
+      cannon.angle = Math.atan2(dy, dx);
+    }
+    ctx.rotate(cannon.angle);
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillRect(0, -15, cannon.length, 30);
+    ctx.fillStyle = '#34495E';
+    ctx.beginPath();
+    ctx.arc(0, 0, 25, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
+    
+    // Trajectory preview
+    if(isDragging) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5,5]);
+      ctx.beginPath();
+      ctx.moveTo(cannon.x, cannon.y);
+      const dx = (dragStart.x - dragCurrent.x) * 0.28;
+      const dy = (dragStart.y - dragCurrent.y) * 0.28;
+      let x = cannon.x, y = cannon.y;
+      for(let i=0; i<50; i++) {
+        x += dx * 0.1;
+        y += dy * 0.1 + i * 0.12;
+        ctx.lineTo(x, y);
+        if(y > WORLD_HEIGHT) break;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    ctx.restore();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
