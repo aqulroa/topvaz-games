@@ -251,6 +251,10 @@
 <script type="module">
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import * as CANNON from 'cannon-es';
 
 // --- CONFIG ---
@@ -295,7 +299,7 @@ const SaveManager = {
 };
 
 // --- GLOBALS ---
-let scene, camera, renderer, world, controls;
+let scene, camera, renderer, world, controls, composer;
 let clock = new THREE.Clock();
 let playerBody;
 let entities = []; // Syncs Physics -> Three
@@ -319,6 +323,19 @@ let spawnZ = -50;
 let lastTruckSpawnZ = 0;
 const BASE_FOV = 80;
 const MAX_FOV = 100;
+
+// Flow State System
+let flowMultiplier = 1.0;
+let flowTimer = 0;
+let lastGroundedTime = 0;
+let airTime = 0;
+let nearMissCount = 0;
+
+// Camera Shake System
+let shakeIntensity = 0;
+let shakeDecay = 5.0;
+let shakeOffsetX = 0;
+let shakeOffsetY = 0;
 
 // Pre-allocated temp objects to avoid GC pressure
 const _tmpVec3 = new THREE.Vector3();
@@ -348,15 +365,15 @@ class ThemeManager {
     getTheme(biome) {
         const themes = {
             urban: {
-                sky: 0x2a2a3a,
-                fog: 0x2a2a3a,
-                fogDensity: 0.004,
-                ground: 0x333333,
-                wallColor: 0x444455,
+                sky: 0x87CEEB,
+                fog: 0x87CEEB,
+                fogDensity: 0.002,
+                ground: 0x444444,
+                wallColor: 0x667788,
                 wallAccent: 0x556677,
-                ambient: 0x6666aa,
-                dirLight: 0xeeeeff,
-                fillLight: 0x4444aa,
+                ambient: 0xccccff,
+                dirLight: 0xffffff,
+                fillLight: 0x8899bb,
                 frictionMod: 1.0
             },
             desert: {
@@ -381,7 +398,7 @@ class ThemeManager {
                 ambient: 0xaaccff,
                 dirLight: 0xeef0ff,
                 fillLight: 0x8899cc,
-                frictionMod: 0.9 // 10% less friction = slippery
+                frictionMod: 0.9
             }
         };
         return themes[biome] || themes.urban;
@@ -399,33 +416,164 @@ class ThemeManager {
         this._decoGroup = new THREE.Group();
         scene.add(this._decoGroup);
         if(biome === 'urban') {
-            // Neon street lights - reduced count, NO point lights for perf
-            const neonColors = [0xff0066, 0x00ffcc, 0xff6600, 0x6600ff];
-            const poleGeo = new THREE.BoxGeometry(0.3, 12, 0.3);
-            const poleMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-            const lightGeo = new THREE.BoxGeometry(3, 0.3, 0.3);
+            // === REALISTIC CITY (OPTIMIZED) ===
+            // Shared materials (reuse across all objects)
+            const markingMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
+            const curbMat = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+            const poleMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+            const lampMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
+            const roofMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+            
+            // --- Road markings (merged into fewer long meshes) ---
+            // Center dashed line — use fewer, longer segments
+            for(let i = 0; i < 30; i++) {
+                const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 4), markingMat);
+                dash.rotation.x = -Math.PI / 2;
+                dash.position.set(0, LAVA_Y - 0.44, 50 - i * 120);
+                this._decoGroup.add(dash);
+            }
+            // Solid edge lines — use long merged strips
             for(let i = 0; i < 15; i++) {
-                const side = i % 2 === 0 ? 1 : -1;
-                const zPos = 50 - i * 240;
-                const pole = new THREE.Mesh(poleGeo, poleMat);
-                pole.position.set(side * 25, 6, zPos);
-                this._decoGroup.add(pole);
-                const neonColor = neonColors[i % neonColors.length];
-                const lightMat = new THREE.MeshBasicMaterial({ color: neonColor });
-                const light = new THREE.Mesh(lightGeo, lightMat);
-                light.position.set(side * 24, 12, zPos);
-                this._decoGroup.add(light);
+                for(const side of [-1, 1]) {
+                    const edge = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 200), markingMat);
+                    edge.rotation.x = -Math.PI / 2;
+                    edge.position.set(side * 14, LAVA_Y - 0.44, 50 - i * 200);
+                    this._decoGroup.add(edge);
+                }
             }
-            // Skyscraper silhouettes - reduced count
-            const bldgMat = new THREE.MeshLambertMaterial({ color: 0x222233 });
+            
+            // --- Sidewalks (merged into longer segments) ---
             for(let i = 0; i < 12; i++) {
-                const side = i % 2 === 0 ? 1 : -1;
-                const h = 80 + Math.random() * 120;
-                const geo = new THREE.BoxGeometry(20 + Math.random()*20, h, 20 + Math.random()*20);
-                const m = new THREE.Mesh(geo, bldgMat);
-                m.position.set(side * (60 + Math.random()*40), h/2, 100 - i * 300);
-                this._decoGroup.add(m);
+                for(const side of [-1, 1]) {
+                    const curb = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 250), curbMat);
+                    curb.position.set(side * 16, 0.15, 50 - i * 250);
+                    this._decoGroup.add(curb);
+                    const sw = new THREE.Mesh(new THREE.BoxGeometry(6, 0.15, 250), sidewalkMat);
+                    sw.position.set(side * 19.5, 0.08, 50 - i * 250);
+                    this._decoGroup.add(sw);
+                }
             }
+            
+            // --- City buildings with INSTANCED windows ---
+            const buildingColors = [0xccbbaa, 0xbb9977, 0x998877, 0xddccbb, 0xaa8866, 0xc4b09a, 0x8899aa, 0xbbaacc, 0xd4c4a8];
+            const winGeo = new THREE.PlaneGeometry(1.5, 2.0);
+            
+            // Collect all window transforms first, then batch
+            const litWinPositions = [];
+            const darkWinPositions = [];
+            const litWinRotations = [];
+            const darkWinRotations = [];
+            
+            for(let i = 0; i < 28; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const h = 25 + Math.random() * 80;
+                const w = 10 + Math.random() * 18;
+                const d = 10 + Math.random() * 15;
+                const bColor = buildingColors[Math.floor(Math.random() * buildingColors.length)];
+                const bldgMat = new THREE.MeshLambertMaterial({ color: bColor });
+                const bldg = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), bldgMat);
+                const xPos = side * (24 + Math.random() * 40);
+                const zPos = 100 - i * 210;
+                bldg.position.set(xPos, h / 2, zPos);
+                this._decoGroup.add(bldg);
+                
+                const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.5, 0.4, d + 0.5), roofMat);
+                roof.position.set(xPos, h + 0.2, zPos);
+                this._decoGroup.add(roof);
+                
+                // Collect window positions for instancing
+                const winRows = Math.floor(h / 5);
+                const winCols = Math.floor(w / 3.5);
+                const faceSide = side > 0 ? -1 : 1;
+                const rotY = faceSide > 0 ? Math.PI / 2 : -Math.PI / 2;
+                
+                for(let r = 0; r < winRows; r++) {
+                    for(let c = 0; c < winCols; c++) {
+                        const wx = xPos + faceSide * (w / 2 + 0.05);
+                        const wy = 3 + r * 5;
+                        const wz = zPos - (winCols / 2) * 3.5 + c * 3.5 + 1.75;
+                        if(Math.random() > 0.3) {
+                            litWinPositions.push(wx, wy, wz);
+                            litWinRotations.push(rotY);
+                        } else {
+                            darkWinPositions.push(wx, wy, wz);
+                            darkWinRotations.push(rotY);
+                        }
+                    }
+                }
+            }
+            
+            // Create InstancedMesh for lit windows (single draw call!)
+            if(litWinPositions.length > 0) {
+                const litMat = new THREE.MeshBasicMaterial({ color: 0xddeeff });
+                const litMesh = new THREE.InstancedMesh(winGeo, litMat, litWinPositions.length / 3);
+                const dummy = new THREE.Object3D();
+                for(let i = 0; i < litWinPositions.length / 3; i++) {
+                    dummy.position.set(litWinPositions[i*3], litWinPositions[i*3+1], litWinPositions[i*3+2]);
+                    dummy.rotation.set(0, litWinRotations[i], 0);
+                    dummy.updateMatrix();
+                    litMesh.setMatrixAt(i, dummy.matrix);
+                }
+                litMesh.instanceMatrix.needsUpdate = true;
+                this._decoGroup.add(litMesh);
+            }
+            // Dark windows
+            if(darkWinPositions.length > 0) {
+                const darkMat = new THREE.MeshBasicMaterial({ color: 0x334455 });
+                const darkMesh = new THREE.InstancedMesh(winGeo, darkMat, darkWinPositions.length / 3);
+                const dummy = new THREE.Object3D();
+                for(let i = 0; i < darkWinPositions.length / 3; i++) {
+                    dummy.position.set(darkWinPositions[i*3], darkWinPositions[i*3+1], darkWinPositions[i*3+2]);
+                    dummy.rotation.set(0, darkWinRotations[i], 0);
+                    dummy.updateMatrix();
+                    darkMesh.setMatrixAt(i, dummy.matrix);
+                }
+                darkMesh.instanceMatrix.needsUpdate = true;
+                this._decoGroup.add(darkMesh);
+            }
+            
+            // --- Street lights (shared geometries) ---
+            const poleGeo = new THREE.CylinderGeometry(0.12, 0.15, 10, 5);
+            const armGeo = new THREE.BoxGeometry(3, 0.12, 0.12);
+            const lampGeo = new THREE.BoxGeometry(1.2, 0.4, 0.8);
+            for(let i = 0; i < 16; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const zPos = 40 - i * 200;
+                const pole = new THREE.Mesh(poleGeo, poleMat);
+                pole.position.set(side * 17, 5, zPos);
+                this._decoGroup.add(pole);
+                const arm = new THREE.Mesh(armGeo, poleMat);
+                arm.position.set(side * 15.5, 10, zPos);
+                this._decoGroup.add(arm);
+                const lamp = new THREE.Mesh(lampGeo, lampMat);
+                lamp.position.set(side * 14.5, 10, zPos);
+                this._decoGroup.add(lamp);
+            }
+            
+            // --- Traffic lights (reduced to 4) ---
+            const tfPoleMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+            const tfBoxMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+            const tfPoleGeo = new THREE.CylinderGeometry(0.1, 0.1, 8, 4);
+            const tfBoxGeo = new THREE.BoxGeometry(0.8, 2.4, 0.8);
+            const bulbGeo = new THREE.SphereGeometry(0.2, 4, 4);
+            const lightMats = [0xff0000, 0xffaa00, 0x00ff00].map(c => new THREE.MeshBasicMaterial({ color: c }));
+            for(let i = 0; i < 4; i++) {
+                const side = i % 2 === 0 ? 1 : -1;
+                const zPos = -150 - i * 600;
+                const tfPole = new THREE.Mesh(tfPoleGeo, tfPoleMat);
+                tfPole.position.set(side * 15, 4, zPos);
+                this._decoGroup.add(tfPole);
+                const tfBox = new THREE.Mesh(tfBoxGeo, tfBoxMat);
+                tfBox.position.set(side * 15, 9.2, zPos);
+                this._decoGroup.add(tfBox);
+                for(let l = 0; l < 3; l++) {
+                    const bulb = new THREE.Mesh(bulbGeo, lightMats[l]);
+                    bulb.position.set(side * 15, 10 - l * 0.7, zPos - 0.45);
+                    this._decoGroup.add(bulb);
+                }
+            }
+            
         } else if(biome === 'desert') {
             // Sandstone pillars - reduced
             const pillarMat = new THREE.MeshLambertMaterial({ color: 0xc4944a, flatShading: true });
@@ -692,6 +840,8 @@ class VFXManager {
         this.windParticles = [];
         this.explosionParticles = [];
         this.windGroup = null;
+        this.dustParticles = [];
+        this.exhaustParticles = [];
     }
     
     init(scene) {
@@ -704,6 +854,71 @@ class VFXManager {
             streak.visible = false;
             this.windGroup.add(streak);
             this.windParticles.push({ mesh: streak, vel: new THREE.Vector3(), life: 0 });
+        }
+        
+        // Tire dust pool
+        this.dustGroup = new THREE.Group();
+        scene.add(this.dustGroup);
+        const dustGeo = new THREE.SphereGeometry(0.2, 4, 4);
+        for(let i = 0; i < 40; i++) {
+            const dustMat = new THREE.MeshBasicMaterial({ color: 0xbbaa88, transparent: true, opacity: 0 });
+            const dust = new THREE.Mesh(dustGeo, dustMat);
+            dust.visible = false;
+            this.dustGroup.add(dust);
+            this.dustParticles.push({ mesh: dust, vel: new THREE.Vector3(), life: 0, maxLife: 1 });
+        }
+        
+        // Exhaust smoke pool
+        const exhGeo = new THREE.SphereGeometry(0.15, 3, 3);
+        for(let i = 0; i < 20; i++) {
+            const exhMat = new THREE.MeshBasicMaterial({ color: 0x555555, transparent: true, opacity: 0 });
+            const exh = new THREE.Mesh(exhGeo, exhMat);
+            exh.visible = false;
+            this.dustGroup.add(exh);
+            this.exhaustParticles.push({ mesh: exh, vel: new THREE.Vector3(), life: 0, maxLife: 1.5 });
+        }
+    }
+    
+    // Spawn tire dust behind a truck
+    spawnTireDust(pos, speed) {
+        if(speed < 15) return;
+        const p = this.dustParticles.find(d => d.life <= 0);
+        if(!p) return;
+        p.mesh.visible = true;
+        p.mesh.position.set(pos.x + (Math.random()-0.5)*2, pos.y + 0.3, pos.z + 7);
+        p.vel.set((Math.random()-0.5)*3, 1 + Math.random()*2, 2 + Math.random()*3);
+        p.life = 0.6 + Math.random()*0.5;
+        p.maxLife = p.life;
+        p.mesh.material.opacity = 0.4;
+        const scale = 0.5 + Math.random()*0.5;
+        p.mesh.scale.set(scale, scale, scale);
+    }
+    
+    // Spawn exhaust from truck
+    spawnExhaust(pos) {
+        const p = this.exhaustParticles.find(d => d.life <= 0);
+        if(!p) return;
+        p.mesh.visible = true;
+        p.mesh.position.set(pos.x + (Math.random()-0.5)*0.5, pos.y + 1.5, pos.z + 8);
+        p.vel.set((Math.random()-0.5)*1, 0.5 + Math.random(), 1);
+        p.life = 1.0 + Math.random()*0.5;
+        p.maxLife = p.life;
+        p.mesh.material.opacity = 0.25;
+    }
+    
+    updateDustAndExhaust(dt) {
+        const allParts = [...this.dustParticles, ...this.exhaustParticles];
+        for(const p of allParts) {
+            if(p.life <= 0) continue;
+            p.life -= dt;
+            p.mesh.position.x += p.vel.x * dt;
+            p.mesh.position.y += p.vel.y * dt;
+            p.mesh.position.z += p.vel.z * dt;
+            p.vel.y -= 1.5 * dt; // slight gravity
+            const t = Math.max(0, p.life / p.maxLife);
+            p.mesh.material.opacity = t * 0.4;
+            p.mesh.scale.multiplyScalar(1 + dt * 0.8); // grow over time
+            if(p.life <= 0) p.mesh.visible = false;
         }
     }
     
@@ -780,8 +995,50 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = false; // Disabled for performance — no objects cast shadows
+    renderer.shadowMap.enabled = false;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
     document.body.appendChild(renderer.domElement);
+    
+    // === POST-PROCESSING: Bloom + Color Grading ===
+    composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    
+    const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        0.4,   // strength
+        0.6,   // radius
+        0.85   // threshold
+    );
+    composer.addPass(bloomPass);
+    
+    // Color Grading shader (subtle vignette + saturation boost)
+    const colorGradingShader = {
+        uniforms: {
+            tDiffuse: { value: null },
+            saturation: { value: 1.15 },
+            vignetteStrength: { value: 0.3 }
+        },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float saturation;
+            uniform float vignetteStrength;
+            varying vec2 vUv;
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                // Saturation boost
+                float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                color.rgb = mix(vec3(gray), color.rgb, saturation);
+                // Vignette
+                vec2 center = vUv - 0.5;
+                float dist = length(center);
+                color.rgb *= 1.0 - vignetteStrength * dist * dist * 2.0;
+                gl_FragColor = color;
+            }
+        `
+    };
+    composer.addPass(new ShaderPass(colorGradingShader));
 
     // Lights
     const ambientInfo = new THREE.AmbientLight(0xffffff, 0.4);
@@ -804,7 +1061,7 @@ function init() {
     world.defaultContactMaterial.friction = 0.0;
     
     // Contact materials
-    const contactTruckPlayer = new CANNON.ContactMaterial(physTruckMat, physPlayerMat, { friction: 0.3, restitution: 0.0 });
+    const contactTruckPlayer = new CANNON.ContactMaterial(physTruckMat, physPlayerMat, { friction: 0.8, restitution: 0.0 });
     world.addContactMaterial(contactTruckPlayer);
     
     // Truck-to-Truck: low friction, some bounciness for satisfying side-slams
@@ -994,10 +1251,10 @@ function clearWorld() {
     vfxMgr.explosionParticles.forEach(p => { scene.remove(p.mesh); disposeObject(p.mesh); });
     vfxMgr.explosionParticles = [];
     
-    // Remove ALL scene children except camera, lights, and wind group
+    // Remove ALL scene children except camera, lights, wind group, and dust group
     for(let i = scene.children.length - 1; i >= 0; i--) {
         const child = scene.children[i];
-        if(child === camera || child.isLight || child === vfxMgr.windGroup) continue;
+        if(child === camera || child.isLight || child === vfxMgr.windGroup || child === vfxMgr.dustGroup) continue;
         scene.remove(child);
         disposeObject(child);
     }
@@ -1040,6 +1297,10 @@ function startGame() {
     distanceTraveled = 0;
     lastTruckSpawnZ = 0;
     lastObstacleZ = 0;
+    flowMultiplier = 1.0;
+    flowTimer = 0;
+    airTime = 0;
+    shakeIntensity = 0;
 
     if(mode === 'campaign') {
         loadCampaignLevel(currentLevel);
@@ -1053,7 +1314,7 @@ function createEnvironment(biome = 'urban') {
     // Apply biome theme
     const theme = themeMgr.applyTheme(scene, biome);
 
-    // Ground with biome color
+    // Ground
     const geoSolid = new THREE.PlaneGeometry(2000, 20000);
     const matSolid = new THREE.MeshStandardMaterial({ color: theme.ground, roughness: 1.0 });
     const meshSolid = new THREE.Mesh(geoSolid, matSolid);
@@ -1070,7 +1331,6 @@ function createEnvironment(biome = 'urban') {
         const geoM = new THREE.BoxGeometry(60 + Math.random()*40, 100 + Math.random()*150, 60 + Math.random()*40);
         const meshM = new THREE.Mesh(geoM, matM);
         meshM.position.set(side * (100 + Math.random()*20), LAVA_Y, zPos);
-        meshM.castShadow = true; meshM.receiveShadow = true;
         scene.add(meshM);
         entities.push({ mesh: meshM, body: null });
     }
@@ -1092,14 +1352,15 @@ function createEnvironment(biome = 'urban') {
 }
 
 function createPlayer() {
-    const shape = new CANNON.Sphere(0.6);
+    // Sphere with small radius for smooth sliding over truck surfaces
+    const shape = new CANNON.Sphere(0.5);
     playerBody = new CANNON.Body({ mass: 50, material: physPlayerMat });
     playerBody.addShape(shape);
     playerBody.position.set(0, 10, 0);
-    playerBody.linearDamping = 0; // Custom damping applied in update loop
+    playerBody.linearDamping = 0;
     playerBody.fixedRotation = true;
-    playerBody.collisionFilterGroup = 2; // Player group
-    playerBody.collisionFilterMask = 1 | 4; // Collide with ground and trucks
+    playerBody.collisionFilterGroup = 2;
+    playerBody.collisionFilterMask = 1 | 4;
     playerBody.updateMassProperties();
     world.addBody(playerBody);
 }
@@ -1130,9 +1391,12 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
     // Dimensions: W=2.4, H=2.8, D=3.0
     const cabW = 2.4, cabH = 2.8, cabD = 3.0;
     
-    // Physics cab collider
-    const cabShape = new CANNON.Box(new CANNON.Vec3(cabW/2, cabH/2, cabD/2));
-    truckBody.addShape(cabShape, new CANNON.Vec3(0, cabH/2, 0));
+    // Physics cab collider — only for cab-only trucks (no trailer)
+    // For trucks with trailer, a single continuous collider is added later
+    if(!hasTrailer) {
+        const cabShape = new CANNON.Box(new CANNON.Vec3(cabW/2, cabH/2, cabD/2));
+        truckBody.addShape(cabShape, new CANNON.Vec3(0, cabH/2, 0));
+    }
     
     const cabGrp = new THREE.Group();
     
@@ -1172,14 +1436,20 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
 
     if(hasTrailer) {
         // --- TRAILER (long box behind cab with gap) ---
-        // Clustertruck trailer: W=2.6, H=3.2, D=10.0 — long and tall
         const trW = 2.6, trH = 3.2, trD = 10.0;
-        const gapD = 1.5; // Gap between cab and trailer (coupling space)
-        const trailerZ = cabD/2 + gapD + trD/2; // Center Z of trailer
+        const gapD = 1.5;
+        const trailerZ = cabD/2 + gapD + trD/2;
         
-        // Physics trailer collider
-        const trailerShape = new CANNON.Box(new CANNON.Vec3(trW/2, trH/2, trD/2));
-        truckBody.addShape(trailerShape, new CANNON.Vec3(0, trH/2, trailerZ));
+        // === SINGLE CONTINUOUS COLLIDER for entire truck top ===
+        // Instead of cab + bridge + trailer (3 shapes with edge-catching),
+        // use ONE box that spans from cab front to trailer back.
+        // This completely eliminates any gaps or edges the player can get stuck on.
+        const totalLength = cabD + gapD + trD;
+        const topW = Math.max(cabW, trW) + 0.2; // slightly wider than visual
+        const topH = Math.max(cabH, trH);
+        const topZ = -cabD/2 + totalLength/2; // centered over full truck length
+        const topShape = new CANNON.Box(new CANNON.Vec3(topW/2, topH/2, totalLength/2));
+        truckBody.addShape(topShape, new CANNON.Vec3(0, topH/2, topZ));
         
         const trailerGrp = new THREE.Group();
         
@@ -1189,34 +1459,33 @@ function spawnTruck(x, y, z, speed, hasTrailer = true) {
         trailerMain.castShadow = false; trailerMain.receiveShadow = true;
         trailerGrp.add(trailerMain);
         
-        // Rear door (dark panel at back)
+        // Rear door
         const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(trW - 0.2, trH - 0.3, 0.12), matGlass);
         doorMesh.position.set(0, trH/2, trailerZ + trD/2 + 0.05);
         trailerGrp.add(doorMesh);
         
-        // Bottom rail under trailer
+        // Bottom rail under trailer (also covers gap visually)
         const railMesh = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.3, trD + gapD), matUnder);
         railMesh.position.set(0, 0.15, trailerZ - gapD/2);
         trailerGrp.add(railMesh);
         
         truckGrp.add(trailerGrp);
         
-        // Rear wheels (4: dual axle at back of trailer)
+        // Rear wheels
         const rearZ1 = trailerZ + trD/2 - 1.5;
         const rearZ2 = trailerZ + trD/2 - 2.8;
         const rearOffs = trW/2 + 0.1;
-        
-        [[- rearOffs, wheelRadius, rearZ1], [rearOffs, wheelRadius, rearZ1],
-         [- rearOffs, wheelRadius, rearZ2], [rearOffs, wheelRadius, rearZ2]].forEach(p => {
+        [[-rearOffs, wheelRadius, rearZ1], [rearOffs, wheelRadius, rearZ1],
+         [-rearOffs, wheelRadius, rearZ2], [rearOffs, wheelRadius, rearZ2]].forEach(p => {
             const w = new THREE.Mesh(wheelGeo, matWheelBlack);
-            w.position.set(p[0], p[1], p[2]); w.castShadow = true;
+            w.position.set(p[0], p[1], p[2]);
             truckGrp.add(w);
         });
         
-        // Cab rear wheels (behind cab body)
+        // Cab rear wheels
         const cabRearZ = cabD/2 - 0.3;
-        const crl = new THREE.Mesh(wheelGeo, matWheelBlack); crl.position.set(-cabW/2 - 0.1, wheelRadius, cabRearZ); crl.castShadow = true;
-        const crr = new THREE.Mesh(wheelGeo, matWheelBlack); crr.position.set(cabW/2 + 0.1, wheelRadius, cabRearZ); crr.castShadow = true;
+        const crl = new THREE.Mesh(wheelGeo, matWheelBlack); crl.position.set(-cabW/2 - 0.1, wheelRadius, cabRearZ);
+        const crr = new THREE.Mesh(wheelGeo, matWheelBlack); crr.position.set(cabW/2 + 0.1, wheelRadius, cabRearZ);
         truckGrp.add(crl); truckGrp.add(crr);
     }
     
@@ -1465,7 +1734,80 @@ function updatePhysics(dt) {
         // Drive forward at constant speed
         t.cab.velocity.z = -t.speed;
         
-        // === SMART RECOVERY AI (prompt2) ===
+        // === CHAOTIC BEHAVIOR: wobble, speed variation, random swerves ===
+        if(!t.wobblePhase) t.wobblePhase = Math.random() * Math.PI * 2;
+        if(!t.wobbleAmp) t.wobbleAmp = 0.5 + Math.random() * 1.5;
+        if(!t.swerveTimer) t.swerveTimer = 3 + Math.random() * 5;
+        if(!t.speedVariation) t.speedVariation = 0.9 + Math.random() * 0.2; // 90%-110% base speed
+        
+        // Natural wobble — trucks drift side to side slightly
+        t.wobblePhase += dt * (1.5 + Math.random() * 0.5);
+        const wobbleForce = Math.sin(t.wobblePhase) * t.wobbleAmp * t.cab.mass * 0.15;
+        _forceVec.set(wobbleForce, 0, 0);
+        t.cab.applyForce(_forceVec, t.cab.position);
+        
+        // Random speed bursts/slowdowns — trucks overtake each other
+        t.swerveTimer -= dt;
+        if(t.swerveTimer <= 0) {
+            t.swerveTimer = 2 + Math.random() * 6;
+            t.speedVariation = 0.85 + Math.random() * 0.3; // 85%-115%
+            // Occasional hard swerve
+            if(Math.random() < 0.25) {
+                t.cab.velocity.x += (Math.random() - 0.5) * 10;
+            }
+        }
+        t.cab.velocity.z = -t.speed * t.speedVariation;
+        
+        // === LOOK-AHEAD STEERING (Ackermann-like) ===
+        // Trucks 'see' obstacles 30-50m ahead and begin turning early
+        if(!t.steerTarget) t.steerTarget = 0;
+        if(!t.lookAheadTimer) t.lookAheadTimer = 0;
+        t.lookAheadTimer += dt;
+        
+        if(t.lookAheadTimer > 0.3) { // Check every 0.3s for perf
+            t.lookAheadTimer = 0;
+            const lookDist = 35 + t.speed * 0.5;
+            let bestSteer = 0;
+            let threatFound = false;
+            
+            // Check for static obstacles ahead
+            for(const e of entities) {
+                if(!e.body || e.body.mass > 0) continue; // Skip dynamic bodies
+                const ex = e.body.position.x;
+                const ez = e.body.position.z;
+                const dz = t.cab.position.z - ez;
+                if(dz < 0 || dz > lookDist) continue; // Behind or too far
+                const dx = Math.abs(t.cab.position.x - ex);
+                if(dx < 6) {
+                    threatFound = true;
+                    bestSteer = t.cab.position.x > ex ? 5 : -5;
+                }
+            }
+            
+            // Check for slow/stopped trucks ahead
+            for(const other of trucks) {
+                if(other === t || other.exploded) continue;
+                const dz = t.cab.position.z - other.cab.position.z;
+                if(dz < 2 || dz > lookDist) continue;
+                const dx = Math.abs(t.cab.position.x - other.cab.position.x);
+                if(dx < 4 && Math.abs(other.cab.velocity.z) < t.speed * 0.5) {
+                    threatFound = true;
+                    const turnRadius = Math.max(3, dz * 0.2); // Wider turn at distance
+                    bestSteer = t.cab.position.x > other.cab.position.x ? turnRadius : -turnRadius;
+                }
+            }
+            
+            t.steerTarget = threatFound ? bestSteer : 0;
+        }
+        
+        // Smooth steering application (simulates wheel turning)
+        if(Math.abs(t.steerTarget) > 0.1) {
+            const steerForce = t.steerTarget * t.cab.mass * 0.3;
+            _forceVec.set(steerForce, 0, 0);
+            t.cab.applyForce(_forceVec, t.cab.position);
+        }
+        
+        // === SMART RECOVERY AI ===
         // Obstacle Awareness: if speed drops below 20% of target for 1.5s → steer out
         if(!t.stuckTimer) t.stuckTimer = 0;
         if(!t.slowTimer) t.slowTimer = 0;
@@ -1531,15 +1873,15 @@ function updatePhysics(dt) {
         }
         
         // === CLUSTERTRUCK DRIFT: All trucks pull toward center ===
-        const centerPull = 4.0; // STRONGER pull for more aggressive slamming
+        const centerPull = 2.5; // Moderate pull — less violent lateral slamming
         const diffToCenter = 0 - t.cab.position.x;
         
         // Apply lateral FORCE so physics collisions work naturally
-        _forceVec.set(diffToCenter * centerPull * t.cab.mass * 0.4, 0, 0);
+        _forceVec.set(diffToCenter * centerPull * t.cab.mass * 0.3, 0, 0);
         t.cab.applyForce(_forceVec, t.cab.position);
         
-        // Damp lateral velocity
-        t.cab.velocity.x *= 0.90;
+        // Stronger lateral damping — trucks stay in lane more
+        t.cab.velocity.x *= 0.85;
         
         // Clamp lateral — don't escape too far
         if(Math.abs(t.cab.position.x) > 25) {
@@ -1589,6 +1931,14 @@ function updatePhysics(dt) {
         if(t.cab.position.y > LAVA_Y + 4) {
             t.cab.velocity.y = -8;
         }
+        
+        // === PARTICLE FX: Tire dust + exhaust ===
+        if(!t.exploded && Math.random() < 0.3) {
+            vfxMgr.spawnTireDust(t.cab.position, t.speed);
+        }
+        if(!t.exploded && Math.random() < 0.1) {
+            vfxMgr.spawnExhaust(t.cab.position);
+        }
     }
 
     // 2. Player Raycast (Grounded Check & Momentum)
@@ -1609,7 +1959,7 @@ function updatePhysics(dt) {
     }
 
     // 3. Player Input & Movement
-    let speed = keys.shift ? 36 : 20;
+    let speed = (keys.shift ? 36 : 20) * Math.min(flowMultiplier, 1.5);
 
     _tmpEuler.setFromQuaternion(camera.quaternion, 'YXZ');
     const yaw = _tmpEuler.y;
@@ -1626,11 +1976,24 @@ function updatePhysics(dt) {
     }
 
     if(isGrounded) {
-        let targetVX = contactVelocity.x + _inputVec.x * speed;
+        // === LANDING STICK: On first frame of landing, kill excess lateral velocity ===
+        if(airTime > 0.15) {
+            playerBody.velocity.x *= 0.3;
+        }
+        
+        // Inherit a small amount of truck lateral velocity for natural feel
+        // but mostly rely on player input for X movement
+        let targetVX = contactVelocity.x * 0.15 + _inputVec.x * speed;
         let targetVZ = contactVelocity.z + _inputVec.z * speed;
         
+        // Higher blend rates = more responsive running on trucks
         playerBody.velocity.x += (targetVX - playerBody.velocity.x) * 0.4;
         playerBody.velocity.z += (targetVZ - playerBody.velocity.z) * 0.4;
+        
+        // Gentle downward stick when not jumping
+        if(playerBody.velocity.y > -1 && playerBody.velocity.y < 3 && !keys.space) {
+            playerBody.velocity.y = Math.min(playerBody.velocity.y, -1);
+        }
         
         if(keys.space) {
             playerBody.velocity.y = 22;
@@ -1644,15 +2007,51 @@ function updatePhysics(dt) {
         playerBody.velocity.z *= 0.998;
     }
 
-    // Camera follow
-    camera.position.set(playerBody.position.x, playerBody.position.y + 0.6, playerBody.position.z);
+    // === FLOW STATE: reward continuous movement ===
+    if(isGrounded) {
+        if(airTime > 0.3) {
+            // Landed after airtime — shake + flow boost
+            shakeIntensity = Math.min(airTime * 0.15, 0.5);
+            flowMultiplier = Math.min(flowMultiplier + airTime * 0.05, 2.0);
+        }
+        airTime = 0;
+        flowTimer += dt;
+    } else {
+        airTime += dt;
+        // Decay flow when grounded too long without jumping
+        if(flowTimer > 3.0) flowMultiplier = Math.max(1.0, flowMultiplier - dt * 0.3);
+    }
+    
+    // === NEAR-MISS DETECTION ===
+    for(const t of trucks) {
+        if(t.exploded) continue;
+        const dx = Math.abs(playerBody.position.x - t.cab.position.x);
+        const dz = Math.abs(playerBody.position.z - t.cab.position.z);
+        if(dx < 4 && dx > 2 && dz < 8 && !isGrounded) {
+            shakeIntensity = Math.max(shakeIntensity, 0.15);
+            flowMultiplier = Math.min(flowMultiplier + dt * 0.5, 2.0);
+        }
+    }
+    
+    // === CAMERA SHAKE ===
+    shakeIntensity = Math.max(0, shakeIntensity - shakeDecay * dt);
+    shakeOffsetX = (Math.random() - 0.5) * 2 * shakeIntensity;
+    shakeOffsetY = (Math.random() - 0.5) * 2 * shakeIntensity;
+    
+    // Camera follow with shake
+    camera.position.set(
+        playerBody.position.x + shakeOffsetX,
+        playerBody.position.y + 0.6 + shakeOffsetY,
+        playerBody.position.z
+    );
     
     // === VFX: Speed effects ===
     const playerSpeedZ = playerBody.velocity.z;
     const playerSpeedTotal = Math.sqrt(playerBody.velocity.x**2 + playerBody.velocity.z**2);
-    vfxMgr.updateFOV(camera, playerSpeedTotal, dt);
+    vfxMgr.updateFOV(camera, playerSpeedTotal * flowMultiplier, dt);
     vfxMgr.updateWindStreaks(playerBody.position, playerSpeedTotal, dt);
     vfxMgr.updateExplosions(dt);
+    vfxMgr.updateDustAndExhaust(dt);
     
     // === Audio: Update engine pitch ===
     audioMgr.updateEngineHum(playerSpeedTotal);
@@ -1678,9 +2077,11 @@ function updatePhysics(dt) {
     const hud = document.getElementById('hud');
     if(mode === 'campaign') {
         let distLeft = Math.max(0, Math.floor(playerBody.position.z - goalZ));
-        hud.innerHTML = `Level: ${currentLevel}<br>Distance to Goal: ${distLeft}m`;
+        const flowPct = Math.floor((flowMultiplier - 1) * 100);
+        hud.innerHTML = `Level: ${currentLevel}<br>Distance: ${distLeft}m` + (flowPct > 0 ? `<br><span style="color:#ff8844">FLOW +${flowPct}%</span>` : '');
     } else {
-        hud.innerHTML = `Mode: Infinite<br>Score: ${distanceTraveled}`;
+        const flowPct = Math.floor((flowMultiplier - 1) * 100);
+        hud.innerHTML = `Mode: Infinite<br>Score: ${distanceTraveled}` + (flowPct > 0 ? `<br><span style="color:#ff8844">FLOW +${flowPct}%</span>` : '');
     }
 }
 
@@ -1743,12 +2144,14 @@ function animate() {
     }
     
     renderer.render(scene, camera);
+    if(composer) composer.render();
 }
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    if(composer) composer.setSize(window.innerWidth, window.innerHeight);
 }
 
 // Start in Menu

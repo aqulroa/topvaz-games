@@ -1,35 +1,32 @@
-# SYSTEM ARCHITECT: Biome Expansion & Advanced AI Recovery (Phase 4)
+# Task: Game Logic Improvement & Bug Fixing (Truck Simulation)
 
-The game logic is stable. Now we implement world-building, advanced obstacle avoidance, and a dynamic audio system.
+## 1. Bug Fix: Collision & Physics
+**Issue:** Player character/object gets stuck in the gap between the truck cabin and the trailer.
+**Goal:** - Implement a "smooth" collision box or a kinematic constraint that prevents getting wedged in the gap.
+- Add a trigger zone or invisible collider to push objects out of the "stuck" area without breaking the physics.
 
-## 1. DYNAMIC AUDIO & PLAYLIST
-- **Music Manager**: Implement a playlist of 3-4 Synthwave/Phonk tracks. 
-- **State-Based Volume**: 
-  - `In-Menu`: Lower volume to 30% and apply a Low-Pass filter if possible.
-  - `In-Game`: Full volume (100%).
-- **Track Transition**: When a level starts or biomes change, crossfade to a new track.
+## 2. Dynamic Gameplay & "Controlled Chaos"
+**Current State:** Level 1 is too static (just moving forward and jumping).
+**Goal:** Add "Drive" and "Dynamic Events." Suggest logic for:
+- **Procedural Obstacles:** Debris falling from trailers, road construction, or sudden traffic shifts.
+- **Speed Variation:** Implementing a "Flow" state where speed increases based on performance.
+- **Camera Shake & VFX:** Add dynamic FOV (Field of View) changes and camera shakes during high-speed maneuvers or near-misses.
 
-## 2. "SMART RECOVERY" TRUCK AI
-- **Obstacle Awareness**: If a truck's speed drops below 20% of its target for 1.5 seconds (due to a pile-up or hitting a pillar), it must:
-  - Immediately check left/right lanes for clearance.
-  - Apply a "Steer Out" force to bypass the wreck.
-- **Chain Reaction**: If the front row stops, the rows behind should proactively start merging into open lanes 1-2 seconds *before* impact.
+## 3. Advanced Truck AI & Steering Logic
+**Goal:** Rewrite the AI movement to mimic realistic vehicle physics rather than "sliding on rails."
+- **Ackermann Steering Logic:** The AI must rotate its wheels and follow a turning radius consistent with a real vehicle.
+- **Human-like Pathfinding:** AI should "look ahead" and start steering into the turn early, simulating a human driver turning the wheel.
+- **Avoidance System:** Implement Raycasts or SphereCasts to detect obstacles and steer smoothly around them, adjusting speed dynamically.
 
-## 3. BIOME SYSTEM (25 Levels Total)
-Implement a `ThemeManager` that changes the environment based on the level index:
-- **Levels 1-5 (Urban)**: Grey asphalt road, skyscraper silhouettes, neon street lights.
-- **Levels 6-15 (Desert)**: Sandy/Yellow ground, canyon walls, sandstone pillars, orange-tinted sky.
-- **Levels 16-25 (Winter)**: White/Blue ground (snow), pine tree silhouettes, falling snow particles, slippery physics (reduce truck/player friction by 10%).
+## 4. Visuals & Environment (Aesthetic Overhaul)
+**Goal:** Improve graphics to look like a "finished indie game" rather than a prototype.
+- **Lighting:** Suggest settings for Post-Processing (Bloom, Color Grading/LUT, Ambient Occlusion).
+- **Shaders:** Provide a simple "Toon" or "Stylized" shader approach that makes the environment pop without requiring high-end hardware.
+- **Atmosphere:** Add suggestions for particle effects (dust from tires, exhaust smoke, motion blur).
 
-## 4. PROCEDURAL OBSTACLE REWRITE
-- **Smart Obstacles**: Instead of random blocks, create "Patterned Hazards":
-  - `The Zig-Zag`: Staggered walls that force the whole convoy to snake.
-  - `The Bridge`: A narrow elevated section where falling off the side leads to "Lava".
-  - `The Tunnel`: Low ceiling obstacles that require the player to crouch or jump precisely.
+---
 
-## INSTRUCTIONS FOR AGENT:
-Use `replace_file_content` to update:
-1. `AudioManager` (Playlist & Menu volume).
-2. `TruckAI` (Improved obstacle avoidance & lane switching).
-3. `ThemeManager` (Visual assets & colors for Urban/Desert/Winter).
-4. `LevelGenerator` (Patterned hazards).
+### Technical Requirements:
+- Provide code snippets in [Insert your Language: e.g., C# for Unity / C++ for Unreal / GDScript for Godot].
+- Use a modular approach so I can easily integrate these fixes into my current project.
+- Focus on performance optimization.
