@@ -771,3 +771,116 @@ a:hover {
   animation: spin 0.8s linear infinite;
   margin: 40px auto;
 }
+
+/* === NEW STYLE BANNER === */
+.new-style-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border: 1px solid rgba(123, 97, 255, 0.3);
+  border-radius: 20px;
+  padding: 25px 30px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.new-style-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(123, 97, 255, 0.15), transparent 70%);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.new-style-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 70%);
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite reverse;
+}
+
+.new-style-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.new-style-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.3), rgba(0, 212, 255, 0.3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.new-style-text {
+  flex: 1;
+}
+
+.new-style-text h3 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.new-style-text p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.new-style-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #7b61ff, #00d4ff);
+  color: #fff;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(123, 97, 255, 0.4);
+  white-space: nowrap;
+}
+
+.new-style-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(123, 97, 255, 0.5);
+  color: #fff;
+}
+
+.new-style-btn i {
+  transition: transform 0.3s ease;
+}
+
+.new-style-btn:hover i {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .new-style-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .new-style-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

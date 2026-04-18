@@ -1,84 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=0.9, shrink-to-fit=no" />
-<title>Parkour Block 3D - Играть онлайн</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkour Block 3d - aqulroa Games</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css" />
-<link rel="stylesheet" type="text/css" href="../assets/css/user.css" />
-<link rel="stylesheet" type="text/css" href="../assets/css/style.css" />
-<link rel="stylesheet" type="text/css" href="../assets/css/custom.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/game-new.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark top-nav" id="mainNav">
-<div class="container">
-<a class="navbar-brand" href="../index.html"><strong>aqulroa Games</strong></a>
-<div class="d-none d-lg-block">
-<ul class="navbar-nav">
-<li class="nav-item"><a class="nav-link" href="../car.html">Гонки</a></li>
-<li class="nav-item"><a class="nav-link" href="../shooting.html">Стрелялки</a></li>
-<li class="nav-item"><a class="nav-link" href="../action.html">Экшн</a></li>
-<li class="nav-item"><a class="nav-link" href="../multiplayer.html">Мультиплеер</a></li>
-<li class="nav-item"><a class="nav-link" href="../sports.html">Спорт</a></li>
-</ul>
-</div>
-</div>
-</nav>
 
-<div class="container game-wrapper">
-<div class="game-container">
-<div class="game-content">
-<div class="game-iframe-container" id="game-player">
-<iframe class="game-iframe" id="game-area" src="https://classroom2111.github.io/g5/class-576" scrolling="no" frameborder="0" allowfullscreen></iframe>
+<!-- 3D BACKGROUND -->
+<div class="bg-container">
+  <div class="bg-grid"></div>
+  <div class="cube cube-1"><div class="cube-face front"></div><div class="cube-face back"></div><div class="cube-face left"></div><div class="cube-face right"></div><div class="cube-face top"></div><div class="cube-face bottom"></div></div>
+  <div class="cube cube-2"><div class="cube-face front"></div><div class="cube-face back"></div><div class="cube-face left"></div><div class="cube-face right"></div><div class="cube-face top"></div><div class="cube-face bottom"></div></div>
+  <div class="cube cube-3"><div class="cube-face front"></div><div class="cube-face back"></div><div class="cube-face left"></div><div class="cube-face right"></div><div class="cube-face top"></div><div class="cube-face bottom"></div></div>
+  <div class="cube cube-4"><div class="cube-face front"></div><div class="cube-face back"></div><div class="cube-face left"></div><div class="cube-face right"></div><div class="cube-face top"></div><div class="cube-face bottom"></div></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 </div>
-</div>
-<div class="game-info">
-<div class="header-left">
-<h1 class="single-title">Parkour Block 3D</h1>
-</div>
-<div class="header-right">
-<div class="b-action">
-<a href="#" onclick="open_fullscreen(); return false;" class="btn btn-capsule"><i class="bi bi-arrows-fullscreen b-icon"></i>Полный экран</a>
-</div>
-</div>
-</div>
-</div>
-</div>
+<div class="bg-particles"></div>
 
-<div class="container">
-<div class="content-wrapper">
-<div class="row">
-<div class="col-md-6">
-<h5 class="highlight-text">Как играть:</h5>
-<p>Нажми на игровое поле чтобы начать. Используй полный экран для лучшего опыта.</p>
-</div>
-<div class="col-md-6">
-<div class="widget">
-<h4 class="widget-title">Популярные игры</h4>
-<div class="row gamelist-widget">
-<div class="col-2 list-grid"><a title="Slope" href="slope.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/slope.webp" class="small-thumb img-rounded" alt="Slope"></div></div></a></div>
-<div class="col-2 list-grid"><a title="Retro Bowl" href="retro-bowl.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/retro-bowl.webp" class="small-thumb img-rounded" alt="Retro Bowl"></div></div></a></div>
-<div class="col-2 list-grid"><a title="Cookie Clicker" href="cookie-clicker.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/cookie-clicker.webp" class="small-thumb img-rounded" alt="Cookie Clicker"></div></div></a></div>
-<div class="col-2 list-grid"><a title="Drift Hunters" href="drift-hunters.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/drift-hunters.webp" class="small-thumb img-rounded" alt="Drift Hunters"></div></div></a></div>
-<div class="col-2 list-grid"><a title="Tunnel Rush" href="tunnel-rush.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/tunnel-rush.webp" class="small-thumb img-rounded" alt="Tunnel Rush"></div></div></a></div>
-<div class="col-2 list-grid"><a title="Basketball Legends" href="basketball-legends.html"><div class="list-game"><div class="list-thumbnail"><img src="../images/basketball-legends.webp" class="small-thumb img-rounded" alt="Basketball Legends"></div></div></a></div>
-</div>
-</div>
-</div>
-</div>
+<div class="game-wrapper">
+  <div class="game-container">
+    <div class="game-iframe-container" id="game-player">
+      <iframe class="game-iframe" id="game-area" src="https://classroom2111.github.io/g5/class-576" scrolling="no" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div class="game-info">
+      <h1 class="game-title">Parkour Block 3d</h1>
+      <div class="game-actions">
+        <button class="fullscreen-btn" onclick="open_fullscreen()">
+          <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Полный экран
+        </button>
+        <a href="../index.html" class="back-link">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Назад к играм
+      </a>
+    </div>
+  </div>
 </div>
 </div>
 
-<div class="container"><div class="border-line mt-4"></div></div>
-<div class="footer-copyright py-4">
-<div class="container">aqulroa Games &copy; 2026</div>
-</div>
-
-<script src="../assets/js/jquery-3.6.2.min.js"></script>
-<script src="../assets/js/bootstrap.min.js"></script>
-<script src="../assets/js/script.js"></script>
+<script>
+function open_fullscreen() {
+  var el = document.querySelector(".game-container");
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
+</script>
 </body>
 </html>

@@ -3,183 +3,908 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>aqulroa Games - Играй в 57 бесплатных игр</title>
+<title>aqulroa Games - Играй в 67 бесплатных игр</title>
 <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
-<meta name="description" content="Играй в 57 бесплатных HTML5 игр онлайн">
-<link rel="stylesheet" href="assets/css/bootstrap.min.css">
-<link rel="stylesheet" href="assets/css/user.css">
-<link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/custom.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="description" content="67 бесплатных HTML5 игр">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+:root {
+  --bg-primary: #0A0612;
+  --bg-secondary: #130D24;
+  --surface: #1A102E;
+  --surface-hover: #241840;
+  --border: rgba(168, 85, 247, 0.2);
+  --border-hover: rgba(168, 85, 247, 0.5);
+  --text-primary: #F5F3FF;
+  --text-secondary: #A78BFA;
+  --accent: #A855F7;
+  --accent-light: #C084FC;
+  --accent-glow: rgba(168, 85, 247, 0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 3D PERSPECTIVE GRID BACKGROUND */
+.bg-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  perspective: 1000px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-grid {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  left: -50%;
+  top: -50%;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 80px 80px;
+  transform: rotateX(60deg) rotateZ(-45deg);
+  transform-origin: center center;
+  animation: gridMove 30s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes gridMove {
+  0% { transform: rotateX(60deg) rotateZ(-45deg) translateY(0); }
+  100% { transform: rotateX(60deg) rotateZ(-45deg) translateY(80px); }
+}
+
+/* 3D FLOATING CUBES */
+.cube {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  transform-style: preserve-3d;
+  animation: cubeFloat 8s ease-in-out infinite;
+}
+
+.cube-face {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--accent);
+  background: rgba(168, 85, 247, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.cube-face.front { transform: translateZ(30px); }
+.cube-face.back { transform: translateZ(-30px) rotateY(180deg); }
+.cube-face.left { transform: translateX(-30px) rotateY(-90deg); }
+.cube-face.right { transform: translateX(30px) rotateY(90deg); }
+.cube-face.top {
+  transform: translateY(-30px) rotateX(90deg);
+  background: rgba(168, 85, 247, 0.15);
+}
+.cube-face.bottom {
+  transform: translateY(30px) rotateX(-90deg);
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.cube-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.cube-2 {
+  top: 60%;
+  right: 15%;
+  transform: scale(0.7);
+  animation-delay: -3s;
+}
+
+.cube-3 {
+  bottom: 20%;
+  left: 20%;
+  transform: scale(0.5);
+  animation-delay: -5s;
+}
+
+.cube-4 {
+  top: 30%;
+  right: 25%;
+  transform: scale(0.8);
+  animation-delay: -2s;
+}
+
+@keyframes cubeFloat {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotateX(10deg) rotateY(10deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(5deg) rotateY(-5deg);
+  }
+  75% {
+    transform: translateY(-25px) rotateX(-10deg) rotateY(5deg);
+  }
+}
+
+.transformed .cube {
+  animation: cubeExplode 0.7s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes cubeExplode {
+  0% { transform: scale(1) rotateX(0deg) rotateY(0deg); opacity: 1; }
+  30% { transform: scale(1.4) rotateX(90deg) rotateY(90deg); opacity: 0.8; filter: brightness(3); }
+  100% { transform: scale(0) rotateX(360deg) rotateY(360deg); opacity: 0; }
+}
+
+#three-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.transformed #three-canvas {
+  opacity: 1;
+}
+
+.try-btn-ripple {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3), transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.try-btn-ripple.active {
+  animation: rippleExpand 1.2s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+}
+
+@keyframes rippleExpand {
+  0% { width: 0; height: 0; opacity: 0.8; }
+  100% { width: 300vw; height: 300vw; opacity: 0; }
+}
+
+/* 3D GLOWING ORBS */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.4;
+  animation: orbPulse 6s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.5) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+  bottom: -50px;
+  right: -50px;
+  animation-delay: -2s;
+}
+
+.orb-3 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.3) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -4s;
+}
+
+@keyframes orbPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+/* FLOATING PARTICLES */
+.bg-particles {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, rgba(168, 85, 247, 0.5), transparent),
+    radial-gradient(2px 2px at 30% 60%, rgba(168, 85, 247, 0.4), transparent),
+    radial-gradient(3px 3px at 50% 10%, rgba(192, 132, 252, 0.6), transparent),
+    radial-gradient(2px 2px at 70% 40%, rgba(168, 85, 247, 0.5), transparent),
+    radial-gradient(2px 2px at 90% 80%, rgba(168, 85, 247, 0.4), transparent),
+    radial-gradient(3px 3px at 15% 85%, rgba(124, 58, 237, 0.6), transparent),
+    radial-gradient(2px 2px at 45% 45%, rgba(192, 132, 252, 0.4), transparent),
+    radial-gradient(2px 2px at 85% 15%, rgba(168, 85, 247, 0.5), transparent);
+  pointer-events: none;
+  z-index: 1;
+  animation: floatParticles 20s ease-in-out infinite;
+}
+
+@keyframes floatParticles {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* HEADER */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10, 6, 18, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.logo span {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.nav-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.nav-links a:hover, .nav-links a.active {
+  color: var(--text-primary);
+}
+
+.try-btn {
+  padding: 8px 18px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.try-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+  color: #fff;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+
+/* SEARCH */
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  width: 260px;
+  padding: 10px 16px 10px 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  transition: all 0.25s ease;
+}
+
+.search-box input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+  width: 300px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+  z-index: 200;
+}
+
+.search-results.active {
+  display: block;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: var(--surface-hover); }
+
+.search-item img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* MAIN */
+.main {
+  padding-top: 72px;
+  position: relative;
+  z-index: 1;
+}
+
+/* HERO */
+.hero {
+  padding: 100px 32px 80px;
+  text-align: center;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 450px;
+  margin: 0 auto 40px;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+/* CATEGORIES */
+.categories {
+  padding: 0 32px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.category-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  padding: 12px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.2);
+}
+
+.cat-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: none;
+}
+
+/* GAMES */
+.games-section {
+  padding: 0 32px 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.game-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeUp 0.5s ease backwards;
+}
+
+.game-card:nth-child(1) { animation-delay: 0.05s; }
+.game-card:nth-child(2) { animation-delay: 0.08s; }
+.game-card:nth-child(3) { animation-delay: 0.11s; }
+.game-card:nth-child(4) { animation-delay: 0.14s; }
+.game-card:nth-child(5) { animation-delay: 0.17s; }
+.game-card:nth-child(6) { animation-delay: 0.2s; }
+.game-card:nth-child(7) { animation-delay: 0.23s; }
+.game-card:nth-child(8) { animation-delay: 0.26s; }
+.game-card:nth-child(9) { animation-delay: 0.29s; }
+.game-card:nth-child(10) { animation-delay: 0.32s; }
+.game-card:nth-child(11) { animation-delay: 0.35s; }
+.game-card:nth-child(12) { animation-delay: 0.38s; }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.game-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--accent);
+  box-shadow: 0 20px 50px rgba(168, 85, 247, 0.25), 0 0 30px rgba(168, 85, 247, 0.15);
+}
+
+.game-thumb {
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.game-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.game-card:hover .game-thumb img {
+  transform: scale(1.1);
+}
+
+.game-info {
+  padding: 16px;
+  position: relative;
+}
+
+.game-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(168, 85, 247, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-card:hover .game-info::before {
+  opacity: 1;
+}
+
+.game-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.game-cat {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* FOOTER */
+.footer {
+  padding: 40px 32px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.footer p {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .header-inner {
+    padding: 0 16px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero {
+    padding: 70px 16px 50px;
+  }
+
+  .hero-stats {
+    gap: 32px;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .categories, .games-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .games-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+  }
+}
+</style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark top-nav fixed-top" id="mainNav">
-<div class="container">
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
-<span class="navbar-toggler-icon"></span>
-</button>
-<a class="navbar-brand" href="index.html">aqulroa Games</a>
-<div class="navbar-collapse collapse" id="nav-menu">
-<ul class="navbar-nav me-auto">
-<li class="nav-item dropdown">
-<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-grid-3x3-gap"></i> Категории</a>
-<ul class="dropdown-menu">
-<li><a class="dropdown-item" href="action.html"><i class="bi bi-lightning"></i> Экшн</a></li>
-<li><a class="dropdown-item" href="car.html"><i class="bi bi-car-front"></i> Гонки</a></li>
-<li><a class="dropdown-item" href="shooting.html"><i class="bi bi-bullseye"></i> Стрелялки</a></li>
-<li><a class="dropdown-item" href="sports.html"><i class="bi bi-trophy"></i> Спорт</a></li>
-<li><a class="dropdown-item" href="multiplayer.html"><i class="bi bi-people"></i> Мультиплеер</a></li>
-</ul>
-</li>
-</ul>
-<div class="search-wrapper">
-<i class="bi bi-search search-icon"></i>
-<input class="search" type="text" id="searchInput" placeholder="Поиск игр..." autocomplete="off">
+<!-- 3D BACKGROUND -->
+<div class="bg-container">
+  <div class="bg-grid"></div>
+
+  <!-- FLOATING 3D CUBES -->
+  <div class="cube cube-1">
+    <div class="cube-face front"></div>
+    <div class="cube-face back"></div>
+    <div class="cube-face left"></div>
+    <div class="cube-face right"></div>
+    <div class="cube-face top"></div>
+    <div class="cube-face bottom"></div>
+  </div>
+  <div class="cube cube-2">
+    <div class="cube-face front"></div>
+    <div class="cube-face back"></div>
+    <div class="cube-face left"></div>
+    <div class="cube-face right"></div>
+    <div class="cube-face top"></div>
+    <div class="cube-face bottom"></div>
+  </div>
+  <div class="cube cube-3">
+    <div class="cube-face front"></div>
+    <div class="cube-face back"></div>
+    <div class="cube-face left"></div>
+    <div class="cube-face right"></div>
+    <div class="cube-face top"></div>
+    <div class="cube-face bottom"></div>
+  </div>
+  <div class="cube cube-4">
+    <div class="cube-face front"></div>
+    <div class="cube-face back"></div>
+    <div class="cube-face left"></div>
+    <div class="cube-face right"></div>
+    <div class="cube-face top"></div>
+    <div class="cube-face bottom"></div>
+  </div>
+
+  <!-- 3D SHAPE CANVAS -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- GLOWING ORBS -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- FLOATING PARTICLES -->
+<div class="bg-particles"></div>
+
+<header class="header">
+<div class="header-inner">
+<a href="index.html" class="logo">aqulroa <span>Games</span></a>
+<nav class="nav-links">
+<a href="#games" class="active">Игры</a>
+<a href="action.html">Экшн</a>
+<a href="car.html">Гонки</a>
+<a href="shooting.html">Стрелялки</a>
+<button class="try-btn" id="tryBtn">Попробуй</button>
+</nav>
+<div class="search-box">
+<svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+</svg>
+<input type="text" id="searchInput" placeholder="Поиск игр..." autocomplete="off">
 <div class="search-results" id="searchResults"></div>
 </div>
 </div>
-</div>
-</nav>
+</header>
 
-<!-- HERO SLIDER -->
-<div class="container" style="padding-top: 90px;">
-<div class="hero-slider">
-<div class="slider-track" id="sliderTrack">
-<div class="slide" style="background: linear-gradient(135deg, #1a0a2e, #0a1628);">
-<div class="slide-content">
-<div class="slide-title">Добро пожаловать в aqulroa Games</div>
-<div class="slide-subtitle">57 бесплатных HTML5 игр - играй прямо в браузере</div>
-<a href="#all-games" class="slide-btn">Все игры</a>
-</div>
-</div>
-<div class="slide" style="background: linear-gradient(135deg, #0a1628, #1a0a3e);">
-<div class="slide-content">
-<div class="slide-title">Retro Bowl</div>
-<div class="slide-subtitle">Создай команду и выиграй чемпионат!</div>
-<a href="play/retro-bowl.html" class="slide-btn">Играть</a>
-</div>
-</div>
-<div class="slide" style="background: linear-gradient(135deg, #1a0a3e, #0a2818);">
-<div class="slide-content">
-<div class="slide-title">Drift Hunters</div>
-<div class="slide-subtitle">Освой искусство дрифта!</div>
-<a href="play/drift-hunters.html" class="slide-btn">Играть</a>
-</div>
-</div>
-<div class="slide" style="background: linear-gradient(135deg, #0a2818, #2a0a18);">
-<div class="slide-content">
-<div class="slide-title">Strike Force Kitty</div>
-<div class="slide-subtitle">Спаси котят от лис!</div>
-<a href="play/strike-force-kitty.html" class="slide-btn">Играть</a>
-</div>
-</div>
-</div>
-<div class="slider-dots" id="sliderDots">
-<div class="slider-dot active" data-slide="0"></div>
-<div class="slider-dot" data-slide="1"></div>
-<div class="slider-dot" data-slide="2"></div>
-<div class="slider-dot" data-slide="3"></div>
-</div>
-<div class="slider-arrow prev" onclick="moveSlider(-1)"><i class="bi bi-chevron-left"></i></div>
-<div class="slider-arrow next" onclick="moveSlider(1)"><i class="bi bi-chevron-right"></i></div>
-</div>
+<main class="main">
 
-<!-- ALL GAMES -->
-<div id="all-games">
-<h3 class="section-title">Все игры</h3>
-<div class="row grid-container">
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/slope.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/slope.webp" class="small-thumb img-rounded" alt="Slope"></div><div class="list-info"><div class="list-title">Slope</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/retro-bowl.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/retro-bowl.webp" class="small-thumb img-rounded" alt="Retro Bowl"></div><div class="list-info"><div class="list-title">Retro Bowl</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/cookie-clicker.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/cookie-clicker.webp" class="small-thumb img-rounded" alt="Cookie Clicker"></div><div class="list-info"><div class="list-title">Cookie Clicker</div></div></div></div></a></div>
-
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/drift-hunters.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/drift-hunters.webp" class="small-thumb img-rounded" alt="Drift Hunters"></div><div class="list-info"><div class="list-title">Drift Hunters</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/basketball-stars.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/basketball-stars.webp" class="small-thumb img-rounded" alt="Basketball Stars"></div><div class="list-info"><div class="list-title">Basketball Stars</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/basketball-legends.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/basketball-legends.webp" class="small-thumb img-rounded" alt="Basketball Legends"></div><div class="list-info"><div class="list-title">Basketball Legends</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/tunnel-rush.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/tunnel-rush.webp" class="small-thumb img-rounded" alt="Tunnel Rush"></div><div class="list-info"><div class="list-title">Tunnel Rush</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/stickman-hook.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/stickman-hook.webp" class="small-thumb img-rounded" alt="Stickman Hook"></div><div class="list-info"><div class="list-title">Stickman Hook</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/bitlife.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/bitlife.webp" class="small-thumb img-rounded" alt="BitLife"></div><div class="list-info"><div class="list-title">BitLife</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/tiny-fishing.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/tiny-fishing.webp" class="small-thumb img-rounded" alt="Tiny Fishing"></div><div class="list-info"><div class="list-title">Tiny Fishing</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/2048.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/2048.webp" class="small-thumb img-rounded" alt="2048"></div><div class="list-info"><div class="list-title">2048</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/ovo.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/ovo.webp" class="small-thumb img-rounded" alt="OvO"></div><div class="list-info"><div class="list-title">OvO</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/eggy-car.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/eggy-car.webp" class="small-thumb img-rounded" alt="Eggy Car"></div><div class="list-info"><div class="list-title">Eggy Car</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/among-us.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/among-us.webp" class="small-thumb img-rounded" alt="Among Us SP"></div><div class="list-info"><div class="list-title">Among Us SP</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/drift-boss.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/drift-boss.webp" class="small-thumb img-rounded" alt="Drift Boss"></div><div class="list-info"><div class="list-title">Drift Boss</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/rooftop-snipers.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/rooftop-snipers.webp" class="small-thumb img-rounded" alt="Rooftop Snipers"></div><div class="list-info"><div class="list-title">Rooftop Snipers</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/house-of-hazards.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/house-of-hazards.webp" class="small-thumb img-rounded" alt="House Of Hazards"></div><div class="list-info"><div class="list-title">House Of Hazards</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/curve-ball-3d.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/curve-ball-3d.webp" class="small-thumb img-rounded" alt="Curve Ball 3D"></div><div class="list-info"><div class="list-title">Curve Ball 3D</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/slope-3.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/slope-3.webp" class="small-thumb img-rounded" alt="Slope 3"></div><div class="list-info"><div class="list-title">Slope 3</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/there-is-no-game.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/there-is-no-game.webp" class="small-thumb img-rounded" alt="There Is No Game"></div><div class="list-info"><div class="list-title">There Is No Game</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/worlds-hardest-game-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/worlds-hardest-game-2.webp" class="small-thumb img-rounded" alt="World's Hardest Game 2"></div><div class="list-info"><div class="list-title">World's Hardest Game 2</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/car-rush.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/car-rush.webp" class="small-thumb img-rounded" alt="Car Rush"></div><div class="list-info"><div class="list-title">Car Rush</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/jelly-truck.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/jelly-truck.webp" class="small-thumb img-rounded" alt="Jelly Truck"></div><div class="list-info"><div class="list-title">Jelly Truck</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/awesome-tanks-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/awesome-tanks-2.webp" class="small-thumb img-rounded" alt="Awesome Tanks"></div><div class="list-info"><div class="list-title">Awesome Tanks</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/parking-fury.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/parking-fury.webp" class="small-thumb img-rounded" alt="Parking Fury"></div><div class="list-info"><div class="list-title">Parking Fury</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/iron-snout.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/iron-snout.webp" class="small-thumb img-rounded" alt="Iron Snout"></div><div class="list-info"><div class="list-title">Iron Snout</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/penalty-kick-online.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/penalty-kick-online.webp" class="small-thumb img-rounded" alt="Penalty Kick Online"></div><div class="list-info"><div class="list-title">Penalty Kick Online</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/top-speed-racing-3d.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/top-speed-racing-3d.webp" class="small-thumb img-rounded" alt="Top Speed Racing 3D"></div><div class="list-info"><div class="list-title">Top Speed Racing 3D</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/moto-x3m-winter.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/moto-x3m-winter.webp" class="small-thumb img-rounded" alt="Moto X3M Winter"></div><div class="list-info"><div class="list-title">Moto X3M Winter</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/moto-x3m-spooky-land.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/moto-x3m-spooky-land.webp" class="small-thumb img-rounded" alt="Moto X3M Spooky Land"></div><div class="list-info"><div class="list-title">Moto X3M Spooky Land</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/moto-x3m-pool-party.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/moto-x3m-pool-party.webp" class="small-thumb img-rounded" alt="Moto X3M Pool Party"></div><div class="list-info"><div class="list-title">Moto X3M Pool Party</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/archery-world-tour.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/archery-world-tour.webp" class="small-thumb img-rounded" alt="Archery World Tour"></div><div class="list-info"><div class="list-title">Archery World Tour</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/evo-city-driving.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/evo-city-driving.webp" class="small-thumb img-rounded" alt="EVO City Driving"></div><div class="list-info"><div class="list-title">EVO City Driving</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/coffee-shop.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/coffee-shop.webp" class="small-thumb img-rounded" alt="Coffee Shop"></div><div class="list-info"><div class="list-title">Coffee Shop</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/duck-life.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/duck-life-1.webp" class="small-thumb img-rounded" alt="Duck Life"></div><div class="list-info"><div class="list-title">Duck Life</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/duck-life-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/duck-life-2.webp" class="small-thumb img-rounded" alt="Duck Life 2"></div><div class="list-info"><div class="list-title">Duck Life 2</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/duck-life-4.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/duck-life-4.webp" class="small-thumb img-rounded" alt="Duck Life 4"></div><div class="list-info"><div class="list-title">Duck Life 4</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/worlds-hardest-game-3.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/worlds-hardest-game-3.webp" class="small-thumb img-rounded" alt="World's Hardest Game 3"></div><div class="list-info"><div class="list-title">World's Hardest Game 3</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/candy-jump.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/candy-jump.webp" class="small-thumb img-rounded" alt="Candy Jump"></div><div class="list-info"><div class="list-title">Candy Jump</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/factory-balls-forever.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/factory-balls-forever.webp" class="small-thumb img-rounded" alt="Factory Balls Forever"></div><div class="list-info"><div class="list-title">Factory Balls Forever</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/madalin-stunt-cars-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/madalin-stunt-cars-2.webp" class="small-thumb img-rounded" alt="Madalin Stunt Cars 2"></div><div class="list-info"><div class="list-title">Madalin Stunt Cars 2</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/madalin-stunt-cars-3.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/madalin-stunt-cars-3.webp" class="small-thumb img-rounded" alt="Madalin Stunt Cars 3"></div><div class="list-info"><div class="list-title">Madalin Stunt Cars 3</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/bloxorz.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/bloxorz.webp" class="small-thumb img-rounded" alt="B-Cubed"></div><div class="list-info"><div class="list-title">B-Cubed</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/parkour-block-3d.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/parkour-block-3d.webp" class="small-thumb img-rounded" alt="Parkour Block 3D"></div><div class="list-info"><div class="list-title">Parkour Block 3D</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/drunken-duel.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/drunken-duel.webp" class="small-thumb img-rounded" alt="Drunken Duel"></div><div class="list-info"><div class="list-title">Drunken Duel</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/lemonade-stand.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/lemonade-stand.svg" class="small-thumb img-rounded" alt="Lemonade Stand"></div><div class="list-info"><div class="list-title">Lemonade Stand</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/jet-boy.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/jet-boy.svg" class="small-thumb img-rounded" alt="Jet Boy"></div><div class="list-info"><div class="list-title">Jet Boy</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/raft-wars.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/raft-wars.webp" class="small-thumb img-rounded" alt="Raft Wars"></div><div class="list-info"><div class="list-title">Raft Wars</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/color-tunnel-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/color-tunnel-2.webp" class="small-thumb img-rounded" alt="Color Tunnel 2"></div><div class="list-info"><div class="list-title">Color Tunnel 2</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/parking-fury-2.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/parking-fury-2.webp" class="small-thumb img-rounded" alt="Parking Fury 2"></div><div class="list-info"><div class="list-title">Parking Fury 2</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/block-the-pig.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/block-the-pig.webp" class="small-thumb img-rounded" alt="Block the Pig"></div><div class="list-info"><div class="list-title">Block the Pig</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/stickman-ragdoll-crash-fun.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/stickman-ragdoll-crash-fun.webp" class="small-thumb img-rounded" alt="Stickman Ragdoll Crash Fun"></div><div class="list-info"><div class="list-title">Stickman Ragdoll Crash Fun</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/bunny-hop.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/bunny-hop.webp" class="small-thumb img-rounded" alt="BunnyHop"></div><div class="list-info"><div class="list-title">BunnyHop</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/strike-force-kitty.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/strike-force-kitty.svg" class="small-thumb img-rounded" alt="Strike Force Kitty"></div><div class="list-info"><div class="list-title">Strike Force Kitty</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/aim-trainer.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/aim-trainer.svg" class="small-thumb img-rounded" alt="Aim Trainer"></div><div class="list-info"><div class="list-title">Aim Trainer</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/truck-jump.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/truck-jump.svg" class="small-thumb img-rounded" alt="Truck Jump"></div><div class="list-info"><div class="list-title">Truck Jump</div></div></div></div></a></div>
-<div class="col-lg-2 col-md-4 col-6 grid-3"><a href="play/dead-shot.html"><div class="game-item"><div class="list-game"><div class="list-thumbnail"><img src="images/dead-shot.png" class="small-thumb img-rounded" alt="Dead Shot"></div><div class="list-info"><div class="list-title">Dead Shot</div></div></div></div></a></div></div>
+<section class="hero">
+<h1>67 игр в браузере</h1>
+<p>Бесплатные HTML5 игры для школы и дома. Без загрузок, без регистрации.</p>
+<div class="hero-stats">
+<div class="stat">
+<div class="stat-number">67</div>
+<div class="stat-label">Игр</div>
+</div>
+<div class="stat">
+<div class="stat-number">4</div>
+<div class="stat-label">Категорий</div>
 </div>
 </div>
+</section>
 
-<div class="container"><div class="border-line mt-4"></div></div>
-<div class="footer-copyright py-4">
-<div class="container text-center">aqulroa Games &copy; 2026. Все права защищены.</div>
+<section class="categories">
+<div class="section-label">Категории</div>
+<div class="category-grid">
+<a href="action.html" class="cat-btn">
+<svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+Экшн
+</a>
+<a href="car.html" class="cat-btn">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+Гонки
+</a>
+<a href="shooting.html" class="cat-btn">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+Стрелялки
+</a>
+<a href="sports.html" class="cat-btn">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+Спорт
+</a>
 </div>
+</section>
 
-<!-- SLIDER SCRIPT -->
+<section class="games-section" id="games">
+<div class="section-label">Все игры</div>
+<div class="games-grid" id="gamesGrid"></div>
+</section>
+
+</main>
+
+<footer class="footer">
+<p>aqulroa Games, 2026</p>
+</footer>
+
 <script>
-let currentSlide = 0;
-const totalSlides = 4;
-const track = document.getElementById('sliderTrack');
-const dots = document.querySelectorAll('.slider-dot');
+const games = [
+{name:"Slope",file:"slope",img:"slope.webp",cat:"Экшн"},
+{name:"Retro Bowl",file:"retro-bowl",img:"retro-bowl.webp",cat:"Спорт"},
+{name:"Cookie Clicker",file:"cookie-clicker",img:"cookie-clicker.webp",cat:"Казуальные"},
+{name:"Drift Hunters",file:"drift-hunters",img:"drift-hunters.webp",cat:"Гонки"},
+{name:"Basketball Stars",file:"basketball-stars",img:"basketball-stars.webp",cat:"Спорт"},
+{name:"Basketball Legends",file:"basketball-legends",img:"basketball-legends.webp",cat:"Спорт"},
+{name:"Tunnel Rush",file:"tunnel-rush",img:"tunnel-rush.webp",cat:"Экшн"},
+{name:"Stickman Hook",file:"stickman-hook",img:"stickman-hook.webp",cat:"Экшн"},
+{name:"BitLife",file:"bitlife",img:"bitlife.webp",cat:"Симулятор"},
+{name:"Tiny Fishing",file:"tiny-fishing",img:"tiny-fishing.webp",cat:"Казуальные"},
+{name:"2048",file:"2048",img:"2048.webp",cat:"Головоломки"},
+{name:"OvO",file:"ovo",img:"ovo.webp",cat:"Платформер"},
+{name:"Eggy Car",file:"eggy-car",img:"eggy-car.webp",cat:"Казуальные"},
+{name:"Among Us",file:"among-us",img:"among-us.webp",cat:"Экшн"},
+{name:"Drift Boss",file:"drift-boss",img:"drift-boss.webp",cat:"Гонки"},
+{name:"Rooftop Snipers",file:"rooftop-snipers",img:"rooftop-snipers.webp",cat:"Стрелялки"},
+{name:"House Of Hazards",file:"house-of-hazards",img:"house-of-hazards.webp",cat:"Экшн"},
+{name:"Curve Ball 3D",file:"curve-ball-3d",img:"curve-ball-3d.webp",cat:"Спорт"},
+{name:"Slope 3",file:"slope-3",img:"slope-3.webp",cat:"Экшн"},
+{name:"There Is No Game",file:"there-is-no-game",img:"there-is-no-game.webp",cat:"Головоломки"},
+{name:"World's Hardest Game 2",file:"worlds-hardest-game-2",img:"worlds-hardest-game-2.webp",cat:"Головоломки"},
+{name:"Car Rush",file:"car-rush",img:"car-rush.webp",cat:"Гонки"},
+{name:"Jelly Truck",file:"jelly-truck",img:"jelly-truck.webp",cat:"Физика"},
+{name:"Awesome Tanks 2",file:"awesome-tanks-2",img:"awesome-tanks-2.webp",cat:"Экшн"},
+{name:"Parking Fury",file:"parking-fury",img:"parking-fury.webp",cat:"Гонки"},
+{name:"Iron Snout",file:"iron-snout",img:"iron-snout.webp",cat:"Экшн"},
+{name:"Penalty Kick Online",file:"penalty-kick-online",img:"penalty-kick-online.webp",cat:"Спорт"},
+{name:"Top Speed Racing 3D",file:"top-speed-racing-3d",img:"top-speed-racing-3d.webp",cat:"Гонки"},
+{name:"Moto X3M Winter",file:"moto-x3m-winter",img:"moto-x3m-winter.webp",cat:"Гонки"},
+{name:"Moto X3M Spooky Land",file:"moto-x3m-spooky-land",img:"moto-x3m-spooky-land.webp",cat:"Гонки"},
+{name:"Moto X3M Pool Party",file:"moto-x3m-pool-party",img:"moto-x3m-pool-party.webp",cat:"Гонки"},
+{name:"Archery World Tour",file:"archery-world-tour",img:"archery-world-tour.webp",cat:"Стрелялки"},
+{name:"EVO City Driving",file:"evo-city-driving",img:"evo-city-driving.webp",cat:"Гонки"},
+{name:"Coffee Shop",file:"coffee-shop",img:"coffee-shop.webp",cat:"Симулятор"},
+{name:"Duck Life",file:"duck-life",img:"duck-life-1.webp",cat:"Симулятор"},
+{name:"Duck Life 2",file:"duck-life-2",img:"duck-life-2.webp",cat:"Симулятор"},
+{name:"Duck Life 4",file:"duck-life-4",img:"duck-life-4.webp",cat:"Симулятор"},
+{name:"World's Hardest Game 3",file:"worlds-hardest-game-3",img:"worlds-hardest-game-3.webp",cat:"Головоломки"},
+{name:"Candy Jump",file:"candy-jump",img:"candy-jump.webp",cat:"Казуальные"},
+{name:"Factory Balls Forever",file:"factory-balls-forever",img:"factory-balls-forever.webp",cat:"Головоломки"},
+{name:"Madalin Stunt Cars 2",file:"madalin-stunt-cars-2",img:"madalin-stunt-cars-2.webp",cat:"Гонки"},
+{name:"Madalin Stunt Cars 3",file:"madalin-stunt-cars-3",img:"madalin-stunt-cars-3.webp",cat:"Гонки"},
+{name:"B-Cubed",file:"bloxorz",img:"bloxorz.webp",cat:"Головоломки"},
+{name:"Parkour Block 3D",file:"parkour-block-3d",img:"parkour-block-3d.webp",cat:"Экшн"},
+{name:"Drunken Duel",file:"drunken-duel",img:"drunken-duel.webp",cat:"Стрелялки"},
+{name:"Lemonade Stand",file:"lemonade-stand",img:"lemonade-stand.svg",cat:"Симулятор"},
+{name:"Jet Boy",file:"jet-boy",img:"jet-boy.svg",cat:"Стрелялки"},
+{name:"Raft Wars",file:"raft-wars",img:"raft-wars.webp",cat:"Стратегия"},
+{name:"Color Tunnel 2",file:"color-tunnel-2",img:"color-tunnel-2.webp",cat:"Экшн"},
+{name:"Parking Fury 2",file:"parking-fury-2",img:"parking-fury-2.webp",cat:"Гонки"},
+{name:"Block the Pig",file:"block-the-pig",img:"block-the-pig.webp",cat:"Головоломки"},
+{name:"Stickman Ragdoll Crash Fun",file:"stickman-ragdoll-crash-fun",img:"stickman-ragdoll-crash-fun.webp",cat:"Экшн"},
+{name:"BunnyHop",file:"bunny-hop",img:"bunny-hop.webp",cat:"Экшн"},
+{name:"Strike Force Kitty",file:"strike-force-kitty",img:"strike-force-kitty.svg",cat:"Экшн"},
+{name:"Aim Trainer",file:"aim-trainer",img:"aim-trainer.svg",cat:"Стрелялки"},
+{name:"Truck Jump",file:"truck-jump",img:"truck-jump.svg",cat:"Гонки"},
+{name:"Dead Shot",file:"dead-shot",img:"dead-shot.png",cat:"Стрелялки"},
+{name:"Vex 5",file:"vex-5",img:"vex-5.webp",cat:"Платформер"},
+{name:"Cluster Rush",file:"cluster-rush",img:"cluster-rush.webp",cat:"Гонки"},
+{name:"Dreadhead Parkour",file:"dreadhead-parkour",img:"dreadhead-parkour.svg",cat:"Экшн"},
+{name:"Red Ball 4",file:"red-ball-4",img:"red-ball-4.webp",cat:"Платформер"},
+{name:"Drive Mad",file:"drive-mad",img:"drive-mad.webp",cat:"Гонки"},
+{name:"Bullet Force",file:"bullet-force",img:"bullet-force.webp",cat:"Стрелялки"},
+{name:"Run 3",file:"run-3",img:"run-3.webp",cat:"Платформер"},
+{name:"1v1.LOL",file:"1v1lol",img:"1v1lol.webp",cat:"Стрелялки"},
+{name:"Death Run 3D",file:"death-run-3d",img:"death-run-3d.webp",cat:"Экшн"}
+];
 
-function goToSlide(n) {
-  currentSlide = n;
-  track.style.transform = 'translateX(-' + (n * 100) + '%)';
-  dots.forEach((d, i) => d.classList.toggle('active', i === n));
-}
-function moveSlider(dir) {
-  let next = (currentSlide + dir + totalSlides) % totalSlides;
-  goToSlide(next);
-}
-dots.forEach(d => d.addEventListener('click', () => goToSlide(+d.dataset.slide)));
-setInterval(() => moveSlider(1), 5000);
-</script>
+const grid = document.getElementById('gamesGrid');
+games.forEach(g => {
+  const card = document.createElement('a');
+  card.href = 'play/' + g.file + '.html';
+  card.className = 'game-card';
+  card.innerHTML = '<div class="game-thumb"><img src="images/' + g.img + '" alt="' + g.name + '"></div><div class="game-info"><div class="game-title">' + g.name + '</div><div class="game-cat">' + g.cat + '</div></div>';
+  grid.appendChild(card);
+});
 
-<!-- SEARCH SCRIPT -->
-<script>
-const games = [{name:"Slope",file:"slope",img:"slope.webp"},{name:"Retro Bowl",file:"retro-bowl",img:"retro-bowl.webp"},{name:"Cookie Clicker",file:"cookie-clicker",img:"cookie-clicker.webp"},{name:"Cannon Clash",file:"cannon-clash",img:"cannon-clash.svg"},{name:"Drift Hunters",file:"drift-hunters",img:"drift-hunters.webp"},{name:"Basketball Stars",file:"basketball-stars",img:"basketball-stars.webp"},{name:"Basketball Legends",file:"basketball-legends",img:"basketball-legends.webp"},{name:"Tunnel Rush",file:"tunnel-rush",img:"tunnel-rush.webp"},{name:"Stickman Hook",file:"stickman-hook",img:"stickman-hook.webp"},{name:"BitLife",file:"bitlife",img:"bitlife.webp"},{name:"Tiny Fishing",file:"tiny-fishing",img:"tiny-fishing.webp"},{name:"2048",file:"2048",img:"2048.webp"},{name:"OvO",file:"ovo",img:"ovo.webp"},{name:"Eggy Car",file:"eggy-car",img:"eggy-car.webp"},{name:"Among Us SP",file:"among-us",img:"among-us.webp"},{name:"Drift Boss",file:"drift-boss",img:"drift-boss.webp"},{name:"Rooftop Snipers",file:"rooftop-snipers",img:"rooftop-snipers.webp"},{name:"House Of Hazards",file:"house-of-hazards",img:"house-of-hazards.webp"},{name:"Curve Ball 3D",file:"curve-ball-3d",img:"curve-ball-3d.webp"},{name:"Slope 3",file:"slope-3",img:"slope-3.webp"},{name:"There Is No Game",file:"there-is-no-game",img:"there-is-no-game.webp"},{name:"World's Hardest Game 2",file:"worlds-hardest-game-2",img:"worlds-hardest-game-2.webp"},{name:"Car Rush",file:"car-rush",img:"car-rush.webp"},{name:"Jelly Truck",file:"jelly-truck",img:"jelly-truck.webp"},{name:"Awesome Tanks",file:"awesome-tanks-2",img:"awesome-tanks-2.webp"},{name:"Parking Fury",file:"parking-fury",img:"parking-fury.webp"},{name:"Iron Snout",file:"iron-snout",img:"iron-snout.webp"},{name:"Penalty Kick Online",file:"penalty-kick-online",img:"penalty-kick-online.webp"},{name:"Top Speed Racing 3D",file:"top-speed-racing-3d",img:"top-speed-racing-3d.webp"},{name:"Moto X3M Winter",file:"moto-x3m-winter",img:"moto-x3m-winter.webp"},{name:"Moto X3M Spooky Land",file:"moto-x3m-spooky-land",img:"moto-x3m-spooky-land.webp"},{name:"Moto X3M Pool Party",file:"moto-x3m-pool-party",img:"moto-x3m-pool-party.webp"},{name:"Archery World Tour",file:"archery-world-tour",img:"archery-world-tour.webp"},{name:"EVO City Driving",file:"evo-city-driving",img:"evo-city-driving.webp"},{name:"Coffee Shop",file:"coffee-shop",img:"coffee-shop.webp"},{name:"Duck Life",file:"duck-life",img:"duck-life-1.webp"},{name:"Duck Life 2",file:"duck-life-2",img:"duck-life-2.webp"},{name:"Duck Life 4",file:"duck-life-4",img:"duck-life-4.webp"},{name:"World's Hardest Game 3",file:"worlds-hardest-game-3",img:"worlds-hardest-game-3.webp"},{name:"Candy Jump",file:"candy-jump",img:"candy-jump.webp"},{name:"Factory Balls Forever",file:"factory-balls-forever",img:"factory-balls-forever.webp"},{name:"Madalin Stunt Cars 2",file:"madalin-stunt-cars-2",img:"madalin-stunt-cars-2.webp"},{name:"Madalin Stunt Cars 3",file:"madalin-stunt-cars-3",img:"madalin-stunt-cars-3.webp"},{name:"B-Cubed",file:"bloxorz",img:"bloxorz.webp"},{name:"Parkour Block 3D",file:"parkour-block-3d",img:"parkour-block-3d.webp"},{name:"Drunken Duel",file:"drunken-duel",img:"drunken-duel.webp"},{name:"Lemonade Stand",file:"lemonade-stand",img:"lemonade-stand.svg"},{name:"Jet Boy",file:"jet-boy",img:"jet-boy.svg"},{name:"Raft Wars",file:"raft-wars",img:"raft-wars.webp"},{name:"Color Tunnel 2",file:"color-tunnel-2",img:"color-tunnel-2.webp"},{name:"Parking Fury 2",file:"parking-fury-2",img:"parking-fury-2.webp"},{name:"Block the Pig",file:"block-the-pig",img:"block-the-pig.webp"},{name:"Stickman Ragdoll Crash Fun",file:"stickman-ragdoll-crash-fun",img:"stickman-ragdoll-crash-fun.webp"},{name:"BunnyHop",file:"bunny-hop",img:"bunny-hop.webp"},{name:"Strike Force Kitty",file:"strike-force-kitty",img:"strike-force-kitty.svg"},{name:"Aim Trainer",file:"aim-trainer",img:"aim-trainer.svg"},{name:"Truck Jump",file:"truck-jump",img:"truck-jump.svg"},{name:"Dead Shot",file:"dead-shot",img:"dead-shot.png"}];
 const input = document.getElementById('searchInput');
 const results = document.getElementById('searchResults');
 
@@ -189,34 +914,203 @@ input.addEventListener('input', function() {
   const found = games.filter(g => g.name.toLowerCase().includes(q));
   if (found.length === 0) { results.classList.remove('active'); return; }
   results.innerHTML = found.map(g =>
-    '<a href="play/' + g.file + '.html" class="search-result-item">' +
+    '<a href="play/' + g.file + '.html" class="search-item">' +
     '<img src="images/' + g.img + '" alt="' + g.name + '">' +
-    '<span class="search-result-name">' + g.name + '</span></a>'
+    '<span>' + g.name + '</span></a>'
   ).join('');
   results.classList.add('active');
 });
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrapper')) results.classList.remove('active');
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-box')) results.classList.remove('active');
+});
+
+// Shape transformation toggle
+const tryBtn = document.getElementById('tryBtn');
+const bgContainer = document.querySelector('.bg-container');
+
+tryBtn.addEventListener('click', function() {
+  const isTransformed = bgContainer.classList.toggle('transformed');
+  tryBtn.textContent = isTransformed ? 'Назад' : 'Попробуй';
+  if (isTransformed) {
+    const ripple = document.createElement('div');
+    ripple.className = 'try-btn-ripple';
+    document.body.appendChild(ripple);
+    requestAnimationFrame(() => ripple.classList.add('active'));
+    setTimeout(() => ripple.remove(), 1300);
+  }
+  if (typeof window._toggleThreeShapes === 'function') {
+    window._toggleThreeShapes(isTransformed);
+  }
 });
 </script>
 
-<!-- SCROLL ANIMATION -->
-<script>
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.style.animationPlayState = 'running';
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 14);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.8, 0.4, 0.1
+);
+composer.addPass(bloom);
+
+scene.add(new THREE.AmbientLight(0x1a0030, 0.8));
+const dirLight = new THREE.DirectionalLight(0xc084fc, 1.5);
+dirLight.position.set(5, 8, 5);
+scene.add(dirLight);
+const pointLight1 = new THREE.PointLight(0xa855f7, 3, 30);
+pointLight1.position.set(-5, 3, 5);
+scene.add(pointLight1);
+const pointLight2 = new THREE.PointLight(0xe879f9, 2, 25);
+pointLight2.position.set(5, -2, 3);
+scene.add(pointLight2);
+
+const shapes = [];
+const shapeData = [
+  { geo: new THREE.OctahedronGeometry(1.2, 0), pos: [-5, 3, -2], color: 0xa855f7, emissive: 0x7c3aed, speed: 0.8, scale: 1.0 },
+  { geo: new THREE.TetrahedronGeometry(1.4, 0), pos: [4.5, -2, -1], color: 0xc084fc, emissive: 0x9333ea, speed: 1.0, scale: 1.1 },
+  { geo: new THREE.IcosahedronGeometry(1.0, 0), pos: [-3, -3, 0], color: 0xe879f9, emissive: 0xc026d3, speed: 0.6, scale: 0.9 },
+  { geo: new THREE.DodecahedronGeometry(1.1, 0), pos: [5, 2.5, -3], color: 0xd946ef, emissive: 0xa21caf, speed: 0.7, scale: 1.0 },
+  { geo: new THREE.TorusKnotGeometry(0.7, 0.25, 80, 16, 2, 3), pos: [0, 4, -2], color: 0xf0abfc, emissive: 0xd946ef, speed: 0.5, scale: 0.85 },
+  { geo: new THREE.TorusGeometry(0.9, 0.35, 16, 40), pos: [-4, 0, -1], color: 0x8b5cf6, emissive: 0x6d28d9, speed: 0.9, scale: 1.0 },
+  { geo: new THREE.ConeGeometry(0.9, 1.8, 4), pos: [2, -4, 0], color: 0xfbbf24, emissive: 0xf59e0b, speed: 1.1, scale: 0.95 },
+  { geo: new THREE.OctahedronGeometry(0.8, 1), pos: [6, -0.5, -2], color: 0x34d399, emissive: 0x059669, speed: 0.75, scale: 0.8 },
+];
+
+shapeData.forEach((d, i) => {
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: d.color,
+    emissive: d.emissive,
+    emissiveIntensity: 0.8,
+    metalness: 0.4,
+    roughness: 0.2,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
+    transparent: true,
+    opacity: 0,
+  });
+
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: d.color,
+    wireframe: true,
+    transparent: true,
+    opacity: 0,
+  });
+
+  const mesh = new THREE.Mesh(d.geo, mat);
+  const wireMesh = new THREE.Mesh(d.geo.clone(), wireMat);
+  wireMesh.scale.setScalar(1.08);
+
+  const group = new THREE.Group();
+  group.add(mesh);
+  group.add(wireMesh);
+  group.position.set(...d.pos);
+  group.scale.setScalar(0.01);
+  scene.add(group);
+
+  shapes.push({
+    group, mesh, wireMesh, mat, wireMat,
+    basePos: [...d.pos],
+    speed: d.speed,
+    targetScale: d.scale,
+    delay: i * 0.12,
+    phase: Math.random() * Math.PI * 2,
+  });
+});
+
+let isActive = false;
+let animating = false;
+let morphProgress = 0;
+const clock = new THREE.Clock();
+
+window._toggleThreeShapes = function(active) {
+  isActive = active;
+  animating = true;
+  morphProgress = 0;
+};
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  const elapsed = clock.getElapsedTime();
+
+  if (animating) {
+    morphProgress += delta * 1.5;
+    if (morphProgress >= 1) {
+      morphProgress = 1;
+      animating = false;
+    }
+  }
+
+  const ease = morphProgress < 1
+    ? 1 - Math.pow(1 - morphProgress, 3)
+    : 1;
+
+  shapes.forEach((s, i) => {
+    const delayedEase = Math.max(0, Math.min(1, (ease - s.delay) / (1 - s.delay)));
+    const springEase = delayedEase < 1
+      ? 1 - Math.pow(1 - delayedEase, 3) * Math.cos(delayedEase * Math.PI * 1.5)
+      : 1;
+
+    if (isActive) {
+      s.mat.opacity = springEase;
+      s.wireMat.opacity = springEase * 0.3;
+      s.group.scale.setScalar(s.targetScale * springEase);
+    } else {
+      const fallEase = 1 - Math.pow(delayedEase, 2);
+      s.mat.opacity = fallEase;
+      s.wireMat.opacity = fallEase * 0.3;
+      s.group.scale.setScalar(s.targetScale * (1 - fallEase) + 0.01);
+    }
+
+    if (s.group.scale.x > 0.05) {
+      s.group.rotation.x += delta * s.speed * 0.7;
+      s.group.rotation.y += delta * s.speed;
+      s.group.rotation.z += delta * s.speed * 0.3;
+
+      s.group.position.x = s.basePos[0] + Math.sin(elapsed * s.speed + s.phase) * 0.5;
+      s.group.position.y = s.basePos[1] + Math.cos(elapsed * s.speed * 0.8 + s.phase) * 0.7;
+      s.group.position.z = s.basePos[2] + Math.sin(elapsed * s.speed * 0.5 + s.phase * 2) * 0.3;
     }
   });
-}, { threshold: 0.1 });
-document.querySelectorAll('.grid-3').forEach(el => {
-  el.style.animationPlayState = 'paused';
-  observer.observe(el);
+
+  pointLight1.position.x = Math.sin(elapsed * 0.5) * 6;
+  pointLight1.position.y = Math.cos(elapsed * 0.3) * 4;
+  pointLight2.position.x = Math.cos(elapsed * 0.4) * 5;
+  pointLight2.position.z = Math.sin(elapsed * 0.6) * 4;
+
+  if (isActive || morphProgress > 0) {
+    composer.render();
+  }
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
 });
 </script>
-
-<script src="assets/js/jquery-3.6.2.min.js"></script>
-<script src="assets/js/popper.min.js"></script>
-<script src="assets/js/bootstrap.min.js"></script>
 </body>
 </html>

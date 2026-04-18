@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strike Force Kitty - aqulroa Games</title>
+<title>Death Run 3d - aqulroa Games</title>
 <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/game-new.css">
-<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
 
+<!-- 3D BACKGROUND -->
 <div class="bg-container">
   <div class="bg-grid"></div>
   <div class="cube cube-1"><div class="cube-face front"></div><div class="cube-face back"></div><div class="cube-face left"></div><div class="cube-face right"></div><div class="cube-face top"></div><div class="cube-face bottom"></div></div>
@@ -28,10 +28,10 @@
 <div class="game-wrapper">
   <div class="game-container">
     <div class="game-iframe-container" id="game-player">
-      <embed id="game-area" src="https://schoolind.github.io/Strike-force-kitty/strikeforcekitty.swf" type="application/x-shockwave-flash" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+      <iframe class="game-iframe" id="game-area" src="https://unbannedgames.io/zubo/death-run-3d/" scrolling="no" frameborder="0" allowfullscreen></iframe>
     </div>
     <div class="game-info">
-      <h1 class="game-title">Strike Force Kitty</h1>
+      <h1 class="game-title">Death Run 3d</h1>
       <div class="game-actions">
         <button class="fullscreen-btn" onclick="open_fullscreen()">
           <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -40,10 +40,10 @@
         <a href="../index.html" class="back-link">
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Назад к играм
-        </a>
-      </div>
+      </a>
     </div>
   </div>
+</div>
 </div>
 
 <script>
