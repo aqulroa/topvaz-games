@@ -1,0 +1,125 @@
+import { useEffect, useRef } from "react";
+import calcPoints from "./calcPoints";
+import { useTranslation } from '@/components/useTranslations'
+import triggerConfetti from "./utils/triggerConfetti";
+
+export default function EndBanner({ countryStreaksEnabled, singlePlayerRound, onboarding, countryGuesser, countryGuesserCorrect, options, lostCountryStreak, session, guessed, latLong, pinPoint, countryStreak, fullReset, km, multiplayerState, usedHint, toggleMap, panoShown, setExplanationModalShown }) {
+    const { t: text } = useTranslation("common");
+    const confettiTriggered = useRef(false);
+
+    // Calculate points for confetti check
+    // For singleplayer (not in multiplayer), use lastPoint (already calculated with correct maxDist for custom maps)
+    // For multiplayer, calculate using multiplayer gameData
+    const points = (!multiplayerState?.inGame && singlePlayerRound?.lastPoint != null)
+        ? singlePlayerRound.lastPoint
+        : (latLong && pinPoint ? calcPoints({
+            lat: latLong.lat,
+            lon: latLong.long,
+            guessLat: pinPoint.lat,
+            guessLon: pinPoint.lng,
+            usedHint: false,
+            maxDist: multiplayerState?.gameData?.maxDist ?? 20000
+        }) : 0);
+
+    // Trigger confetti for scores >= 4850 (delay to let the map transition finish —
+    // firing while the pano is still visible causes white screen on mobile GPUs)
+    useEffect(() => {
+        let timer;
+        if (guessed && points >= 4850 && !panoShown && !confettiTriggered.current) {
+            confettiTriggered.current = true;
+            timer = setTimeout(() => triggerConfetti(), 500);
+        }
+        // Reset when banner hides
+        if (!guessed) {
+            confettiTriggered.current = false;
+        }
+        return () => clearTimeout(timer);
+    }, [guessed, points, panoShown]);
+
+    return (
+        <div id='endBanner' style={{ display: guessed ? '' : 'none' }}>
+
+            <button className="openInMaps topGameInfoButton" onClick={() => {
+                toggleMap();
+            }}>
+                {panoShown ? text("showMap") : text("showPano")}
+            </button>
+            <div className="bannerContent">
+
+
+
+                {pinPoint && (km >= 0) ? (
+                    <span className='mainBannerTxt'>
+                        {/* Your guess was {km} km away! */}
+
+
+
+                        {text(`guessDistance${options.units === "imperial" ? "Mi" : "Km"}`, { d: options.units === "imperial" ? (km * 0.621371).toFixed(1) : km })}
+                    </span>
+                ) : (
+                    <span className='mainBannerTxt'>{
+                        countryGuesser ? (
+                            countryGuesserCorrect ? text("correctCountry") : text("incorrectCountry")
+                        ) : text("didntGuess")
+                    }!</span>
+                )}
+                <p className="motivation">
+                    {latLong && pinPoint && (onboarding || multiplayerState?.inGame) &&
+                        `${text('gotPoints', { p: calcPoints({ lat: latLong.lat, lon: latLong.long, guessLat: pinPoint.lat, guessLon: pinPoint.lng, usedHint: false, maxDist: multiplayerState?.gameData?.maxDist ?? 20000 }) })}! `
+                    }
+                    {
+                        countryGuesser && onboarding && latLong &&
+                        `${text('gotPoints', { p: 2500 })}!`
+                    }
+
+
+                </p>
+                {/* <p className="motivation">
+                    {xpEarned > 0 && session?.token?.secret ? text("earnedXP", { xp: xpEarned }) : ''}
+
+                </p> */}
+                {countryStreaksEnabled && (
+                    <p className="motivation">
+                        {countryStreak > 0 ? text("onCountryStreak", { streak: countryStreak }) : ''}
+                        {lostCountryStreak > 0 ? `${text("lostCountryStreak", { streak: lostCountryStreak })}!` : ''}
+                    </p>
+                )}
+                <p className="motivation">
+                    {singlePlayerRound &&
+
+                        text("gotPoints", { p: singlePlayerRound.lastPoint })}
+
+                </p>
+            </div>
+            {!multiplayerState && (
+
+                <div className="endButtonContainer">
+                    <button className="playAgain" onClick={fullReset}>
+                        {(onboarding && onboarding.round === 5)
+                            || (singlePlayerRound && singlePlayerRound.round === singlePlayerRound.totalRounds)
+                            ? text("viewResults") : text("nextRound")}
+                    </button>
+                    {/* { !onboarding && (
+  <button className="openInMaps" onClick={() => {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${latLong.lat},${latLong.long}`);
+  }}>
+    {text("openInMaps")}
+  </button>
+  )} */}
+
+
+
+                    {session?.token?.canMakeClues && (
+                        <button className="openInMaps" onClick={() => {
+                            if (!panoShown) toggleMap();
+                            setExplanationModalShown(true);
+                        }}>
+                            {text("writeExplanation")}
+                        </button>
+                    )}
+
+                </div>
+            )}
+        </div>
+    )
+}
