@@ -496,6 +496,51 @@ body {
   margin-top: 4px;
 }
 
+.worldguessr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 48px;
+  padding: 16px 36px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 16px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.4), 0 8px 10px -6px rgba(34, 197, 94, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.worldguessr-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  animation: shine 4s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.worldguessr-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 35px -5px rgba(34, 197, 94, 0.5), 0 10px 15px -6px rgba(34, 197, 94, 0.2);
+}
+
+.wg-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 /* CATEGORIES */
 .categories {
   padding: 0 32px 60px;
@@ -779,11 +824,11 @@ body {
 <main class="main">
 
 <section class="hero">
-<h1>77 игр в браузере</h1>
+<h1>58 игр в браузере</h1>
 <p>Бесплатные HTML5 игры для школы и дома. Без загрузок, без регистрации.</p>
 <div class="hero-stats">
 <div class="stat">
-<div class="stat-number">77</div>
+<div class="stat-number">58</div>
 <div class="stat-label">Игр</div>
 </div>
 <div class="stat">
@@ -791,6 +836,11 @@ body {
 <div class="stat-label">Категорий</div>
 </div>
 </div>
+<br>
+<a href="/guess/" class="worldguessr-btn">
+<span class="wg-icon">🌍</span>
+<span>Играть в WorldGuessr</span>
+</a>
 </section>
 
 <section class="categories">
