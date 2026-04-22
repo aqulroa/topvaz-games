@@ -826,11 +826,67 @@
       border-top: 1px solid var(--border);
       position: relative;
       z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      align-items: center;
     }
 
     .footer p {
       font-size: 0.8125rem;
       color: var(--text-secondary);
+    }
+
+    .info-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+      padding: 0;
+    }
+    
+    .disclaimer-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+
+    .disclaimer-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 500px;
+      color: var(--text-primary);
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      text-align: left;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .close-disclaimer {
+      position: absolute;
+      top: 15px; 
+      right: 20px;
+      background: none; 
+      border: none; 
+      color: var(--text-secondary); 
+      font-size: 24px; 
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .close-disclaimer:hover {
+      color: var(--text-primary);
     }
 
     /* RESPONSIVE */
@@ -1008,7 +1064,16 @@
 
   <footer class="footer">
     <p>aqulroa Games, 2026</p>
+    <button class="info-btn" onclick="document.getElementById('disclaimer-modal').style.display='flex'">Информация</button>
   </footer>
+
+  <div id="disclaimer-modal" class="disclaimer-modal">
+    <div class="disclaimer-content">
+      <button class="close-disclaimer" onclick="document.getElementById('disclaimer-modal').style.display='none'">×</button>
+      <h3 style="margin-bottom:12px; font-weight:600; font-size:1.2rem;">Отказ от ответственности</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">Все материалы (игры, изображения и прочий контент), представленные на данном сайте, взяты из открытых источников в интернете и предоставляются исключительно в ознакомительных и образовательных целях. Автор сайта не претендует на авторские права на контент и не несет ответственности за его использование. Данный проект разработан исключительно в целях хобби для демонстрации веб-технологий. Если вы являетесь правообладателем и хотите удалить свой контент, свяжитесь с нами.</p>
+    </div>
+  </div>
 
   <script>
     const games = [
