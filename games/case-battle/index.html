@@ -6,8 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <link rel="stylesheet" href="./style.css"/>
-<!-- Yandex Games SDK -->
-<script src="/sdk.js"></script>
+<!-- Yandex Games SDK Removed -->
 <style>
         canvas:focus {
             outline: none;
@@ -265,9 +264,9 @@
             try {
                 if (IsLocalHost()) return;
 
-                ysdk = await YaGames.init();
-                ysdk.on('game_api_pause', PauseCallback);
-                ysdk.on('game_api_resume', ResumeCallback);
+                ysdk = null; // await YaGames.init();
+// ysdk.on('game_api_pause', PauseCallback);
+// ysdk.on('game_api_resume', ResumeCallback);
 
                 // Additional init0 modules
 await RequestingEnvironmentData();

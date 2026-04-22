@@ -1,7 +1,7 @@
 function show_ad(){
-         gdsdk.showAd();
+    console.log('Ad prevented');
 }
 
 function show_rev_ad() {
-    gdsdk.showAd('rewarded');
+    console.log('Rewarded ad prevented');
 }
