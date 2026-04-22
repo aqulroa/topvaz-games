@@ -50,14 +50,18 @@
             dataUrl: buildUrl + "/build.data",
             frameworkUrl: buildUrl + "/build.framework.js",
             codeUrl: buildUrl + "/build.wasm",
-        streamingAssetsUrl: "StreamingAssets",
+            streamingAssetsUrl: "StreamingAssets",
             companyName: "DefaultCompany",
             productName: "cbsim",
-            productVersion: "1.0"
+            productVersion: "1.0",
+            matchWebGLToCanvasSize: true,
+            devicePixelRatio: window.devicePixelRatio || 1
         };
 
         const container = document.querySelector("#unity-container");
         const canvas = document.querySelector("#unity-canvas");
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
         const loadingCover = document.querySelector("#loading-cover");
         const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
         const progressBarFull = document.querySelector("#unity-progress-bar-full");
