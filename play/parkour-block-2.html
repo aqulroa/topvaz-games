@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Играть в Паркур Блок 2</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body { margin: 0; padding: 0; background-color: #000; overflow: hidden; }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            z-index: 1000;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .back-button:hover { background-color: #555; border-color: #fff; }
+        .fullscreen-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+        .fullscreen-button:hover { background-color: #0056b3; }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-button">← Назад</a>
+    <button class="fullscreen-button" onclick="toggleFullScreen()">На весь экран</button>
+
+    <iframe id="game-container" src="../games/parkour-block-2/index.html"></iframe>
+
+    <script>
+        function toggleFullScreen() {
+            var doc = window.document;
+            var docEl = doc.documentElement;
+
+            var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            } else {
+                cancelFullScreen.call(doc);
+            }
+        }
+    </script>
+</body>
+</html>
